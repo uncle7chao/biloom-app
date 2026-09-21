@@ -3,7 +3,7 @@
     <title>status_1</title>
     <defs>
         <filter id="glow-shadow" x="-50%" y="-50%" width="200%" height="200%">
-            <feDropShadow dx="0" dy="5" stdDeviation="5" flood-color="#0F172A" flood-opacity="0.12"/>
+            <feDropShadow dx="0" dy="5" stdDeviation="5" flood-color="#1A1408" flood-opacity="0.12"/>
         </filter>
         <path id="shape-top"
               d="M60.65,89.6L154.18,35.6A18,18 107.59,0 1,178.77 42.19L178.77,42.19A18,18 107.59,0 1,172.18 66.78L78.65,120.78A18,18 106.67,0 1,54.06 114.19L54.06,114.19A18,18 106.67,0 1,60.65 89.6z"/>

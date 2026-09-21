@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="ic_launcher_background">#FAFAFA</color>
+    <!-- BiLoom placeholder: deep charcoal behind orange-gold marks -->
+    <color name="ic_launcher_background">#14110C</color>
 </resources>

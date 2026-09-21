@@ -4,8 +4,6 @@ import android.app.ActivityManager
 import android.app.Application
 import android.os.Build
 import android.util.Log
-import com.google.firebase.FirebaseApp
-import com.google.firebase.crashlytics.FirebaseCrashlytics
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -33,20 +31,18 @@ object GlobalState : CoroutineScope by CoroutineScope(SupervisorJob() + Dispatch
     }
 
     fun log(text: String) {
-        Log.d("FlClash", text)
+        Log.d("BiLoom", text)
     }
 
+    // BiLoom: Firebase Crashlytics was removed from the fork (it also forced a
+    // google-services.json whose package name breaks once applicationId changes).
+    // The flag is kept as an inert switch so the shared-state plumbing is unchanged.
+    @Suppress("UNUSED_PARAMETER")
     fun setCrashlytics(enable: Boolean) {
-        FirebaseApp.initializeApp(application)
-        FirebaseCrashlytics.getInstance().isCrashlyticsCollectionEnabled = enable
-        if (enable) {
-            log("Crashlytics enabled")
-        }
     }
 
     fun didCrashOnPreviousExecution(): Boolean {
-        FirebaseApp.initializeApp(application)
-        return FirebaseCrashlytics.getInstance().didCrashOnPreviousExecution()
+        return false
     }
 
     fun lastExitInfo(): Map<String, Any?>? {

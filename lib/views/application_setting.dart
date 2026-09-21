@@ -92,13 +92,9 @@ class ApplicationSettingView extends StatelessWidget {
           update: (state, value) =>
               state.copyWith(showNotificationStopAction: value),
         ),
-      if (system.isAndroid)
-        _appSettingToggle(
-          title: (l) => l.crashlytics,
-          subtitle: (l) => l.crashlyticsTip,
-          select: (state) => state.crashlytics,
-          update: (state, value) => state.copyWith(crashlytics: value),
-        ),
+      // BiLoom: the Crashlytics toggle is gone - Firebase was removed from the
+      // fork, so showing a "we collect crash data via Firebase" switch here
+      // would be a false disclosure in the Play Data Safety sense.
       _appSettingToggle(
         title: (l) => l.autoCheckUpdate,
         subtitle: (l) => l.autoCheckUpdateDesc,
