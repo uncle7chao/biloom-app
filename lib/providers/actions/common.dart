@@ -8,18 +8,19 @@ class CommonAction extends _$CommonAction {
   @override
   void build() {}
 
+  /// 主连接入口（首页悬浮球、托盘菜单、快捷键）共用这一个方法。
+  ///
+  /// 「连接」与「断开」操作的是「接管方式」，而不只是内核进程：
+  /// 内核起来了却没有接管方式时流量照样直连，那不是用户要的「已连接」；
+  /// 断开却把系统代理留在打开的位置，开关会和状态自相矛盾，而且下一次
+  /// 任何一次开关变动都会把它重新拉起来，用户会觉得「关不掉」。
   void toggleRunning() {
-    final running = !ref.read(isStartProvider);
-    unawaited(
-      globalState.safeRun(
-        () => ref
-            .read(setupActionProvider.notifier)
-            .setRunning(
-              running,
-              initialize: running && !ref.read(initProvider),
-            ),
-      ),
-    );
+    final systemAction = ref.read(systemActionProvider.notifier);
+    if (ref.read(isStartProvider)) {
+      systemAction.disconnect();
+    } else {
+      systemAction.connect();
+    }
   }
 
   void updateSpeedStatistics() {
@@ -76,8 +77,12 @@ class CommonAction extends _$CommonAction {
   Future<bool> autoCheckUpdate() async {
     if (!ref.read(appSettingProvider).autoCheckUpdate) return false;
     final res = await request.checkForUpdate();
-    await checkUpdateResultHandle(data: res);
-    return res != null;
+    // 自动检查只在**真的有新版本**时出声。启动时既不该因为「已是最新」打扰用户，
+    // 更不该因为断网/查不到而弹窗 —— 后者是静默失败，只记日志。
+    if (res.status == UpdateCheckStatus.hasUpdate) {
+      await checkUpdateResultHandle(result: res);
+    }
+    return res.status == UpdateCheckStatus.hasUpdate;
   }
 
   TextSpan _releaseSpan(BuildContext context, String tagName, String? body) {
@@ -119,9 +124,23 @@ class CommonAction extends _$CommonAction {
   }
 
   Future<void> checkUpdateResultHandle({
-    Map<String, dynamic>? data,
+    required UpdateCheckResult result,
     bool isUser = false,
   }) async {
+    // 「查不到」和「已是最新」必须给不同的话。混成一句，用户就会以为自己在用最新版，
+    // 而这恰恰是他最需要知道「我没查到」的时候。
+    if (result.status == UpdateCheckStatus.failed) {
+      if (isUser) {
+        unawaited(
+          dialogs.showMessage(
+            title: currentAppLocalizations.checkUpdate,
+            message: TextSpan(text: currentAppLocalizations.checkUpdateFailed),
+          ),
+        );
+      }
+      return;
+    }
+    final data = result.data;
     if (data != null) {
       final context = globalState.navigatorKey.currentContext!;
       final res = await dialogs.showMessage(

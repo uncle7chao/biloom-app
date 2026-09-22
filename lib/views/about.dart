@@ -26,13 +26,14 @@ class Contributor {
 class AboutView extends ConsumerWidget {
   const AboutView({super.key});
 
-  Future<void> _checkUpdate(BuildContext context, WidgetRef ref) async {
+  Future<void> _checkUpdate(WidgetRef ref) async {
     final commonAction = ref.read(commonActionProvider.notifier);
-    final data = await globalState.safeRun<Map<String, dynamic>?>(
-      request.checkForUpdate,
-      title: context.appLocalizations.checkUpdate,
+    // 不再包 `safeRun`：现在这三种结局都在应用自己的对话框里讲清楚，
+    // 而不是把「失败」抛成异常、或者含混成「已是最新版」。
+    final result = await request.checkForUpdate();
+    unawaited(
+      commonAction.checkUpdateResultHandle(result: result, isUser: true),
     );
-    unawaited(commonAction.checkUpdateResultHandle(data: data, isUser: true));
   }
 
   List<Widget> _buildMoreSection(BuildContext context, WidgetRef ref) {
@@ -44,20 +45,24 @@ class AboutView extends ConsumerWidget {
         ListItem(
           title: Text(appLocalizations.checkUpdate),
           onTap: () {
-            _checkUpdate(context, ref);
+            _checkUpdate(ref);
           },
-        ),
-        ListItem(
-          title: const Text('Telegram'),
-          onTap: () {
-            dialogs.openUrl('https://t.me/FlClash');
-          },
-          trailing: const Icon(Icons.launch),
         ),
         ListItem(
           title: Text(appLocalizations.project),
           onTap: () {
             dialogs.openUrl('https://github.com/$repository');
+          },
+          trailing: const Icon(Icons.launch),
+        ),
+        // 这一个不是「友情链接」，是 GPL-3.0 的署名义务：BiLoom 的 Dart/UI 层
+        // 来自 FlClash（内核另有其源），署名与出处必须出现在用户能看到的地方。
+        // 基线版本这里是 FlClash 官方 Telegram，换皮时删掉了 —— 删对了（不该把
+        // 用户导向上游的支持渠道），但该补的出处说明不能跟着一起消失。
+        ListItem(
+          title: Text(appLocalizations.forkedFrom),
+          onTap: () {
+            dialogs.openUrl('https://github.com/chen08209/FlClash');
           },
           trailing: const Icon(Icons.launch),
         ),

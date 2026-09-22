@@ -9,6 +9,26 @@ import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/state.dart';
 
+/// 检查更新的三种结局。
+///
+/// 三态是**必须**的，不是洁癖：上游把「没有新版本」和「请求失败」都表示成 `null`，
+/// 于是手动点「检查更新」时，仓库 404、断网、GitHub API 限流全都会被显示成
+/// **「当前应用已经是最新版了」** —— 把一次失败说成了成功。用户据此以为自己在用最新版，
+/// 而这恰好是最需要他知道「我查不到」的场景。
+enum UpdateCheckStatus {
+  hasUpdate,
+  upToDate,
+  failed,
+}
+
+/// [`checkForUpdate`] 的返回值。`data` 仅在 [UpdateCheckStatus.hasUpdate] 时非空。
+class UpdateCheckResult {
+  const UpdateCheckResult(this.status, [this.data]);
+
+  final UpdateCheckStatus status;
+  final Map<String, dynamic>? data;
+}
+
 class Request {
   late final Dio dio;
   late final Dio _clashDio;
@@ -22,7 +42,15 @@ class Request {
 
   Request() {
     dio = Dio(BaseOptions(headers: {'User-Agent': browserUa}));
-    _clashDio = Dio();
+    // 订阅下载必须有上界。Dio 默认的 receiveTimeout 是 null，也就是无限等待 ——
+    // 服务端接受连接后迟迟不吐数据时，配置页会永远停在转圈上，「全部更新」按钮
+    // 从此变哑，连删除菜单都点不出来，只能重启应用。
+    _clashDio = Dio(
+      BaseOptions(
+        connectTimeout: const Duration(seconds: 15),
+        receiveTimeout: const Duration(seconds: 60),
+      ),
+    );
     _clashDio.httpClientAdapter = IOHttpClientAdapter(
       createHttpClient: () {
         final client = HttpClient();
@@ -32,7 +60,7 @@ class Request {
           if (read == null) {
             return 'DIRECT';
           }
-          return FlClashHttpOverrides.findProxyForReader(read, uri);
+          return BiLoomHttpOverrides.findProxyForReader(read, uri);
         };
         return client;
       },
@@ -69,23 +97,26 @@ class Request {
     }
   }
 
-  Future<Map<String, dynamic>?> checkForUpdate() async {
+  Future<UpdateCheckResult> checkForUpdate() async {
     try {
       final response = await dio.get(
         'https://api.github.com/repos/$repository/releases/latest',
         options: Options(responseType: ResponseType.json),
       );
-      if (response.statusCode != 200) return null;
+      if (response.statusCode != 200) {
+        return const UpdateCheckResult(UpdateCheckStatus.failed);
+      }
       final data = response.data as Map<String, dynamic>;
       final remoteVersion = data['tag_name'];
       final version = globalState.packageInfo.version;
       final hasUpdate =
           compareVersions(remoteVersion.replaceAll('v', ''), version) > 0;
-      if (!hasUpdate) return null;
-      return data;
+      return hasUpdate
+          ? UpdateCheckResult(UpdateCheckStatus.hasUpdate, data)
+          : const UpdateCheckResult(UpdateCheckStatus.upToDate);
     } catch (e) {
       commonPrint.log('checkForUpdate failed', logLevel: LogLevel.warning);
-      return null;
+      return const UpdateCheckResult(UpdateCheckStatus.failed);
     }
   }
 
