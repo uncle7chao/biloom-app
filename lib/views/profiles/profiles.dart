@@ -124,6 +124,13 @@ class _ProfilesViewState extends ConsumerState<ProfilesView> {
             nullStatus: NullStatus(
               label: appLocalizations.nullProfileDesc,
               illustration: NullStatusIllustration.profile,
+              // 这是全 App 最关键的首次引导页，却只给一句话、不给按钮 —— 用户
+              // 得自己去猜右下角那个「+」。把入口直接摆到他面前，少一次猜测。
+              action: FilledButton.tonalIcon(
+                onPressed: _handleShowAddExtendPage,
+                icon: const Icon(Icons.add),
+                label: Text(appLocalizations.addProfile),
+              ),
             ),
             child: _ProfilesGrid(
               profiles: state.profiles,

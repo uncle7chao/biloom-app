@@ -39,6 +39,31 @@ class ProfilesAction extends _$ProfilesAction {
     return _core.validateConfigWithData(data);
   }
 
+  /// 订阅兼容层：把内核能识别的任意订阅格式统一转成标准 Clash 配置。
+  ///
+  /// 内核报出来的都是面向用户的中文说明，这里统一改包成 [MessageException]，
+  /// 好让它走和「配置校验失败」一样的提示通道（同一个错误弹窗）。
+  Future<Uint8List> convertSubscription(Uint8List bytes) async {
+    if (bytes.isEmpty) {
+      throw const MessageException('订阅内容为空，请检查链接是否可以正常访问');
+    }
+    try {
+      final result = await _core.convertSubscription(
+        utf8.decode(bytes, allowMalformed: true),
+      );
+      // 没有发生转换（本来就是 Clash 配置）时原样返回入参。
+      // 走一遍 decode(allowMalformed) → encode 是有损的：用 GBK/ANSI 存过的配置
+      // （中文节点名在国内很常见）会被静默写成一片 U+FFFD 替换符，而且校验还会
+      // 通过，用户以为导入正常，直到看见节点名全成了乱码。
+      if (!result.changed) {
+        return bytes;
+      }
+      return Uint8List.fromList(utf8.encode(result.yaml));
+    } on CoreMethodException catch (e) {
+      throw MessageException(e.message);
+    }
+  }
+
   Future<void> autoUpdateProfiles() async {
     for (final profile in ref.read(profilesProvider)) {
       if (!profile.autoUpdate) continue;
@@ -80,6 +105,7 @@ class ProfilesAction extends _$ProfilesAction {
       ref.read(profilesProvider.notifier).put(profile);
       final newProfile = await profile.update(
         validate: (path) => _core.validateConfig(path),
+        convert: convertSubscription,
       );
       ref.read(profilesProvider.notifier).put(newProfile);
       if (profile.id == ref.read(currentProfileIdProvider)) {
@@ -107,7 +133,11 @@ class ProfilesAction extends _$ProfilesAction {
       () async {
         return Profile.normal(
           label: platformFile.name,
-        ).saveFile(bytes, validate: (path) => _core.validateConfig(path));
+        ).saveFile(
+          bytes,
+          validate: (path) => _core.validateConfig(path),
+          convert: convertSubscription,
+        );
       },
       title: currentAppLocalizations.addProfile,
     );
@@ -126,7 +156,10 @@ class ProfilesAction extends _$ProfilesAction {
       () async {
         return Profile.normal(
           url: url,
-        ).update(validate: (path) => _core.validateConfig(path));
+        ).update(
+          validate: (path) => _core.validateConfig(path),
+          convert: convertSubscription,
+        );
       },
       title: currentAppLocalizations.addProfile,
     );

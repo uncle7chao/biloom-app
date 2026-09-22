@@ -11,6 +11,7 @@ part 'generated/profile.freezed.dart';
 part 'generated/profile.g.dart';
 
 typedef ValidateConfig = Future<String> Function(String path);
+typedef ConvertSubscription = Future<Uint8List> Function(Uint8List bytes);
 
 @freezed
 abstract class SubscriptionInfo with _$SubscriptionInfo {
@@ -153,13 +154,14 @@ extension ProfileExtension on Profile {
 
   Future<Profile?> checkAndUpdateAndCopy({
     required ValidateConfig validate,
+    required ConvertSubscription convert,
   }) async {
     final mFile = await _getFile(false);
     final isExists = await mFile.exists();
     if (isExists || url.isEmpty) {
       return null;
     }
-    return update(validate: validate);
+    return update(validate: validate, convert: convert);
   }
 
   Future<File> _getFile([bool autoCreate = true]) async {
@@ -176,7 +178,10 @@ extension ProfileExtension on Profile {
     return _getFile();
   }
 
-  Future<Profile> update({required ValidateConfig validate}) async {
+  Future<Profile> update({
+    required ValidateConfig validate,
+    required ConvertSubscription convert,
+  }) async {
     final response = await request.getFileResponseForUrl(url);
     final disposition = response.headers.value('content-disposition');
     final userinfo = response.headers.value('subscription-userinfo');
@@ -186,16 +191,26 @@ extension ProfileExtension on Profile {
         id.toString(),
       ]),
       subscriptionInfo: SubscriptionInfo.formHString(userinfo),
-    ).saveFile(response.data ?? Uint8List.fromList([]), validate: validate);
+    ).saveFile(
+      response.data ?? Uint8List.fromList([]),
+      validate: validate,
+      convert: convert,
+    );
   }
 
   Future<Profile> saveFile(
     Uint8List bytes, {
     required ValidateConfig validate,
+    required ConvertSubscription convert,
   }) async {
+    // 订阅兼容层。内核能识别 Clash 之外的 v2ray/SS/SSR 分享链接订阅（base64 或明文）、
+    // ssd:// 与 sing-box 配置，这里先转成标准 Clash 配置再落盘，好处是 profile 文件
+    // 本身始终是人类可读的 Clash 配置 —— 编辑配置页、覆写模板、节点页、延迟测试
+    // 全都不必知道订阅原本是什么格式。
+    final data = await convert(bytes);
     final path = await appPath.tempFilePath;
     final tempFile = File(path);
-    await tempFile.safeWriteAsBytes(bytes);
+    await tempFile.safeWriteAsBytes(data);
     final message = await validate(path);
     if (message.isNotEmpty) {
       throw MessageException(message);

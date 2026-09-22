@@ -100,7 +100,13 @@ func handleValidateConfig(path string) string {
 	if err != nil {
 		return err.Error()
 	}
-	if _, err = config.UnmarshalRawConfig(buf); err != nil {
+	// BiLoom: 订阅兼容层。非 Clash 格式(base64/明文分享链接、ssd://、sing-box JSON)
+	// 在这里先转成 Clash YAML，否则用户拿到的是一句英文 YAML 报错。
+	converted, convertErr := subscriptionToProfileYAML(buf)
+	if convertErr != nil {
+		return convertErr.Error()
+	}
+	if _, err = config.UnmarshalRawConfig(converted.YAML); err != nil {
 		return err.Error()
 	}
 	return ""
@@ -629,7 +635,14 @@ func handleGetConfig(path string) (*config.RawConfig, error) {
 	if err != nil {
 		return nil, err
 	}
-	return config.UnmarshalRawConfig(buf)
+	// BiLoom: 与 handleValidateConfig 同样的订阅兜底。这条路径是 FlClash 生成
+	// 运行时配置的入口(getProfile → makeRealProfile),手工放进来的订阅原文
+	// 也会经过这里。
+	converted, convertErr := subscriptionToProfileYAML(buf)
+	if convertErr != nil {
+		return nil, convertErr
+	}
+	return config.UnmarshalRawConfig(converted.YAML)
 }
 
 func handleCrash() {

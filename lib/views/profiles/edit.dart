@@ -89,6 +89,9 @@ class _EditProfileViewState extends ConsumerState<EditProfileView> {
           _fileData!,
           validate: (path) =>
               ref.read(coreHandlerProvider).validateConfig(path),
+          // 编辑页保存的通常是 Clash 配置本身，转换器会原样放行；顺手支持
+          // 「把订阅链接/base64 直接粘进编辑器」也是白赚的。
+          convert: ref.read(profilesActionProvider.notifier).convertSubscription,
         ),
       );
       if (savedProfile == null) {

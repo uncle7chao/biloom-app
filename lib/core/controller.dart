@@ -104,6 +104,15 @@ class CoreController {
     return res;
   }
 
+  /// 把任意受支持的订阅内容转换成标准 Clash 配置。
+  ///
+  /// 转换放在内核里做：内核自带 convert 包（proxy-provider 路径上就在用它），
+  /// 已经覆盖 vless/vmess/trojan/ss/ssr/hysteria2/tuic/anytls 以及 ws/grpc/h2/
+  /// xhttp/httpupgrade 等传输，自己再写一遍只会跟着内核漂移。
+  Future<ConvertSubscriptionResult> convertSubscription(String data) async {
+    return _interface.convertSubscription(data);
+  }
+
   Future<String> updateConfig(UpdateParams updateParams) async {
     return _interface.updateConfig(updateParams);
   }

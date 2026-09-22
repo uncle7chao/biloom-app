@@ -370,7 +370,14 @@ func loadConfig(path string) (*config.Config, error) {
 	if err != nil {
 		return nil, err
 	}
-	return executor.ParseWithBytes(buf)
+	// BiLoom: 订阅兼容层。config.yaml 正常由 FlClash 生成，这里是最后一道兜底 ——
+	// 只有它被手工换成订阅原文时才会用到。此处必须是「完整配置」形态，
+	// 只有 proxies 的碎片过不了 ParseRawConfig(没有端口等必填项)。
+	normalized, _, normalizeErr := subscriptionToFullConfigYAML(buf)
+	if normalizeErr != nil {
+		return nil, normalizeErr
+	}
+	return executor.ParseWithBytes(normalized)
 }
 
 func applyConfig(params *SetupParams) error {

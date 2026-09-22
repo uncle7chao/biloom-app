@@ -46,7 +46,11 @@ void main() {
       final bytes = Uint8List.fromList(utf8.encode('bad: ['));
 
       await expectLater(
-        profile.saveFile(bytes, validate: (_) async => 'invalid config'),
+        profile.saveFile(
+          bytes,
+          validate: (_) async => 'invalid config',
+          convert: (data) async => data,
+        ),
         throwsA(
           isA<MessageException>().having(
             (e) => e.message,
@@ -64,7 +68,32 @@ void main() {
       final profile = Profile.normal(label: 'p');
       final bytes = Uint8List.fromList(utf8.encode('proxies: []'));
 
-      final saved = await profile.saveFile(bytes, validate: (_) async => '');
+      final saved = await profile.saveFile(
+        bytes,
+        validate: (_) async => '',
+        convert: (data) async => data,
+      );
+
+      expect(saved.lastUpdateDate, isNotNull);
+      final savedFile = await profile.file;
+      expect(await savedFile.readAsString(), 'proxies: []');
+    });
+
+    // 订阅兼容层：落到盘上的必须是转换结果，而不是下载到的原始内容 ——
+    // 否则 profile 文件会停在服务商给的 base64/JSON 形态上，
+    // 编辑配置页和覆写模板都会看到一堆看不懂的东西。
+    test('persists the converted subscription, not the raw payload', () async {
+      final profile = Profile.normal(label: 'p');
+      final raw = Uint8List.fromList(utf8.encode('dmxlc3M6Ly94'));
+
+      final saved = await profile.saveFile(
+        raw,
+        validate: (_) async => '',
+        convert: (data) async {
+          expect(utf8.decode(data), 'dmxlc3M6Ly94');
+          return Uint8List.fromList(utf8.encode('proxies: []'));
+        },
+      );
 
       expect(saved.lastUpdateDate, isNotNull);
       final savedFile = await profile.file;

@@ -272,6 +272,14 @@ var methodHandlers = map[CoreMethod]methodHandler{
 			response.success(handleClearEffect(*profileId))
 		})
 	}),
+	convertSubscriptionMethod: withArguments(func(data *string, response MethodResponse) {
+		result, err := handleConvertSubscription(*data)
+		if err != nil {
+			response.failure("convert_subscription_error", err.Error(), nil)
+			return
+		}
+		response.success(result)
+	}),
 }
 
 func registerMethod(method CoreMethod, handler methodHandler) {

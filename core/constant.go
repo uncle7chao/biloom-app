@@ -114,6 +114,7 @@ const (
 	setupConfigMethod              CoreMethod = "setupConfig"
 	getConfigMethod                CoreMethod = "getConfig"
 	clearEffectMethod              CoreMethod = "clearEffect"
+	convertSubscriptionMethod      CoreMethod = "convertSubscription"
 )
 
 type CoreMethod string

@@ -179,3 +179,41 @@ abstract class ProxiesData with _$ProxiesData {
   factory ProxiesData.fromJson(Map<String, Object?> json) =>
       _$ProxiesDataFromJson(json);
 }
+
+/// 订阅转换结果。
+///
+/// 内核支持 Clash 之外的订阅格式 —— v2ray/SS/SSR 分享链接（base64 或明文）、
+/// ssd:// 、sing-box 配置 —— 统一转成 Clash 配置后交回来。`changed` 为 false 时
+/// 表示原内容本来就是 Clash 配置，`yaml` 与输入一致。
+///
+/// 这里刻意不写成 freezed：它只是内核协议的返回体，加进来会引入一次代码生成的
+/// 负担，收益为零。
+class ConvertSubscriptionResult {
+  const ConvertSubscriptionResult({
+    required this.yaml,
+    required this.format,
+    required this.nodeCount,
+    required this.changed,
+  });
+
+  /// 转换后的 Clash 配置全文。
+  final String yaml;
+
+  /// 嗅探出的来源格式：clash / v2ray / ssd / sing-box / unknown。
+  final String format;
+
+  /// 转换出的节点数量；来源本身是 Clash 配置时为 0。
+  final int nodeCount;
+
+  /// 内容是否真的被改写过。
+  final bool changed;
+
+  factory ConvertSubscriptionResult.fromJson(Map<String, dynamic> json) {
+    return ConvertSubscriptionResult(
+      yaml: json['yaml'] as String? ?? '',
+      format: json['format'] as String? ?? 'unknown',
+      nodeCount: (json['nodeCount'] as num?)?.toInt() ?? 0,
+      changed: json['changed'] as bool? ?? false,
+    );
+  }
+}

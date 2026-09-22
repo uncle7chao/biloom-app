@@ -25,6 +25,8 @@ mixin CoreInterface {
 
   Future<Map<String, dynamic>> getConfig(String path);
 
+  Future<ConvertSubscriptionResult> convertSubscription(String data);
+
   Future<Delay?> asyncTestDelay(String url, String proxyName);
 
   Future<String> updateConfig(UpdateParams updateParams);
@@ -182,6 +184,21 @@ abstract class CoreHandlerInterface with CoreInterface {
       method: CoreMethod.setupConfig,
       arguments: setupParams.toJson(),
     );
+  }
+
+  @override
+  Future<ConvertSubscriptionResult> convertSubscription(String data) async {
+    final result = await _invokeMethod<Map<String, dynamic>>(
+      method: CoreMethod.convertSubscription,
+      arguments: data,
+    );
+    if (result == null) {
+      throw const CoreMethodException(
+        code: 'empty_result',
+        message: 'Core returned an empty subscription result',
+      );
+    }
+    return ConvertSubscriptionResult.fromJson(result);
   }
 
   @override
