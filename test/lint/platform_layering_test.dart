@@ -23,13 +23,19 @@ final _platformImport = RegExp(
   multiLine: true,
 );
 
+/// `p.relative`, `p.join` and `Directory.listSync` yield `\`-separated paths on
+/// Windows, while every path literal here is written POSIX-style. Without this
+/// the designated-module exemption never matches on Windows and the desktop
+/// plugins look like layering violations.
+String _posix(String path) => path.replaceAll(r'\', '/');
+
 Set<String> _closureOfCommonBarrel() {
   String resolve(String uri, String from) {
     if (uri.startsWith('package:fl_clash/')) {
       return 'lib/${uri.substring('package:fl_clash/'.length)}';
     }
     if (uri.startsWith('dart:') || uri.startsWith('package:')) return uri;
-    return p.normalize(p.join(p.dirname(from), uri));
+    return _posix(p.normalize(p.join(p.dirname(from), uri)));
   }
 
   final directive = RegExp(
@@ -62,7 +68,7 @@ Iterable<File> _dartFilesIn(String root) sync* {
   for (final entity in directory.listSync(recursive: true)) {
     if (entity is File &&
         entity.path.endsWith('.dart') &&
-        !entity.path.contains('/generated/')) {
+        !_posix(entity.path).contains('/generated/')) {
       yield entity;
     }
   }
@@ -91,7 +97,7 @@ void main() {
 
     for (final root in ['lib/common', 'lib/enum', 'lib/models']) {
       for (final file in _dartFilesIn(root)) {
-        final relative = p.relative(file.path);
+        final relative = _posix(p.relative(file.path));
         if (_platformModules.contains(relative)) {
           continue;
         }

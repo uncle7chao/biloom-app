@@ -21,7 +21,7 @@ class MessageLookup extends MessageLookupByLibrary {
   String get localeName => 'ru';
 
   static String m0(code) =>
-      "Windows отказалась запускать FlClashCore.exe (ошибка ${code}). Политики контроля приложений, такие как Smart App Control или AppLocker, блокируют неподписанные программы; разрешите BiLoom в этой политике или отключите её и повторите попытку.";
+      "Windows отказалась запускать BiLoomCore.exe (ошибка ${code}). Политики контроля приложений, такие как Smart App Control или AppLocker, блокируют неподписанные программы; разрешите BiLoom в этой политике или отключите её и повторите попытку.";
 
   static String m1(name) =>
       "Приложение два раза подряд не смогло завершить запуск. Чтобы разорвать цикл, профиль ${name} снят с выбора, а автоматическая настройка пропущена. Вы можете выбрать его снова в любой момент.";
@@ -273,6 +273,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "checkUpdateError": MessageLookupByLibrary.simpleMessage(
       "У вас уже последняя версия",
     ),
+    "checkUpdateFailed": MessageLookupByLibrary.simpleMessage(
+      "Не удалось связаться с сервером обновлений. Проверьте подключение и повторите попытку.",
+    ),
     "clearData": MessageLookupByLibrary.simpleMessage("Очистить данные"),
     "clearSearch": MessageLookupByLibrary.simpleMessage("Очистить поиск"),
     "clipboardExport": MessageLookupByLibrary.simpleMessage(
@@ -333,17 +336,13 @@ class MessageLookup extends MessageLookupByLibrary {
     "core": MessageLookupByLibrary.simpleMessage("Ядро"),
     "coreBlockedByPolicyTip": m0,
     "coreBlockedBySmartAppControlTip": MessageLookupByLibrary.simpleMessage(
-      "Smart App Control в Windows заблокировал неподписанный FlClashCore.exe. Откройте Безопасность Windows → Управление приложениями и браузером → Параметры Smart App Control, выберите «Выкл.» и снова запустите BiLoom. Повторно включить Smart App Control без переустановки Windows нельзя.",
+      "Smart App Control в Windows заблокировал неподписанный BiLoomCore.exe. Откройте Безопасность Windows → Управление приложениями и браузером → Параметры Smart App Control, выберите «Выкл.» и снова запустите BiLoom. Повторно включить Smart App Control без переустановки Windows нельзя.",
     ),
     "coreStatus": MessageLookupByLibrary.simpleMessage("Статус ядра"),
     "country": MessageLookupByLibrary.simpleMessage("Регион"),
     "crashDetected": MessageLookupByLibrary.simpleMessage("Обнаружен сбой"),
     "crashDetectedTip": m1,
     "crashTest": MessageLookupByLibrary.simpleMessage("Тест сбоя"),
-    "crashlytics": MessageLookupByLibrary.simpleMessage("Аналитика сбоев"),
-    "crashlyticsTip": MessageLookupByLibrary.simpleMessage(
-      "При включении в случае сбоя приложения автоматически загружаются логи сбоя без конфиденциальной информации",
-    ),
     "create": MessageLookupByLibrary.simpleMessage("Создать"),
     "createProfile": MessageLookupByLibrary.simpleMessage("Создать профиль"),
     "createProfileFromUrlTip": m2,
@@ -354,12 +353,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "dashboard": MessageLookupByLibrary.simpleMessage("Панель"),
     "dataChangedSave": MessageLookupByLibrary.simpleMessage(
       "Обнаружены изменения данных. Сохранить их?",
-    ),
-    "dataCollectionContent": MessageLookupByLibrary.simpleMessage(
-      "Это приложение использует Firebase Crashlytics для сбора информации о сбоях, чтобы повысить стабильность.\nСобираемые данные включают сведения об устройстве и подробности сбоя и не содержат личных конфиденциальных данных.\nЭту функцию можно отключить в настройках.",
-    ),
-    "dataCollectionTip": MessageLookupByLibrary.simpleMessage(
-      "Уведомление о сборе данных",
     ),
     "databaseWriteFailedTip": MessageLookupByLibrary.simpleMessage(
       "Не удалось сохранить изменение; оно отменено",
@@ -378,7 +371,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "deleteMultipTip": m4,
     "deleteTip": m5,
     "desc": MessageLookupByLibrary.simpleMessage(
-      "Многоплатформенный прокси-клиент на основе ClashMeta: простой и удобный, с открытым исходным кодом и без рекламы.",
+      "Многоплатформенный прокси-клиент на основе FlClash: простой и удобный.",
     ),
     "destination": MessageLookupByLibrary.simpleMessage("Назначение"),
     "destinationGeoIP": MessageLookupByLibrary.simpleMessage(
@@ -401,7 +394,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Отказ от ответственности",
     ),
     "disclaimerDesc": MessageLookupByLibrary.simpleMessage(
-      "Это программное обеспечение предназначено только для некоммерческого использования: обучения, обмена опытом и научных исследований. Коммерческое использование строго запрещено; любая коммерческая деятельность не имеет отношения к этому программному обеспечению.",
+      "Программа предоставляется как есть, без каких-либо гарантий. Соблюдайте законодательство своей юрисдикции и не используйте её в противоправных целях.",
     ),
     "disconnected": MessageLookupByLibrary.simpleMessage("Отключено"),
     "discoverNewVersion": MessageLookupByLibrary.simpleMessage(
@@ -411,6 +404,33 @@ class MessageLookup extends MessageLookupByLibrary {
       "Настройки, связанные с DNS",
     ),
     "dnsHijacking": MessageLookupByLibrary.simpleMessage("Перехват DNS"),
+    "dnsLeakCheck": MessageLookupByLibrary.simpleMessage("Проверка утечки DNS"),
+    "dnsLeakCheckDesc": MessageLookupByLibrary.simpleMessage(
+      "Проверить, перехватывает ли ядро системный DNS",
+    ),
+    "dnsLeakExplain": MessageLookupByLibrary.simpleMessage(
+      "В режиме fake-ip ядро отвечает на любой домен адресом из диапазона fake-ip; реальный публичный IP здесь означает, что запрос не дошёл до ядра. В режиме «только системный прокси» это неизбежно: системный прокси действует лишь на приложения, которые его учитывают, а DNS-запросы самой Windows — нет. Чтобы перехватить всю систему, включите TUN.",
+    ),
+    "dnsLeakFailed": MessageLookupByLibrary.simpleMessage(
+      "Ни один резолвер не ответил",
+    ),
+    "dnsLeakMode": MessageLookupByLibrary.simpleMessage(
+      "Текущий способ перехвата",
+    ),
+    "dnsLeakNotApplicable": MessageLookupByLibrary.simpleMessage(
+      "Неприменимо в текущем режиме",
+    ),
+    "dnsLeakNotTakenOver": MessageLookupByLibrary.simpleMessage(
+      "Не перехватывается",
+    ),
+    "dnsLeakOnline": MessageLookupByLibrary.simpleMessage(
+      "Открыть онлайн-проверку",
+    ),
+    "dnsLeakRun": MessageLookupByLibrary.simpleMessage("Запустить проверку"),
+    "dnsLeakRunning": MessageLookupByLibrary.simpleMessage("Проверка..."),
+    "dnsLeakTakenOver": MessageLookupByLibrary.simpleMessage(
+      "Перехватывается ядром",
+    ),
     "dnsMode": MessageLookupByLibrary.simpleMessage("Режим DNS"),
     "domain": MessageLookupByLibrary.simpleMessage("Домен"),
     "download": MessageLookupByLibrary.simpleMessage("Загрузка"),
@@ -484,6 +504,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "forceRestartCoreTip": MessageLookupByLibrary.simpleMessage(
       "Вы уверены, что хотите принудительно перезапустить ядро?",
     ),
+    "forkedFrom": MessageLookupByLibrary.simpleMessage("На основе FlClash"),
     "fruitSaladScheme": MessageLookupByLibrary.simpleMessage("Фруктовый микс"),
     "general": MessageLookupByLibrary.simpleMessage("Общие"),
     "geoAutoUpdate": MessageLookupByLibrary.simpleMessage("Автообновление"),
@@ -565,9 +586,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "inputRuleContent": MessageLookupByLibrary.simpleMessage(
       "Введите содержимое правила",
     ),
-    "installedAppsPermissionDeniedMessage": MessageLookupByLibrary.simpleMessage(
-      "Разрешение на список приложений отклонено, поэтому установленные приложения недоступны. Предоставьте его вручную в системных настройках.",
-    ),
+    "installedAppsPermissionDeniedMessage":
+        MessageLookupByLibrary.simpleMessage(
+          "Разрешение на список приложений отклонено, поэтому установленные приложения недоступны. Предоставьте его вручную в системных настройках.",
+        ),
     "installedAppsPermissionDesc": MessageLookupByLibrary.simpleMessage(
       "Эта система не выдаёт список установленных приложений без разрешения. Предоставьте его, чтобы настроить прокси для отдельных приложений.",
     ),
@@ -1152,6 +1174,10 @@ class MessageLookup extends MessageLookupByLibrary {
       "Информация о подписке",
     ),
     "suspended": MessageLookupByLibrary.simpleMessage("Приостановлено..."),
+    "switchToTun": MessageLookupByLibrary.simpleMessage("Переключиться на TUN"),
+    "switchToTunDesc": MessageLookupByLibrary.simpleMessage(
+      "Виртуальный сетевой адаптер перехватывает весь трафик, включая DNS-запросы самой системы",
+    ),
     "sync": MessageLookupByLibrary.simpleMessage("Синхронизация"),
     "system": MessageLookupByLibrary.simpleMessage("Система"),
     "systemApp": MessageLookupByLibrary.simpleMessage("Системные приложения"),

@@ -87,8 +87,8 @@ void main() {
     // AboutView reads globalState.packageInfo, which only the real app bootstrap
     // populates.
     globalState.packageInfo = PackageInfo(
-      appName: 'FlClash',
-      packageName: 'com.follow.clash',
+      appName: 'BiLoom',
+      packageName: 'app.biloom.top',
       version: '0.0.0',
       buildNumber: '1',
     );
@@ -154,7 +154,10 @@ void main() {
     await tester.pump();
 
     expect(find.byType(AboutView), findsOneWidget);
-    expect(find.text('Telegram'), findsOneWidget);
+    // The upstream Telegram row pointed at the FlClash community and was dropped
+    // with the fork, so the name/version header carries the assertion now.
+    expect(find.text('BiLoom'), findsOneWidget);
+    expect(find.text('0.0.0'), findsOneWidget);
     expect(tester.takeException(), null);
 
     final scrollables = find.byType(Scrollable);

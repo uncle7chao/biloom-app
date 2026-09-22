@@ -21,7 +21,7 @@ class MessageLookup extends MessageLookupByLibrary {
   String get localeName => 'ja';
 
   static String m0(code) =>
-      "Windows が FlClashCore.exe の実行を拒否しました（エラー ${code}）。スマート アプリ コントロールや AppLocker などのアプリ制御ポリシーは未署名のプログラムをブロックします。ポリシーで BiLoom を許可するか、ポリシーを無効にしてから再試行してください。";
+      "Windows が BiLoomCore.exe の実行を拒否しました（エラー ${code}）。スマート アプリ コントロールや AppLocker などのアプリ制御ポリシーは未署名のプログラムをブロックします。ポリシーで BiLoom を許可するか、ポリシーを無効にしてから再試行してください。";
 
   static String m1(name) =>
       "アプリの起動が2回連続で完了しませんでした。クラッシュループを断ち切るため、プロファイル ${name} の選択を解除し、今回の自動セットアップをスキップしました。いつでも選択し直せます。";
@@ -211,6 +211,9 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "checkUpdate": MessageLookupByLibrary.simpleMessage("更新を確認"),
     "checkUpdateError": MessageLookupByLibrary.simpleMessage("すでに最新バージョンです"),
+    "checkUpdateFailed": MessageLookupByLibrary.simpleMessage(
+      "更新サーバーに接続できませんでした。ネットワークを確認して再試行してください。",
+    ),
     "clearData": MessageLookupByLibrary.simpleMessage("データを消去"),
     "clearSearch": MessageLookupByLibrary.simpleMessage("検索をクリア"),
     "clipboardExport": MessageLookupByLibrary.simpleMessage("クリップボードへエクスポート"),
@@ -259,17 +262,13 @@ class MessageLookup extends MessageLookupByLibrary {
     "core": MessageLookupByLibrary.simpleMessage("コア"),
     "coreBlockedByPolicyTip": m0,
     "coreBlockedBySmartAppControlTip": MessageLookupByLibrary.simpleMessage(
-      "Windows のスマート アプリ コントロールが、署名されていない FlClashCore.exe をブロックしました。Windows セキュリティ → アプリとブラウザーの制御 → スマート アプリ コントロールの設定で「オフ」を選び、BiLoom を再起動してください。一度オフにすると、Windows を再インストールしない限り再度オンにはできません。",
+      "Windows のスマート アプリ コントロールが、署名されていない BiLoomCore.exe をブロックしました。Windows セキュリティ → アプリとブラウザーの制御 → スマート アプリ コントロールの設定で「オフ」を選び、BiLoom を再起動してください。一度オフにすると、Windows を再インストールしない限り再度オンにはできません。",
     ),
     "coreStatus": MessageLookupByLibrary.simpleMessage("コアの状態"),
     "country": MessageLookupByLibrary.simpleMessage("地域"),
     "crashDetected": MessageLookupByLibrary.simpleMessage("クラッシュを検出しました"),
     "crashDetectedTip": m1,
     "crashTest": MessageLookupByLibrary.simpleMessage("クラッシュテスト"),
-    "crashlytics": MessageLookupByLibrary.simpleMessage("クラッシュ分析"),
-    "crashlyticsTip": MessageLookupByLibrary.simpleMessage(
-      "有効にすると、アプリのクラッシュ時に機密情報を含まないクラッシュログを自動的にアップロードします",
-    ),
     "create": MessageLookupByLibrary.simpleMessage("作成"),
     "createProfile": MessageLookupByLibrary.simpleMessage("プロファイルを作成"),
     "createProfileFromUrlTip": m2,
@@ -281,10 +280,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "dataChangedSave": MessageLookupByLibrary.simpleMessage(
       "データの変更を検出しました。保存しますか？",
     ),
-    "dataCollectionContent": MessageLookupByLibrary.simpleMessage(
-      "本アプリは、安定性向上のために Firebase Crashlytics を使用してクラッシュ情報を収集します。\n収集されるデータにはデバイス情報とクラッシュの詳細が含まれますが、個人の機密データは含まれません。\nこの機能は設定で無効にできます。",
-    ),
-    "dataCollectionTip": MessageLookupByLibrary.simpleMessage("データ収集について"),
     "databaseWriteFailedTip": MessageLookupByLibrary.simpleMessage(
       "変更の保存に失敗したため、元に戻しました",
     ),
@@ -300,7 +295,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "deleteMultipTip": m4,
     "deleteTip": m5,
     "desc": MessageLookupByLibrary.simpleMessage(
-      "ClashMetaベースのマルチプラットフォーム対応プロキシクライアント。シンプルで使いやすく、オープンソースで広告もありません。",
+      "FlClash をベースにカスタマイズしたマルチプラットフォーム対応プロキシクライアント。シンプルで使いやすい。",
     ),
     "destination": MessageLookupByLibrary.simpleMessage("宛先"),
     "destinationGeoIP": MessageLookupByLibrary.simpleMessage("宛先GeoIP"),
@@ -317,7 +312,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "disableUDP": MessageLookupByLibrary.simpleMessage("UDPを無効化"),
     "disclaimer": MessageLookupByLibrary.simpleMessage("免責事項"),
     "disclaimerDesc": MessageLookupByLibrary.simpleMessage(
-      "本ソフトウェアは、学習・交流や研究などの非商用目的でのみ使用できます。商用目的での使用は固く禁じられています。いかなる商業行為も本ソフトウェアとは一切関係ありません。",
+      "本ソフトウェアは「現状のまま」提供され、いかなる保証も行いません。お住まいの国の法令を遵守し、違法な目的で使用しないでください。",
     ),
     "disconnected": MessageLookupByLibrary.simpleMessage("切断済み"),
     "discoverNewVersion": MessageLookupByLibrary.simpleMessage(
@@ -325,6 +320,23 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "dnsDesc": MessageLookupByLibrary.simpleMessage("DNS関連の設定を更新します"),
     "dnsHijacking": MessageLookupByLibrary.simpleMessage("DNSハイジャック"),
+    "dnsLeakCheck": MessageLookupByLibrary.simpleMessage("DNS リーク検査"),
+    "dnsLeakCheckDesc": MessageLookupByLibrary.simpleMessage(
+      "システム DNS がコアに引き継がれているか確認します",
+    ),
+    "dnsLeakExplain": MessageLookupByLibrary.simpleMessage(
+      "fake-ip モードでは、コアはどのドメインにも fake-ip 範囲のアドレスを返します。ここで実際のグローバル IP が返る場合、その問い合わせはコアに届いていません。「システムプロキシのみ」のモードではこれは避けられません。システムプロキシはそれを認識するアプリにしか作用せず、Windows 自身が行う DNS 問い合わせは対象外だからです。システム全体を引き継ぐには TUN を使用してください。",
+    ),
+    "dnsLeakFailed": MessageLookupByLibrary.simpleMessage("どのリゾルバからも応答がありません"),
+    "dnsLeakMode": MessageLookupByLibrary.simpleMessage("現在の引き継ぎ方式"),
+    "dnsLeakNotApplicable": MessageLookupByLibrary.simpleMessage(
+      "現在のモードでは判定できません",
+    ),
+    "dnsLeakNotTakenOver": MessageLookupByLibrary.simpleMessage("引き継がれていません"),
+    "dnsLeakOnline": MessageLookupByLibrary.simpleMessage("オンライン検査を開く"),
+    "dnsLeakRun": MessageLookupByLibrary.simpleMessage("検査を開始"),
+    "dnsLeakRunning": MessageLookupByLibrary.simpleMessage("検査中..."),
+    "dnsLeakTakenOver": MessageLookupByLibrary.simpleMessage("コアに引き継がれています"),
     "dnsMode": MessageLookupByLibrary.simpleMessage("DNSモード"),
     "domain": MessageLookupByLibrary.simpleMessage("ドメイン"),
     "download": MessageLookupByLibrary.simpleMessage("ダウンロード"),
@@ -384,6 +396,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "forceRestartCoreTip": MessageLookupByLibrary.simpleMessage(
       "コアを強制再起動してもよろしいですか？",
     ),
+    "forkedFrom": MessageLookupByLibrary.simpleMessage("FlClash をベースにしています"),
     "fruitSaladScheme": MessageLookupByLibrary.simpleMessage("フルーツサラダ"),
     "general": MessageLookupByLibrary.simpleMessage("一般"),
     "geoAutoUpdate": MessageLookupByLibrary.simpleMessage("自動更新"),
@@ -921,6 +934,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "submit": MessageLookupByLibrary.simpleMessage("送信"),
     "subscriptionInfo": MessageLookupByLibrary.simpleMessage("サブスクリプション情報"),
     "suspended": MessageLookupByLibrary.simpleMessage("一時停止中..."),
+    "switchToTun": MessageLookupByLibrary.simpleMessage("TUN に切り替える"),
+    "switchToTunDesc": MessageLookupByLibrary.simpleMessage(
+      "仮想ネットワークアダプタがすべての通信を引き継ぐため、システム自身の DNS 問い合わせも遮断されます",
+    ),
     "sync": MessageLookupByLibrary.simpleMessage("同期"),
     "system": MessageLookupByLibrary.simpleMessage("システム"),
     "systemApp": MessageLookupByLibrary.simpleMessage("システムアプリ"),

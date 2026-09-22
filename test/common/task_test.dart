@@ -218,12 +218,20 @@ void main() {
       );
       expect(config['hosts']['router.local'], ['192.168.1.1', '192.168.1.2']);
       expect(config['sniffer']['sniff']['HTTP']['ports'], ['80', '443']);
+      // `confineProviders` builds these paths with `p.join`, so they come out
+      // `\`-separated on Windows; the segment layout is what this test owns.
       expect(
-        config['proxy-providers']['remote']['path'],
+        (config['proxy-providers']['remote']['path'] as String).replaceAll(
+          r'\',
+          '/',
+        ),
         startsWith('/profiles/providers/7/proxies/'),
       );
       expect(
-        config['rule-providers']['remote']['path'],
+        (config['rule-providers']['remote']['path'] as String).replaceAll(
+          r'\',
+          '/',
+        ),
         startsWith('/profiles/providers/7/rules/'),
       );
       expect(config['rules'], [

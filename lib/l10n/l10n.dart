@@ -820,6 +820,16 @@ class AppLocalizations {
     return Intl.message('Core', name: 'core', desc: '', args: []);
   }
 
+  /// `Based on FlClash`
+  String get forkedFrom {
+    return Intl.message(
+      'Based on FlClash',
+      name: 'forkedFrom',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Tab animation`
   String get tabAnimation {
     return Intl.message(
@@ -830,10 +840,10 @@ class AppLocalizations {
     );
   }
 
-  /// `A multi-platform proxy client based on ClashMeta, simple and easy to use, open-source and ad-free.`
+  /// `A multi-platform proxy client, deeply customized from FlClash. Simple and easy to use.`
   String get desc {
     return Intl.message(
-      'A multi-platform proxy client based on ClashMeta, simple and easy to use, open-source and ad-free.',
+      'A multi-platform proxy client, deeply customized from FlClash. Simple and easy to use.',
       name: 'desc',
       desc: '',
       args: [],
@@ -1045,6 +1055,36 @@ class AppLocalizations {
     return Intl.message(
       'The app is already up to date',
       name: 'checkUpdateError',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Could not reach the update server. Check your connection and try again.`
+  String get checkUpdateFailed {
+    return Intl.message(
+      'Could not reach the update server. Check your connection and try again.',
+      name: 'checkUpdateFailed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Switch to TUN`
+  String get switchToTun {
+    return Intl.message(
+      'Switch to TUN',
+      name: 'switchToTun',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The virtual network adapter takes over all traffic, so even the system's own DNS queries are intercepted`
+  String get switchToTunDesc {
+    return Intl.message(
+      'The virtual network adapter takes over all traffic, so even the system\'s own DNS queries are intercepted',
+      name: 'switchToTunDesc',
       desc: '',
       args: [],
     );
@@ -1965,10 +2005,10 @@ class AppLocalizations {
     return Intl.message('Disclaimer', name: 'disclaimer', desc: '', args: []);
   }
 
-  /// `This software is intended only for non-commercial uses such as learning and research. Using it for any commercial purpose is strictly prohibited; any commercial activity is unrelated to this software.`
+  /// `This software is provided as is, without warranty of any kind. You are responsible for complying with the laws of your jurisdiction and must not use it for any unlawful purpose.`
   String get disclaimerDesc {
     return Intl.message(
-      'This software is intended only for non-commercial uses such as learning and research. Using it for any commercial purpose is strictly prohibited; any commercial activity is unrelated to this software.',
+      'This software is provided as is, without warranty of any kind. You are responsible for complying with the laws of your jurisdiction and must not use it for any unlawful purpose.',
       name: 'disclaimerDesc',
       desc: '',
       args: [],
@@ -3140,46 +3180,6 @@ class AppLocalizations {
     return Intl.message('Core status', name: 'coreStatus', desc: '', args: []);
   }
 
-  /// `Data collection notice`
-  String get dataCollectionTip {
-    return Intl.message(
-      'Data collection notice',
-      name: 'dataCollectionTip',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `This app uses Firebase Crashlytics to collect crash information to improve stability.\nThe collected data includes device information and crash details, and contains no personally sensitive data.\nYou can turn this off in settings.`
-  String get dataCollectionContent {
-    return Intl.message(
-      'This app uses Firebase Crashlytics to collect crash information to improve stability.\nThe collected data includes device information and crash details, and contains no personally sensitive data.\nYou can turn this off in settings.',
-      name: 'dataCollectionContent',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Crash analytics`
-  String get crashlytics {
-    return Intl.message(
-      'Crash analytics',
-      name: 'crashlytics',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `When enabled, crash logs without sensitive information are uploaded automatically when the app crashes`
-  String get crashlyticsTip {
-    return Intl.message(
-      'When enabled, crash logs without sensitive information are uploaded automatically when the app crashes',
-      name: 'crashlyticsTip',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `Append system DNS`
   String get appendSystemDns {
     return Intl.message(
@@ -3750,20 +3750,20 @@ class AppLocalizations {
     );
   }
 
-  /// `Windows refused to run FlClashCore.exe (error {code}). An app control policy such as Smart App Control or AppLocker blocks unsigned programs; allow BiLoom in that policy or turn it off, then try again.`
+  /// `Windows refused to run BiLoomCore.exe (error {code}). An app control policy such as Smart App Control or AppLocker blocks unsigned programs; allow BiLoom in that policy or turn it off, then try again.`
   String coreBlockedByPolicyTip(Object code) {
     return Intl.message(
-      'Windows refused to run FlClashCore.exe (error $code). An app control policy such as Smart App Control or AppLocker blocks unsigned programs; allow BiLoom in that policy or turn it off, then try again.',
+      'Windows refused to run BiLoomCore.exe (error $code). An app control policy such as Smart App Control or AppLocker blocks unsigned programs; allow BiLoom in that policy or turn it off, then try again.',
       name: 'coreBlockedByPolicyTip',
       desc: '',
       args: [code],
     );
   }
 
-  /// `Windows Smart App Control blocked FlClashCore.exe because it is not signed. Open Windows Security → App & browser control → Smart App Control settings, choose Off, then start BiLoom again. Smart App Control cannot be turned back on without reinstalling Windows.`
+  /// `Windows Smart App Control blocked BiLoomCore.exe because it is not signed. Open Windows Security → App & browser control → Smart App Control settings, choose Off, then start BiLoom again. Smart App Control cannot be turned back on without reinstalling Windows.`
   String get coreBlockedBySmartAppControlTip {
     return Intl.message(
-      'Windows Smart App Control blocked FlClashCore.exe because it is not signed. Open Windows Security → App & browser control → Smart App Control settings, choose Off, then start BiLoom again. Smart App Control cannot be turned back on without reinstalling Windows.',
+      'Windows Smart App Control blocked BiLoomCore.exe because it is not signed. Open Windows Security → App & browser control → Smart App Control settings, choose Off, then start BiLoom again. Smart App Control cannot be turned back on without reinstalling Windows.',
       name: 'coreBlockedBySmartAppControlTip',
       desc: '',
       args: [],
@@ -5110,6 +5110,111 @@ class AppLocalizations {
     return Intl.message(
       'The app list permission was denied, so installed apps cannot be listed. Please grant it manually in system settings.',
       name: 'installedAppsPermissionDeniedMessage',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `DNS leak check`
+  String get dnsLeakCheck {
+    return Intl.message(
+      'DNS leak check',
+      name: 'dnsLeakCheck',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Check whether the system DNS is taken over by the core`
+  String get dnsLeakCheckDesc {
+    return Intl.message(
+      'Check whether the system DNS is taken over by the core',
+      name: 'dnsLeakCheckDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Run check`
+  String get dnsLeakRun {
+    return Intl.message('Run check', name: 'dnsLeakRun', desc: '', args: []);
+  }
+
+  /// `Checking...`
+  String get dnsLeakRunning {
+    return Intl.message(
+      'Checking...',
+      name: 'dnsLeakRunning',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Current takeover`
+  String get dnsLeakMode {
+    return Intl.message(
+      'Current takeover',
+      name: 'dnsLeakMode',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Taken over by the core`
+  String get dnsLeakTakenOver {
+    return Intl.message(
+      'Taken over by the core',
+      name: 'dnsLeakTakenOver',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Not taken over`
+  String get dnsLeakNotTakenOver {
+    return Intl.message(
+      'Not taken over',
+      name: 'dnsLeakNotTakenOver',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Cannot be judged in this mode`
+  String get dnsLeakNotApplicable {
+    return Intl.message(
+      'Cannot be judged in this mode',
+      name: 'dnsLeakNotApplicable',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No resolver answered`
+  String get dnsLeakFailed {
+    return Intl.message(
+      'No resolver answered',
+      name: 'dnsLeakFailed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Open online test`
+  String get dnsLeakOnline {
+    return Intl.message(
+      'Open online test',
+      name: 'dnsLeakOnline',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `In fake-ip mode the core answers every domain with an address from the fake-ip range; a real public IP here means the query never reached the core. Under "system proxy only" that is unavoidable: the system proxy affects only apps that honour it, and DNS queries made by Windows itself are not among them. Switch to TUN to take over the whole system.`
+  String get dnsLeakExplain {
+    return Intl.message(
+      'In fake-ip mode the core answers every domain with an address from the fake-ip range; a real public IP here means the query never reached the core. Under "system proxy only" that is unavoidable: the system proxy affects only apps that honour it, and DNS queries made by Windows itself are not among them. Switch to TUN to take over the whole system.',
+      name: 'dnsLeakExplain',
       desc: '',
       args: [],
     );

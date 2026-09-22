@@ -38,6 +38,11 @@ final _lateDeclaration = RegExp(
   r'(?:<[\w<>,\s?]*>)?\??\s+(_?[A-Za-z]\w*)\s*;',
 );
 
+/// `p.relative` yields `\`-separated paths on Windows, while `_allowed` and the
+/// generated-file exemptions are written POSIX-style. Without this every allowed
+/// field looks like a violation on Windows.
+String _posix(String path) => path.replaceAll(r'\', '/');
+
 bool _isGenerated(String path) {
   return path.contains('/generated/') ||
       path.endsWith('.g.dart') ||
@@ -53,7 +58,7 @@ void main() {
       if (entity is! File || !entity.path.endsWith('.dart')) {
         continue;
       }
-      final relative = p.relative(entity.path);
+      final relative = _posix(p.relative(entity.path));
       if (_isGenerated(relative)) {
         continue;
       }

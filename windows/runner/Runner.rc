@@ -94,7 +94,7 @@ BEGIN
             VALUE "FileVersion", VERSION_AS_STRING "\0"
             VALUE "InternalName", "biloom" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2025-2026 BiLoom. Based on FlClash (GPL-3.0)." "\0"
-            VALUE "OriginalFilename", "FlClash.exe" "\0"
+            VALUE "OriginalFilename", "BiLoom.exe" "\0"
             VALUE "ProductName", "BiLoom" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END

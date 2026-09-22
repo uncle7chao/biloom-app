@@ -1,6 +1,6 @@
 # Project Context
 
-FlClash is a multi-platform proxy client based on ClashMeta (mihomo), built with Flutter. It supports Android, Windows, macOS, and Linux, using a Material You design with Surfboard-like UI.
+BiLoom is a multi-platform proxy client based on ClashMeta (mihomo), built with Flutter, forked from FlClash. Shipping targets are Android and Windows; macOS and Linux packaging stays in-tree but untested. The UI follows Material You with a Surfboard-like layout.
 
 ## Version Notes
 
@@ -14,10 +14,8 @@ FlClash is a multi-platform proxy client based on ClashMeta (mihomo), built with
 
 Three `pubspec.yaml` dependencies are pinned to a fork — `window_manager` by tag,
 the other two by commit SHA. All three
-forks live under `chen08209`, the same account that owns this repository, so they
-are maintained in-house rather than tracked from a third party: advancing a pin
-is a local decision, and there is no external maintainer to wait on for the patch
-itself. What each fork still waits on is the *upstream* fix that would let the
+forks live under `chen08209`, the upstream FlClash maintainer. BiLoom consumes those forks as-is, so the pins
+track upstream: advancing one means picking up a newer upstream tag or commit. What each fork still waits on is the *upstream* fix that would let the
 pin be dropped entirely, recorded below.
 
 Each entry records what the fork changes and what has to be true before it can go
@@ -54,7 +52,7 @@ commits of its own rather than a single patch on top of a release.
 - Migrates `win32_registry` from `^2.0.0` to `^3.0.3`, which is a breaking rename
   across the whole Windows implementation (`Registry.openPath` → `CURRENT_USER.open`,
   `createValue` → `setValue`, `getStringValue` → `getString`).
-- This one is not optional while it lasts: FlClash depends on `win32_registry: ^3.0.3`
+- This one is not optional while it lasts: BiLoom depends on `win32_registry: ^3.0.3`
   directly, and upstream's `^2.0.0` constraint cannot co-resolve with it.
 - Drop the fork when upstream publishes a release that accepts `win32_registry` 3.x.
 

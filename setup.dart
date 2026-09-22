@@ -215,13 +215,25 @@ Future<int> _package(
   );
 
   process.stdout.listen((data) {
-    stdout.write(utf8.decode(data));
+    stdout.write(_decodeProcessOutput(data));
   });
   process.stderr.listen((data) {
-    stderr.write(utf8.decode(data));
+    stderr.write(_decodeProcessOutput(data));
   });
   final exitCode = await process.exitCode;
   return exitCode;
+}
+
+/// 子进程输出的编码并不统一：flutter / flutter_distributor 按 UTF-8 写，
+/// 而 cmd.exe 的本地化报错（如「'xxx' 不是内部或外部命令」）按 Windows OEM 代码页（中文即 GBK）写。
+/// 直接 utf8.decode 会在第二类上抛 FormatException —— 结果是构建以一个看不懂的解码栈结束，
+/// 真正的错误信息被彻底掩盖（曾因此白查一轮）。先按 UTF-8 解，失败再回退系统编码。
+String _decodeProcessOutput(List<int> data) {
+  try {
+    return utf8.decode(data);
+  } on FormatException {
+    return systemEncoding.decode(data);
+  }
 }
 
 String _detectArch() {

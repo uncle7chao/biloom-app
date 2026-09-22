@@ -4,132 +4,108 @@
 
 </div>
 
-## FlClash
+# BiLoom
 
-[![Downloads](https://img.shields.io/github/downloads/chen08209/FlClash/total?style=flat-square&logo=github)](https://github.com/chen08209/FlClash/releases/)[![Last Version](https://img.shields.io/github/release/chen08209/FlClash/all.svg?style=flat-square)](https://github.com/chen08209/FlClash/releases/)[![License](https://img.shields.io/github/license/chen08209/FlClash?style=flat-square)](LICENSE)
+[![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-blue.svg)](LICENSE)
 
-[![Channel](https://img.shields.io/badge/Telegram-Channel-blue?style=flat-square&logo=telegram)](https://t.me/FlClash)
+A multi-platform proxy client built on the ClashMeta core — simple, easy to use
+and fully open source.
 
-A multi-platform proxy client based on ClashMeta, simple and easy to use, open-source and ad-free.
+> BiLoom is a fork of [FlClash](https://github.com/chen08209/FlClash), which is
+> licensed under GPL-3.0. The original application, its design and the bulk of
+> this codebase are the work of the FlClash authors — see [Credits](#credits).
 
-<p align="center">
-    <picture>
-        <source media="(prefers-color-scheme: dark)" srcset="snapshots/preview-dark.png">
-        <img alt="FlClash on desktop and mobile" src="snapshots/preview.png" width="90%">
-    </picture>
-</p>
+<!-- TODO(M2): add BiLoom screenshots once the UI refresh lands. -->
 
 ## Features
 
-✈️ Multi-platform: Android, Windows, macOS and Linux
+✈️ Multi-platform: Android and Windows ship today; Linux and macOS packaging
+stays in-tree so the fork keeps building everywhere
 
-💻 Adaptive multiple screen sizes, Multiple color themes available
+💻 Adaptive layout across screen sizes, with multiple colour themes
 
-💡 Based on Material You Design, [Surfboard](https://github.com/getsurfboard/surfboard)-like UI
+💡 Built on Material You design, with a [Surfboard](https://github.com/getsurfboard/surfboard)-like UI
 
-☁️ Supports data sync via WebDAV
+🔀 Proxy groups, rules and subscription profiles, with WebDAV data sync
 
-✨ Support subscription link, Dark mode
+📊 Traffic statistics, connection tracking and rule-match inspection
 
-## Use
+🛡️ TUN mode on Android and Windows through a privileged helper service
 
-### Linux
-
-⚠️ Make sure to install the following dependencies before using them
-
-   ```bash
-    sudo apt-get install libayatana-appindicator3-dev
-   ```
-
-### Android
-
-Support the following actions
-
-   ```bash
-    com.follow.clash.action.START
-    
-    com.follow.clash.action.STOP
-    
-    com.follow.clash.action.TOGGLE
-   ```
+🔒 No analytics or crash-reporting SDK is bundled
 
 ## Download
 
-<a href="https://chen08209.github.io/FlClash-fdroid-repo/repo?fingerprint=789D6D32668712EF7672F9E58DEEB15FBD6DCEEC5AE7A4371EA72F2AAE8A12FD"><img alt="Get it on F-Droid" src="snapshots/get-it-on-fdroid.svg" width="200px"/></a> <a href="https://github.com/chen08209/FlClash/releases"><img alt="Get it on GitHub" src="snapshots/get-it-on-github.svg" width="200px"/></a>
+Builds are published on the [Releases](https://github.com/biloom/biloom-app/releases) page.
 
-### Homebrew
+## Use
+
+### Android
+
+The app responds to the following broadcast actions:
 
 ```bash
-brew tap chen08209/tap
-brew install --cask flclash
+app.biloom.top.action.START
+
+app.biloom.top.action.STOP
+
+app.biloom.top.action.TOGGLE
+```
+
+### Deep links
+
+Import a subscription profile straight from a link:
+
+```
+biloom://install-config?url=<subscription-url>
+```
+
+The generic `clash://` and `clashmeta://` schemes are accepted as well.
+
+### Linux
+
+Make sure the following dependency is installed:
+
+```bash
+sudo apt-get install libayatana-appindicator3-dev
 ```
 
 ## Build
 
-1. Update submodules
+1. Install the **Flutter**, **Go** and **Rust** toolchains.
+
+2. Fetch dependencies:
+
    ```bash
-   git submodule update --init --recursive
+   flutter pub get
    ```
 
-2. Install `Flutter` and `Golang` environment
+3. Build — the Go core and the Rust helper are compiled automatically by the
+   setup build hook:
 
-3. Build Application
+   ```bash
+   dart setup.dart windows
+   ```
 
-    - android
+   Other targets: `android`, `linux`, `macos`.
 
-        1. Install `Android SDK`, `Android NDK`
+   Platform prerequisites:
 
-        2. Set `ANDROID_NDK` environment variable
+   - **Android** — Android SDK plus the NDK version pinned in
+     `android/gradle/libs.versions.toml`
+   - **Windows** — Visual Studio C++ build tools and
+     [Inno Setup 6](https://jrsoftware.org/isinfo.php). If Inno Setup is not in
+     its default location, point `INNO_SETUP_PATH` at it.
 
-        3. Run build script
+## Credits
 
-           ```bash
-           dart setup.dart android
-           ```
+- **[FlClash](https://github.com/chen08209/FlClash)** — the upstream application
+  this project is forked from. Licensed under GPL-3.0.
+- **[Clash.Meta / mihomo](https://github.com/MetaCubeX/mihomo)** — the proxy core
+  that powers the tunnel.
 
-    - windows
+## License
 
-        1. Requires a Windows client
-
-        2. Install `GCC`, `Inno Setup`
-
-        3. Run build script
-
-           ```bash
-           dart setup.dart windows
-           ```
-
-    - linux
-
-        1. Requires a Linux client
-
-        2. Dependencies are auto-installed by setup script, or manually:
-           ```bash
-           sudo apt-get install -y libayatana-appindicator3-dev
-           ```
-
-        3. Run build script
-
-           ```bash
-           dart setup.dart linux
-           ```
-
-    - macOS
-
-        1. Requires a macOS client
-
-        2. Run build script
-
-           ```bash
-           dart setup.dart macos
-           ```
-
-## Star
-
-The easiest way to support developers is to click on the star (⭐) at the top of the page.
-
-<p style="text-align: center;">
-    <a href="https://api.star-history.com/svg?repos=chen08209/FlClash&Date">
-        <img alt="start" width=50% src="https://api.star-history.com/svg?repos=chen08209/FlClash&Date"/>
-    </a>
-</p>
+Licensed under the [GNU General Public License v3.0](LICENSE), the same licence
+as the upstream project. Distributing binaries of this application obliges you
+to make the corresponding source code available.

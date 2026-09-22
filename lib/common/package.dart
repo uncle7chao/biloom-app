@@ -5,6 +5,11 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'common.dart';
 
 extension PackageInfoExtension on PackageInfo {
+  /// The client string this build sends to subscription servers.
+  ///
+  /// The name comes from the compile-time `appName` constant, **not** from
+  /// `PackageInfo.appName`: a rebuild whose manifest still carries another
+  /// label keeps reporting BiLoom, so servers see one stable client.
   String get ua => [
     '$appName/v$version',
     'clash-verge',
@@ -39,8 +44,8 @@ int compareVersions(String version1, String version2) {
   return build1.compareTo(build2);
 }
 
-const releaseNotesBeginMarker = '<!-- flclash:changelog:begin -->';
-const releaseNotesEndMarker = '<!-- flclash:changelog:end -->';
+const releaseNotesBeginMarker = '<!-- biloom:changelog:begin -->';
+const releaseNotesEndMarker = '<!-- biloom:changelog:end -->';
 
 List<String> parseReleaseBody(String? body) {
   if (body == null) return [];

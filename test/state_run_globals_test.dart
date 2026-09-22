@@ -8,8 +8,8 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:riverpod/riverpod.dart';
 
 final _packageInfo = PackageInfo(
-  appName: 'FlClash',
-  packageName: 'com.follow.clash',
+  appName: 'BiLoom',
+  packageName: 'app.biloom.top',
   version: '1.2.3',
   buildNumber: '1',
 );
@@ -44,7 +44,10 @@ void main() {
       setGlobalUa('');
 
       expect(globalState.ua, _packageInfo.ua);
-      expect(globalState.ua, contains('FlClash/v1.2.3'));
+      // The UA prefix comes from the compile-time `appName` constant, not from
+      // `PackageInfo.appName`: a binary rebuilt under another package identity
+      // still reports BiLoom, so subscription servers see one stable client.
+      expect(globalState.ua, contains('BiLoom/v1.2.3'));
     });
 
     test('prefers the configured global user agent', () {

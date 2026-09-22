@@ -21,7 +21,7 @@ class MessageLookup extends MessageLookupByLibrary {
   String get localeName => 'en';
 
   static String m0(code) =>
-      "Windows refused to run FlClashCore.exe (error ${code}). An app control policy such as Smart App Control or AppLocker blocks unsigned programs; allow BiLoom in that policy or turn it off, then try again.";
+      "Windows refused to run BiLoomCore.exe (error ${code}). An app control policy such as Smart App Control or AppLocker blocks unsigned programs; allow BiLoom in that policy or turn it off, then try again.";
 
   static String m1(name) =>
       "The app failed to finish launching twice in a row. To break the loop, the profile ${name} has been deselected and automatic setup was skipped. You can select it again at any time.";
@@ -265,6 +265,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "checkUpdateError": MessageLookupByLibrary.simpleMessage(
       "The app is already up to date",
     ),
+    "checkUpdateFailed": MessageLookupByLibrary.simpleMessage(
+      "Could not reach the update server. Check your connection and try again.",
+    ),
     "clearData": MessageLookupByLibrary.simpleMessage("Clear data"),
     "clearSearch": MessageLookupByLibrary.simpleMessage("Clear search"),
     "clipboardExport": MessageLookupByLibrary.simpleMessage(
@@ -325,17 +328,13 @@ class MessageLookup extends MessageLookupByLibrary {
     "core": MessageLookupByLibrary.simpleMessage("Core"),
     "coreBlockedByPolicyTip": m0,
     "coreBlockedBySmartAppControlTip": MessageLookupByLibrary.simpleMessage(
-      "Windows Smart App Control blocked FlClashCore.exe because it is not signed. Open Windows Security → App & browser control → Smart App Control settings, choose Off, then start BiLoom again. Smart App Control cannot be turned back on without reinstalling Windows.",
+      "Windows Smart App Control blocked BiLoomCore.exe because it is not signed. Open Windows Security → App & browser control → Smart App Control settings, choose Off, then start BiLoom again. Smart App Control cannot be turned back on without reinstalling Windows.",
     ),
     "coreStatus": MessageLookupByLibrary.simpleMessage("Core status"),
     "country": MessageLookupByLibrary.simpleMessage("Region"),
     "crashDetected": MessageLookupByLibrary.simpleMessage("Crash detected"),
     "crashDetectedTip": m1,
     "crashTest": MessageLookupByLibrary.simpleMessage("Crash test"),
-    "crashlytics": MessageLookupByLibrary.simpleMessage("Crash analytics"),
-    "crashlyticsTip": MessageLookupByLibrary.simpleMessage(
-      "When enabled, crash logs without sensitive information are uploaded automatically when the app crashes",
-    ),
     "create": MessageLookupByLibrary.simpleMessage("Create"),
     "createProfile": MessageLookupByLibrary.simpleMessage("Create profile"),
     "createProfileFromUrlTip": m2,
@@ -346,12 +345,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "dashboard": MessageLookupByLibrary.simpleMessage("Dashboard"),
     "dataChangedSave": MessageLookupByLibrary.simpleMessage(
       "Data changes detected. Save them?",
-    ),
-    "dataCollectionContent": MessageLookupByLibrary.simpleMessage(
-      "This app uses Firebase Crashlytics to collect crash information to improve stability.\nThe collected data includes device information and crash details, and contains no personally sensitive data.\nYou can turn this off in settings.",
-    ),
-    "dataCollectionTip": MessageLookupByLibrary.simpleMessage(
-      "Data collection notice",
     ),
     "databaseWriteFailedTip": MessageLookupByLibrary.simpleMessage(
       "Failed to save the change; it has been rolled back",
@@ -370,7 +363,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "deleteMultipTip": m4,
     "deleteTip": m5,
     "desc": MessageLookupByLibrary.simpleMessage(
-      "A multi-platform proxy client based on ClashMeta, simple and easy to use, open-source and ad-free.",
+      "A multi-platform proxy client, deeply customized from FlClash. Simple and easy to use.",
     ),
     "destination": MessageLookupByLibrary.simpleMessage("Destination"),
     "destinationGeoIP": MessageLookupByLibrary.simpleMessage(
@@ -391,7 +384,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "disableUDP": MessageLookupByLibrary.simpleMessage("Disable UDP"),
     "disclaimer": MessageLookupByLibrary.simpleMessage("Disclaimer"),
     "disclaimerDesc": MessageLookupByLibrary.simpleMessage(
-      "This software is intended only for non-commercial uses such as learning and research. Using it for any commercial purpose is strictly prohibited; any commercial activity is unrelated to this software.",
+      "This software is provided as is, without warranty of any kind. You are responsible for complying with the laws of your jurisdiction and must not use it for any unlawful purpose.",
     ),
     "disconnected": MessageLookupByLibrary.simpleMessage("Disconnected"),
     "discoverNewVersion": MessageLookupByLibrary.simpleMessage(
@@ -401,6 +394,29 @@ class MessageLookup extends MessageLookupByLibrary {
       "Update DNS-related settings",
     ),
     "dnsHijacking": MessageLookupByLibrary.simpleMessage("DNS hijacking"),
+    "dnsLeakCheck": MessageLookupByLibrary.simpleMessage("DNS leak check"),
+    "dnsLeakCheckDesc": MessageLookupByLibrary.simpleMessage(
+      "Check whether the system DNS is taken over by the core",
+    ),
+    "dnsLeakExplain": MessageLookupByLibrary.simpleMessage(
+      "In fake-ip mode the core answers every domain with an address from the fake-ip range; a real public IP here means the query never reached the core. Under \"system proxy only\" that is unavoidable: the system proxy affects only apps that honour it, and DNS queries made by Windows itself are not among them. Switch to TUN to take over the whole system.",
+    ),
+    "dnsLeakFailed": MessageLookupByLibrary.simpleMessage(
+      "No resolver answered",
+    ),
+    "dnsLeakMode": MessageLookupByLibrary.simpleMessage("Current takeover"),
+    "dnsLeakNotApplicable": MessageLookupByLibrary.simpleMessage(
+      "Cannot be judged in this mode",
+    ),
+    "dnsLeakNotTakenOver": MessageLookupByLibrary.simpleMessage(
+      "Not taken over",
+    ),
+    "dnsLeakOnline": MessageLookupByLibrary.simpleMessage("Open online test"),
+    "dnsLeakRun": MessageLookupByLibrary.simpleMessage("Run check"),
+    "dnsLeakRunning": MessageLookupByLibrary.simpleMessage("Checking..."),
+    "dnsLeakTakenOver": MessageLookupByLibrary.simpleMessage(
+      "Taken over by the core",
+    ),
     "dnsMode": MessageLookupByLibrary.simpleMessage("DNS mode"),
     "domain": MessageLookupByLibrary.simpleMessage("Domain"),
     "download": MessageLookupByLibrary.simpleMessage("Download"),
@@ -470,6 +486,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "forceRestartCoreTip": MessageLookupByLibrary.simpleMessage(
       "Are you sure you want to force restart the core?",
     ),
+    "forkedFrom": MessageLookupByLibrary.simpleMessage("Based on FlClash"),
     "fruitSaladScheme": MessageLookupByLibrary.simpleMessage("Fruit salad"),
     "general": MessageLookupByLibrary.simpleMessage("General"),
     "geoAutoUpdate": MessageLookupByLibrary.simpleMessage("Auto update"),
@@ -551,9 +568,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "inputRuleContent": MessageLookupByLibrary.simpleMessage(
       "Enter the rule content",
     ),
-    "installedAppsPermissionDeniedMessage": MessageLookupByLibrary.simpleMessage(
-      "The app list permission was denied, so installed apps cannot be listed. Please grant it manually in system settings.",
-    ),
+    "installedAppsPermissionDeniedMessage":
+        MessageLookupByLibrary.simpleMessage(
+          "The app list permission was denied, so installed apps cannot be listed. Please grant it manually in system settings.",
+        ),
     "installedAppsPermissionDesc": MessageLookupByLibrary.simpleMessage(
       "This system hides the installed app list until the permission is granted. Authorize it to configure the per-app proxy.",
     ),
@@ -1104,6 +1122,10 @@ class MessageLookup extends MessageLookupByLibrary {
       "Subscription info",
     ),
     "suspended": MessageLookupByLibrary.simpleMessage("Suspended..."),
+    "switchToTun": MessageLookupByLibrary.simpleMessage("Switch to TUN"),
+    "switchToTunDesc": MessageLookupByLibrary.simpleMessage(
+      "The virtual network adapter takes over all traffic, so even the system\'s own DNS queries are intercepted",
+    ),
     "sync": MessageLookupByLibrary.simpleMessage("Sync"),
     "system": MessageLookupByLibrary.simpleMessage("System"),
     "systemApp": MessageLookupByLibrary.simpleMessage("System apps"),

@@ -21,7 +21,7 @@ class MessageLookup extends MessageLookupByLibrary {
   String get localeName => 'zh_CN';
 
   static String m0(code) =>
-      "Windows 拒绝运行 FlClashCore.exe（错误 ${code}）。智能应用控制、AppLocker 等应用控制策略会拦截未签名程序，请在该策略中放行 BiLoom 或关闭策略后重试。";
+      "Windows 拒绝运行 BiLoomCore.exe（错误 ${code}）。智能应用控制、AppLocker 等应用控制策略会拦截未签名程序，请在该策略中放行 BiLoom 或关闭策略后重试。";
 
   static String m1(name) =>
       "应用连续两次未能完成启动。为打断崩溃循环，已取消选中配置 ${name}，并跳过本次自动配置，你可以随时重新选中它。";
@@ -195,6 +195,9 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "checkUpdate": MessageLookupByLibrary.simpleMessage("检查更新"),
     "checkUpdateError": MessageLookupByLibrary.simpleMessage("当前应用已经是最新版了"),
+    "checkUpdateFailed": MessageLookupByLibrary.simpleMessage(
+      "无法连接更新服务器，请检查网络后重试",
+    ),
     "clearData": MessageLookupByLibrary.simpleMessage("清除数据"),
     "clearSearch": MessageLookupByLibrary.simpleMessage("清除搜索"),
     "clipboardExport": MessageLookupByLibrary.simpleMessage("导出剪贴板"),
@@ -231,17 +234,13 @@ class MessageLookup extends MessageLookupByLibrary {
     "core": MessageLookupByLibrary.simpleMessage("内核"),
     "coreBlockedByPolicyTip": m0,
     "coreBlockedBySmartAppControlTip": MessageLookupByLibrary.simpleMessage(
-      "Windows 智能应用控制拦截了未签名的 FlClashCore.exe。请打开 Windows 安全中心 → 应用和浏览器控制 → 智能应用控制设置，选择「关闭」后重新启动 BiLoom。智能应用控制关闭后无法再开启，除非重装 Windows。",
+      "Windows 智能应用控制拦截了未签名的 BiLoomCore.exe。请打开 Windows 安全中心 → 应用和浏览器控制 → 智能应用控制设置，选择「关闭」后重新启动 BiLoom。智能应用控制关闭后无法再开启，除非重装 Windows。",
     ),
     "coreStatus": MessageLookupByLibrary.simpleMessage("核心状态"),
     "country": MessageLookupByLibrary.simpleMessage("区域"),
     "crashDetected": MessageLookupByLibrary.simpleMessage("检测到崩溃"),
     "crashDetectedTip": m1,
     "crashTest": MessageLookupByLibrary.simpleMessage("崩溃测试"),
-    "crashlytics": MessageLookupByLibrary.simpleMessage("崩溃分析"),
-    "crashlyticsTip": MessageLookupByLibrary.simpleMessage(
-      "开启后，应用崩溃时自动上传不包含敏感信息的崩溃日志",
-    ),
     "create": MessageLookupByLibrary.simpleMessage("创建"),
     "createProfile": MessageLookupByLibrary.simpleMessage("创建配置"),
     "createProfileFromUrlTip": m2,
@@ -251,10 +250,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "dark": MessageLookupByLibrary.simpleMessage("深色"),
     "dashboard": MessageLookupByLibrary.simpleMessage("仪表盘"),
     "dataChangedSave": MessageLookupByLibrary.simpleMessage("检测到数据有更改，是否保存"),
-    "dataCollectionContent": MessageLookupByLibrary.simpleMessage(
-      "本应用使用 Firebase Crashlytics 收集崩溃信息以改进应用稳定性。\n收集的数据包括设备信息和崩溃详情，不包含个人敏感数据。\n您可以在设置中关闭此功能。",
-    ),
-    "dataCollectionTip": MessageLookupByLibrary.simpleMessage("数据收集说明"),
     "databaseWriteFailedTip": MessageLookupByLibrary.simpleMessage(
       "保存更改失败，已回滚",
     ),
@@ -268,7 +263,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "deleteMultipTip": m4,
     "deleteTip": m5,
     "desc": MessageLookupByLibrary.simpleMessage(
-      "基于ClashMeta的多平台代理客户端，简单易用，开源无广告。",
+      "基于 FlClash 深度定制的多平台代理客户端，简单易用。",
     ),
     "destination": MessageLookupByLibrary.simpleMessage("目标地址"),
     "destinationGeoIP": MessageLookupByLibrary.simpleMessage("目标地理定位"),
@@ -281,12 +276,27 @@ class MessageLookup extends MessageLookupByLibrary {
     "disableUDP": MessageLookupByLibrary.simpleMessage("禁用UDP"),
     "disclaimer": MessageLookupByLibrary.simpleMessage("免责声明"),
     "disclaimerDesc": MessageLookupByLibrary.simpleMessage(
-      "本软件仅供学习交流、科研等非商业性质的用途，严禁将本软件用于商业目的。如有任何商业行为，均与本软件无关。",
+      "本软件按「现状」提供，不对可用性作任何担保。请遵守你所在国家或地区的法律法规，不得用于任何违法用途。",
     ),
     "disconnected": MessageLookupByLibrary.simpleMessage("已断开"),
     "discoverNewVersion": MessageLookupByLibrary.simpleMessage("发现新版本"),
     "dnsDesc": MessageLookupByLibrary.simpleMessage("更新DNS相关设置"),
     "dnsHijacking": MessageLookupByLibrary.simpleMessage("DNS劫持"),
+    "dnsLeakCheck": MessageLookupByLibrary.simpleMessage("DNS 泄露自检"),
+    "dnsLeakCheckDesc": MessageLookupByLibrary.simpleMessage(
+      "检测系统 DNS 是否被内核接管",
+    ),
+    "dnsLeakExplain": MessageLookupByLibrary.simpleMessage(
+      "fake-ip 模式下，内核回答任何域名都会给出 fake-ip 段内的地址；此处若返回真实公网 IP，说明这次查询根本没有到内核手上。在「仅系统代理」模式下这是必然的：系统代理只作用于认它的程序，而 Windows 自身发出的 DNS 查询不在其列。要让整个系统都被接管，请改用 TUN。",
+    ),
+    "dnsLeakFailed": MessageLookupByLibrary.simpleMessage("没有问到任何解析器"),
+    "dnsLeakMode": MessageLookupByLibrary.simpleMessage("当前接管方式"),
+    "dnsLeakNotApplicable": MessageLookupByLibrary.simpleMessage("当前模式无法判定"),
+    "dnsLeakNotTakenOver": MessageLookupByLibrary.simpleMessage("未被内核接管"),
+    "dnsLeakOnline": MessageLookupByLibrary.simpleMessage("打开在线测试"),
+    "dnsLeakRun": MessageLookupByLibrary.simpleMessage("开始检测"),
+    "dnsLeakRunning": MessageLookupByLibrary.simpleMessage("检测中..."),
+    "dnsLeakTakenOver": MessageLookupByLibrary.simpleMessage("已被内核接管"),
     "dnsMode": MessageLookupByLibrary.simpleMessage("DNS模式"),
     "domain": MessageLookupByLibrary.simpleMessage("域名"),
     "download": MessageLookupByLibrary.simpleMessage("下载"),
@@ -338,6 +348,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "followProfile": MessageLookupByLibrary.simpleMessage("跟随配置"),
     "fontFamily": MessageLookupByLibrary.simpleMessage("字体"),
     "forceRestartCoreTip": MessageLookupByLibrary.simpleMessage("您确定要强制重启核心吗？"),
+    "forkedFrom": MessageLookupByLibrary.simpleMessage("基于 FlClash 深度定制"),
     "fruitSaladScheme": MessageLookupByLibrary.simpleMessage("果缤纷"),
     "general": MessageLookupByLibrary.simpleMessage("常规"),
     "geoAutoUpdate": MessageLookupByLibrary.simpleMessage("自动更新"),
@@ -793,6 +804,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "submit": MessageLookupByLibrary.simpleMessage("提交"),
     "subscriptionInfo": MessageLookupByLibrary.simpleMessage("订阅信息"),
     "suspended": MessageLookupByLibrary.simpleMessage("挂起中..."),
+    "switchToTun": MessageLookupByLibrary.simpleMessage("改用 TUN 接管"),
+    "switchToTunDesc": MessageLookupByLibrary.simpleMessage(
+      "虚拟网卡会接管全部流量，连系统自己发出的 DNS 查询也会被拦住",
+    ),
     "sync": MessageLookupByLibrary.simpleMessage("同步"),
     "system": MessageLookupByLibrary.simpleMessage("系统"),
     "systemApp": MessageLookupByLibrary.simpleMessage("系统应用"),

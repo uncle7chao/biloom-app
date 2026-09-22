@@ -14,8 +14,9 @@ Widget _list() {
   );
 }
 
+// TargetPlatformVariant.only 是工厂构造，不是 const；带集合的那个是 const。
 final _desktop = TargetPlatformVariant.only(TargetPlatform.macOS);
-final _everyPlatform = TargetPlatformVariant(const {
+const _everyPlatform = TargetPlatformVariant({
   TargetPlatform.macOS,
   TargetPlatform.android,
 });

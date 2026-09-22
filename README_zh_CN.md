@@ -4,132 +4,100 @@
 
 </div>
 
-## FlClash
+# BiLoom
 
-[![Downloads](https://img.shields.io/github/downloads/chen08209/FlClash/total?style=flat-square&logo=github)](https://github.com/chen08209/FlClash/releases/)[![Last Version](https://img.shields.io/github/release/chen08209/FlClash/all.svg?style=flat-square)](https://github.com/chen08209/FlClash/releases/)[![License](https://img.shields.io/github/license/chen08209/FlClash?style=flat-square)](LICENSE)
+[![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-blue.svg)](LICENSE)
 
-[![Channel](https://img.shields.io/badge/Telegram-Channel-blue?style=flat-square&logo=telegram)](https://t.me/FlClash)
+基于 ClashMeta 内核的多平台代理客户端，简单易用，完全开源。
 
-基于ClashMeta的多平台代理客户端，简单易用，开源无广告。
+> BiLoom 是 [FlClash](https://github.com/chen08209/FlClash) 的 fork，后者以 GPL-3.0 授权。
+> 原应用的设计与大部分代码均出自 FlClash 作者，详见[致谢](#致谢)。
 
-<p align="center">
-    <picture>
-        <source media="(prefers-color-scheme: dark)" srcset="snapshots/preview-dark.png">
-        <img alt="FlClash on desktop and mobile" src="snapshots/preview.png" width="90%">
-    </picture>
-</p>
+<!-- TODO(M2): UI 改造完成后补充 BiLoom 界面截图。 -->
 
-## Features
+## 功能
 
-✈️ 多平台: Android, Windows, macOS and Linux
+✈️ 多平台：当前发布 Android 与 Windows；Linux、macOS 的打包配置保留在仓库中
 
-💻 自适应多个屏幕尺寸,多种颜色主题可供选择
+💻 自适应多种屏幕尺寸，提供多套配色主题
 
-💡 基本 Material You 设计, 类[Surfboard](https://github.com/getsurfboard/surfboard)用户界面
+💡 基于 Material You 设计，类 [Surfboard](https://github.com/getsurfboard/surfboard) 界面
 
-☁️ 支持通过WebDAV同步数据
+🔀 策略组、规则与订阅配置管理，支持 WebDAV 数据同步
 
-✨ 支持一键导入订阅, 深色模式
+📊 流量统计、连接追踪与规则命中查看
 
-## Use
+🛡️ Android 与 Windows 上的 TUN 模式，由特权助手服务提供支持
 
-### Linux
+🔒 未内置任何分析统计或第三方崩溃上报 SDK
 
-⚠️ 使用前请确保安装以下依赖
+## 下载
 
-   ```bash
-    sudo apt-get install libayatana-appindicator3-dev
-   ```
+构建产物发布在 [Releases](https://github.com/biloom/biloom-app/releases) 页面。
+
+## 使用
 
 ### Android
 
-支持下列操作
-
-   ```bash
-    com.follow.clash.action.START
-    
-    com.follow.clash.action.STOP
-    
-    com.follow.clash.action.TOGGLE
-   ```
-
-## Download
-
-<a href="https://chen08209.github.io/FlClash-fdroid-repo/repo?fingerprint=789D6D32668712EF7672F9E58DEEB15FBD6DCEEC5AE7A4371EA72F2AAE8A12FD"><img alt="Get it on F-Droid" src="snapshots/get-it-on-fdroid.svg" width="200px"/></a> <a href="https://github.com/chen08209/FlClash/releases"><img alt="Get it on GitHub" src="snapshots/get-it-on-github.svg" width="200px"/></a>
-
-### Homebrew
+应用响应以下广播 action：
 
 ```bash
-brew tap chen08209/tap
-brew install --cask flclash
+app.biloom.top.action.START
+
+app.biloom.top.action.STOP
+
+app.biloom.top.action.TOGGLE
 ```
 
-## Build
+### 深链
 
-1. 更新 submodules
+通过链接直接导入订阅配置：
+
+```
+biloom://install-config?url=<订阅链接>
+```
+
+同时兼容通用的 `clash://` 与 `clashmeta://` 协议。
+
+### Linux
+
+请先安装以下依赖：
+
+```bash
+sudo apt-get install libayatana-appindicator3-dev
+```
+
+## 构建
+
+1. 安装 **Flutter**、**Go**、**Rust** 工具链。
+
+2. 拉取依赖：
+
    ```bash
-   git submodule update --init --recursive
+   flutter pub get
    ```
 
-2. 安装 `Flutter` 以及 `Golang` 环境
+3. 构建 —— Go 内核与 Rust 助手由 setup 构建钩子自动编译：
 
-3. 构建应用
+   ```bash
+   dart setup.dart windows
+   ```
 
-    - android
+   其他目标：`android`、`linux`、`macos`。
 
-        1. 安装  `Android SDK` ,  `Android NDK`
+   各平台前置条件：
 
-        2. 设置 `ANDROID_NDK` 环境变量
+   - **Android** —— Android SDK，以及 `android/gradle/libs.versions.toml` 中钉死的 NDK 版本
+   - **Windows** —— Visual Studio C++ 生成工具与
+     [Inno Setup 6](https://jrsoftware.org/isinfo.php)。若未安装在默认路径，
+     请用 `INNO_SETUP_PATH` 指定。
 
-        3. 运行构建脚本
+## 致谢
 
-           ```bash
-           dart setup.dart android
-           ```
+- **[FlClash](https://github.com/chen08209/FlClash)** —— 本项目 fork 的上游应用，GPL-3.0 授权。
+- **[Clash.Meta / mihomo](https://github.com/MetaCubeX/mihomo)** —— 驱动隧道的代理内核。
 
-    - windows
+## 许可证
 
-        1. 你需要一个windows客户端
-
-        2. 安装 `GCC`，`Inno Setup`
-
-        3. 运行构建脚本
-
-           ```bash
-           dart setup.dart windows
-           ```
-
-    - linux
-
-        1. 你需要一个linux客户端
-
-        2. 依赖会由 setup 脚本自动安装，也可以手动安装：
-           ```bash
-           sudo apt-get install -y libayatana-appindicator3-dev
-           ```
-
-        3. 运行构建脚本
-
-           ```bash
-           dart setup.dart linux
-           ```
-
-    - macOS
-
-        1. 你需要一个macOS客户端
-
-        2. 运行构建脚本
-
-           ```bash
-           dart setup.dart macos
-           ```
-
-## Star
-
-支持开发者的最简单方式是点击页面顶部的星标（⭐）。
-
-<p style="text-align: center;">
-    <a href="https://api.star-history.com/svg?repos=chen08209/FlClash&Date">
-        <img alt="start" width=50% src="https://api.star-history.com/svg?repos=chen08209/FlClash&Date"/>
-    </a>
-</p>
+以 [GNU General Public License v3.0](LICENSE) 授权，与上游项目一致。
+分发本应用的二进制文件时，您有义务提供对应的源代码。

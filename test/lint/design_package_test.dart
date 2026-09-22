@@ -18,6 +18,12 @@ const _forbiddenImports = <String, String>{
 
 const _generatedL10n = ['lib/l10n/l10n.dart', 'lib/l10n/intl/'];
 
+/// `p.relative` — and `Directory.listSync` — yield `\`-separated paths on
+/// Windows, but every path literal in this file is written POSIX-style. Without
+/// this the generated-l10n exemption silently stops matching on Windows and the
+/// Flutter Intl output gets flagged as a hand-written violation.
+String _posix(String path) => path.replaceAll(r'\', '/');
+
 bool _isGenerated(String path) {
   return path.contains('/generated/') ||
       path.endsWith('.g.dart') ||
@@ -38,7 +44,7 @@ void main() {
         if (entity is! File || !entity.path.endsWith('.dart')) {
           continue;
         }
-        final relative = p.relative(entity.path);
+        final relative = _posix(p.relative(entity.path));
         if (_isGenerated(relative)) {
           continue;
         }
