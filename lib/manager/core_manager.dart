@@ -118,6 +118,10 @@ class _CoreContainerState extends ConsumerState<CoreManager>
       return;
     }
     ref.read(coreStatusProvider.notifier).value = CoreStatus.disconnected;
+    // 内核没了，运行态必须跟着清掉。否则首页继续显示「已连接」、秒表继续走、
+    // 系统代理还指着那个没人监听的端口 —— 表现就是「看起来一切正常，但所有网页
+    // 打不开」，而且此时点「停止」会因为 IPC 已不可用而失败回滚，用户彻底卡住。
+    ref.read(setupActionProvider.notifier).handleCoreCrash();
     if (WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed) {
       context.showNotifier(message, level: MessageLevel.error);
     }

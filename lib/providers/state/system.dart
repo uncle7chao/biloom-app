@@ -31,7 +31,11 @@ UpdateParams updateParams(Ref ref) {
 
 @riverpod
 TrayState trayState(Ref ref) {
-  final isStart = ref.watch(runTimeProvider.select((state) => state != null));
+  // 与 proxyState 共用同一套门控。被排除的 SSID 下内核确实已经停止接管流量，
+  // 托盘却显示「运行中」、菜单还给出「停止」—— 首页、托盘、真实状态三处互相打脸。
+  final isStart = ref.watch(
+    proxyStateProvider.select((state) => state.isStart),
+  );
   final systemProxy = ref.watch(
     networkSettingProvider.select((state) => state.systemProxy),
   );
@@ -229,4 +233,20 @@ bool suspend(Ref ref) {
   final currentSSID = ref.watch(currentSSIDProvider);
   final excludeSSIDs = ref.watch(excludeSSIDsProvider);
   return excludeSSIDs.contains(currentSSID);
+}
+
+/// 「接管方式」是系统代理与 TUN 的统称，也是用户表达连接意图的地方：
+/// 打开任意一个就是说「我开始用代理」，两个都关就是说「我不需要代理了」。
+///
+/// 运行态由它派生（见 SystemAction.syncRunningWithTakeover），于是不存在
+/// 「开关开着却没连接」这种自相矛盾的状态 —— 那正是这次要根治的问题。
+@riverpod
+bool takeoverOpen(Ref ref) {
+  final systemProxy = ref.watch(
+    networkSettingProvider.select((state) => state.systemProxy),
+  );
+  final tunEnable = ref.watch(
+    patchClashConfigProvider.select((state) => state.tun.enable),
+  );
+  return systemProxy || tunEnable;
 }

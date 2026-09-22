@@ -218,7 +218,11 @@ void main() {
   group('NetworkProps JSON round-trip', () {
     test('default values', () {
       const props = NetworkProps();
-      expect(props.systemProxy, true);
+      // 这个默认值是「开关即连接」的一环，不是随手定的：系统代理开关现在与
+      // 「连接」是同一件事（拨开就自动连上），所以它必须诚实反映「此刻有没有在
+      // 用代理」。默认开着会让新用户看到一个亮着的开关却什么都没发生 ——
+      // 那正是要根治的「开关骗人」。
+      expect(props.systemProxy, false);
       expect(props.bypassDomain, defaultBypassDomain);
       expect(props.routeMode, RouteMode.config);
       expect(props.autoSetSystemDns, true);
@@ -407,7 +411,7 @@ void main() {
       final restored = roundTrip(() => config.toJson(), Config.fromJson);
       expect(restored.currentProfileId, null);
       expect(restored.overrideDns, false);
-      expect(restored.networkProps.systemProxy, true);
+      expect(restored.networkProps.systemProxy, false);
       expect(restored.vpnProps.enable, true);
       expect(restored.hotKeyActions, isEmpty);
     });

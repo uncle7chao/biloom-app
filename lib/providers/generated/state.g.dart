@@ -89,7 +89,7 @@ final class TrayStateProvider
   }
 }
 
-String _$trayStateHash() => r'25b5b6e8120d605a1b7729e0e74eb1bccafdb2fe';
+String _$trayStateHash() => r'b1b2e01ca1435efe01e1d59676a75e037290a4cd';
 
 @ProviderFor(trayTitleState)
 final trayTitleStateProvider = TrayTitleStateProvider._();
@@ -524,6 +524,63 @@ final class SuspendProvider extends $FunctionalProvider<bool, bool, bool>
 }
 
 String _$suspendHash() => r'9ab9210f4f3c70f63d9858d492a9c09b3fb24bf1';
+
+/// 「接管方式」是系统代理与 TUN 的统称，也是用户表达连接意图的地方：
+/// 打开任意一个就是说「我开始用代理」，两个都关就是说「我不需要代理了」。
+///
+/// 运行态由它派生（见 SystemAction.syncRunningWithTakeover），于是不存在
+/// 「开关开着却没连接」这种自相矛盾的状态 —— 那正是这次要根治的问题。
+
+@ProviderFor(takeoverOpen)
+final takeoverOpenProvider = TakeoverOpenProvider._();
+
+/// 「接管方式」是系统代理与 TUN 的统称，也是用户表达连接意图的地方：
+/// 打开任意一个就是说「我开始用代理」，两个都关就是说「我不需要代理了」。
+///
+/// 运行态由它派生（见 SystemAction.syncRunningWithTakeover），于是不存在
+/// 「开关开着却没连接」这种自相矛盾的状态 —— 那正是这次要根治的问题。
+
+final class TakeoverOpenProvider extends $FunctionalProvider<bool, bool, bool>
+    with $Provider<bool> {
+  /// 「接管方式」是系统代理与 TUN 的统称，也是用户表达连接意图的地方：
+  /// 打开任意一个就是说「我开始用代理」，两个都关就是说「我不需要代理了」。
+  ///
+  /// 运行态由它派生（见 SystemAction.syncRunningWithTakeover），于是不存在
+  /// 「开关开着却没连接」这种自相矛盾的状态 —— 那正是这次要根治的问题。
+  TakeoverOpenProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'takeoverOpenProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$takeoverOpenHash();
+
+  @$internal
+  @override
+  $ProviderElement<bool> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  bool create(Ref ref) {
+    return takeoverOpen(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(bool value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<bool>(value),
+    );
+  }
+}
+
+String _$takeoverOpenHash() => r'896ce1ef11024bbbf89fb7b54d0e7237077cdc7e';
 
 @ProviderFor(DynamicColor)
 final dynamicColorProvider = DynamicColorProvider._();
@@ -1353,7 +1410,7 @@ final class CurrentGroupsStateProvider
 }
 
 String _$currentGroupsStateHash() =>
-    r'dbf8f02606a31486c99d7b89d19914cd5a1fc496';
+    r'556df61695cbf2e48dd1dcd7551aa5346d708c95';
 
 @ProviderFor(proxyState)
 final proxyStateProvider = ProxyStateProvider._();

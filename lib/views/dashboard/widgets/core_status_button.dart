@@ -68,9 +68,13 @@ class _CoreStatusButtonState extends ConsumerState<CoreStatusButton> {
     if (coreStatus == CoreStatus.connecting) {
       return;
     }
+    // 文案在这里就取出来，不在 await 之后再碰 context：等用户回答对话框的这段时间里
+    // 本组件完全可能已经被卸载（他切了页面、或直接把窗口关了），那时再访问 context
+    // 就是一次 use-after-dispose。
+    final appLocalizations = context.appLocalizations;
     final tip = coreStatus == CoreStatus.connected
-        ? context.appLocalizations.forceRestartCoreTip
-        : context.appLocalizations.restartCoreTip;
+        ? appLocalizations.forceRestartCoreTip
+        : appLocalizations.restartCoreTip;
     final res = await dialogs.showMessage(message: TextSpan(text: tip));
     if (res != true) {
       return;
@@ -78,7 +82,13 @@ class _CoreStatusButtonState extends ConsumerState<CoreStatusButton> {
     try {
       await ref.read(coreActionProvider.notifier).restartCore();
     } catch (error) {
-      dialogs.showNotifier(error.toString(), level: MessageLevel.error);
+      // 直接 error.toString() 会让用户看到
+      // 「DesktopCoreFailure(start_failed, revision: 1, ProcessException: ...)」
+      // 这种东西贴满屏幕 —— 内核被安全软件拦下时尤其常见。
+      dialogs.showNotifier(
+        userFacingErrorMessage(error, appLocalizations),
+        level: MessageLevel.error,
+      );
     }
   }
 

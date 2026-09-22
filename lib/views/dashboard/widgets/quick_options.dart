@@ -1,5 +1,5 @@
 import 'package:fl_clash/common/common.dart';
-import 'package:fl_clash/providers/config.dart';
+import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/views/config/network.dart';
 import 'package:fl_clash/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
@@ -92,6 +92,8 @@ class TUNButton extends StatelessWidget {
         ref
             .read(patchClashConfigProvider.notifier)
             .update((state) => state.copyWith.tun(enable: value));
+        // 拨开关就等于「我要用代理」，不需要再去别处找「启动」。
+        ref.read(systemActionProvider.notifier).syncRunningWithTakeover();
       },
     );
   }
@@ -111,6 +113,7 @@ class SystemProxyButton extends StatelessWidget {
         ref
             .read(networkSettingProvider.notifier)
             .update((state) => state.copyWith(systemProxy: value));
+        ref.read(systemActionProvider.notifier).syncRunningWithTakeover();
       },
     );
   }

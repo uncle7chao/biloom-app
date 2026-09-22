@@ -111,9 +111,11 @@ class _NetworkDetectionState extends ConsumerState<NetworkDetection> {
                         )
                       : isLoading == false && ipInfo == null
                       ? Text(
-                          'Timeout',
+                          // 中文界面上直接甩一个英文「Timeout」，用户既要猜意思、
+                          // 又要猜是谁超时了。用已有的超时文案 + 主题错误色。
+                          context.appLocalizations.timeout,
                           style: context.textTheme.bodyMedium
-                              ?.copyWith(color: Colors.red)
+                              ?.copyWith(color: context.colorScheme.error)
                               .adjustSize(1),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,

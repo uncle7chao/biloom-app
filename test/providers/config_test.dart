@@ -69,7 +69,9 @@ void main() {
   group('NetworkSetting provider', () {
     test('default values', () {
       final value = container.read(networkSettingProvider);
-      expect(value.systemProxy, true);
+      // 默认关：这个开关已经与「连接」合而为一，默认开着就等于一进软件就
+      // 处在「已连接」而用户并不知情。详见 NetworkProps.systemProxy 的注释。
+      expect(value.systemProxy, false);
       expect(value.bypassDomain, defaultBypassDomain);
     });
 
@@ -200,7 +202,7 @@ void main() {
       expect(config.appSettingProps.onlyStatisticsProxy, false);
       expect(config.windowProps.width, 0);
       expect(config.vpnProps.enable, true);
-      expect(config.networkProps.systemProxy, true);
+      expect(config.networkProps.systemProxy, false);
       expect(config.currentProfileId, null);
       expect(config.overrideDns, false);
       expect(config.hotKeyActions, isEmpty);

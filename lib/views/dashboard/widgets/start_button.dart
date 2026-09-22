@@ -182,10 +182,12 @@ class _StartButtonState extends ConsumerState<StartButton>
     final hasProfile = ref.watch(
       profilesProvider.select((state) => state.isNotEmpty),
     );
-    if (!hasProfile) {
-      return Container();
-    }
+    // 没有订阅时不要把按钮整个藏起来（此前这里是 `return Container()`）。
+    // 后果是新手第一次打开软件看到一个空首页、连「开始」的视觉线索都没有 ——
+    // 唯一还能启动的入口是托盘右键，而他根本不知道托盘里有菜单。
+    // 留着按钮、点击时直接告诉他缺什么，比凭空消失有用得多。
     final suspend = ref.watch(suspendProvider);
+    final isStart = ref.watch(isStartProvider);
     final hasThreeDigitHours =
         (_displayRunTime ?? 0) >= _threeDigitHourThreshold;
     final theme = Theme.of(context);
@@ -209,9 +211,12 @@ class _StartButtonState extends ConsumerState<StartButton>
           clipBehavior: Clip.antiAlias,
           materialTapTargetSize: MaterialTapTargetSize.padded,
           heroTag: null,
-          onPressed: () {
-            handleSwitchStart();
-          },
+          tooltip: hasProfile
+              ? (isStart ? appLocalizations.stop : appLocalizations.start)
+              : appLocalizations.nullProfileDesc,
+          onPressed: hasProfile
+              ? handleSwitchStart
+              : () => context.showNotifier(appLocalizations.nullProfileDesc),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [

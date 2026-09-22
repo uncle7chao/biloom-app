@@ -30,7 +30,7 @@ final _cardCases = <_CardCase>[
     'system proxy',
     const SystemProxyButton(),
     (container) => container.read(networkSettingProvider).systemProxy,
-    initial: true,
+    // 默认关：拨开它就等于「我要开始用代理」，所以起点必须是诚实的「没在用」。
   ),
   _CardCase(
     'VPN',

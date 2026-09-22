@@ -101,7 +101,13 @@ class SetupAction extends _$SetupAction {
     if (system.isAndroid) {
       await _updateStartTime();
     }
-    final shouldRun = _isRunning || ref.read(appSettingProvider).autoRun;
+    // 「接管方式还开着」（系统代理 / TUN）同样代表用户希望处在连接状态 ——
+    // 那是他上次离开时的选择，打开软件就该恢复。有了这一条，系统代理的默认值
+    // 才真正等于「打开即用」，而不是一个亮着却什么也没做的开关。
+    final shouldRun =
+        _isRunning ||
+        ref.read(appSettingProvider).autoRun ||
+        ref.read(takeoverOpenProvider);
     if (shouldRun) {
       await setRunning(true, initialize: true);
     } else {
@@ -127,6 +133,24 @@ class SetupAction extends _$SetupAction {
     return running ? _start(request) : _stop(request);
   }
 
+  /// 内核进程已经退出了 —— 运行态必须在本地就地清掉。
+  ///
+  /// 这里不能图省事直接调 setRunning(false)：那条路径会走 stopListener()，而内核
+  /// 已经死了，IPC 必然失败抛错，_rollbackRunning 反而把状态改回「运行中」。后果是
+  /// 首页计时器继续走、托盘仍显示运行中、系统代理一直指着那个没人监听的端口 ——
+  /// 用户看到的是「连接正常但所有网页都打不开」，而且点「停止」也停不下来。
+  ///
+  /// 作废 _latestRunRequest 是必要的：任何还在飞行中的请求都不该再回来改状态。
+  void handleCoreCrash() {
+    if (_startTime == null) return;
+    commonPrint.log(
+      'core is gone, clearing the running state',
+      logLevel: LogLevel.warning,
+    );
+    _latestRunRequest = null;
+    _setLocalRunning(false);
+  }
+
   Future<bool> _start(_RunRequest request) async {
     if (request.initialize) {
       var applied = false;
@@ -135,7 +159,14 @@ class SetupAction extends _$SetupAction {
           force: true,
           preloadInvoke: () => _setCoreRunning(request),
         );
-      } catch (_) {
+      } catch (e, s) {
+        // 调用方只拿到一个 bool，异常在这里被静默吞掉的话，出问题时日志里就只剩
+        // 「启动失败」四个字，连是哪一步炸的都查不出来 —— 而这条路径恰恰是用户
+        // 「拨了开关却连不上」时唯一能留下的线索。
+        commonPrint.log(
+          'start failed: ${compactError(e)}, $s',
+          logLevel: LogLevel.error,
+        );
         applied = false;
       }
       if (!applied && _isCurrent(request)) {
@@ -181,7 +212,18 @@ class SetupAction extends _$SetupAction {
       if (request.running && ref.read(suspendProvider)) {
         return;
       }
-      await setCoreRunning(request.running);
+      final applied = await setCoreRunning(request.running);
+      if (!applied) {
+        // 这里刻意只记日志、不抛异常。返回 false 的含义是「这次 RPC 没能确认结果」
+        // （内核侧 handleStartListener / handleStopListener 一到就是 return true，
+        // 所以 false 只可能来自超时或传输层失败），但超时并不等于内核没做 ——
+        // 它可能只是被 configMu 挡了一会儿、稍后才真的开始接管。若在这里当成失败
+        // 回滚，就会把「其实连上了」演成「启动失败」，比现在更糟。
+        commonPrint.log(
+          'setCoreRunning(${request.running}) was not confirmed by the core',
+          logLevel: LogLevel.warning,
+        );
+      }
     });
   }
 
@@ -381,7 +423,10 @@ class SetupAction extends _$SetupAction {
       );
       return res.yaml;
     } catch (e) {
-      dialogs.showNotifier(e.toString(), level: MessageLevel.error);
+      dialogs.showNotifier(
+        userFacingErrorMessage(e, currentAppLocalizations),
+        level: MessageLevel.error,
+      );
     }
     return '';
   }
@@ -453,6 +498,7 @@ class SetupAction extends _$SetupAction {
     final nextProfile = await globalState.safeRun(
       () => profile?.checkAndUpdateAndCopy(
         validate: (path) => _core.validateConfig(path),
+        convert: ref.read(profilesActionProvider.notifier).convertSubscription,
       ),
     );
     if (nextProfile != null) {

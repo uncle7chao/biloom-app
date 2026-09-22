@@ -15,15 +15,20 @@ GroupsState currentGroupsState(Ref ref) {
       }),
     ),
   );
+  final visible = groups.where((item) => item.hidden == false).toList();
+  final nonGlobal = visible
+      .where((item) => item.name != GroupName.GLOBAL.name)
+      .toList();
   return GroupsState(
     value: switch (mode) {
       Mode.direct => [],
       Mode.global => groups.toList(),
-      Mode.rule =>
-        groups
-            .where((item) => item.hidden == false)
-            .where((element) => element.name != GroupName.GLOBAL.name)
-            .toList(),
+      // 规则模式下 GLOBAL 通常是冗余的：能落到它的流量本来就该由 profile 自己的
+      // 分组承接，所以平时把它藏起来。但一份只带 proxies 的配置（例如直接导入的
+      // 订阅转换结果）除 GLOBAL 外没有任何分组，藏掉它会让分组列表为空、
+      // 「代理」页签整块消失 —— 用户连节点列表和测速按钮都找不到。
+      // 所以只在「确实还有别的分组」时才隐藏 GLOBAL，否则原样保留作为兜底入口。
+      Mode.rule => nonGlobal.isNotEmpty ? nonGlobal : visible,
     },
   );
 }

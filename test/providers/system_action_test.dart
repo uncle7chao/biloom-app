@@ -5,6 +5,7 @@ import 'package:fl_clash/common/preferences.dart';
 import 'package:fl_clash/models/config.dart';
 import 'package:fl_clash/providers/action.dart';
 import 'package:fl_clash/providers/actions/system_exit.dart';
+import 'package:fl_clash/providers/app.dart';
 import 'package:fl_clash/providers/config.dart';
 import 'package:fl_clash/state.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -49,6 +50,22 @@ class TestSystemAction extends SystemAction {
 
 class _PersistenceSystemAction extends SystemAction {
   Future<void> persist() => savePreferences();
+}
+
+/// 只记录「有没有人来要求启动 / 停止」，其余一概不碰。
+/// 真实实现会去拉内核实连接，在单元测试里那是一串永远等不到回应的定时器。
+class _RecordingSetupAction extends SetupAction {
+  final List<bool> calls = [];
+
+  @override
+  Future<bool> setRunning(bool running, {bool initialize = false}) async {
+    calls.add(running);
+    // 真实实现会在这里同步更新 runTimeProvider，而对齐逻辑正是靠它判断
+    // 「此刻算不算已连接」。照着做，否则第二次拨开关会因为「状态没变」提前返回，
+    // 测到的就不是真正的行为了。
+    ref.read(runTimeProvider.notifier).value = running ? 0 : null;
+    return true;
+  }
 }
 
 class _GeometryWindowPort implements WindowPort {
@@ -329,6 +346,106 @@ void main() {
       container.read(systemActionProvider.notifier).updateAutoLaunch();
 
       expect(container.read(appSettingProvider).autoLaunch, !before);
+    });
+  });
+
+  // 「打开系统代理」和「启动」在用户心里是同一件事。这一组就是把这件事钉死：
+  // 拨开任意一种接管方式（系统代理 / TUN）就必须连上，两种都关掉就必须断开 ——
+  // 不允许出现「开关亮着却没连接」这种自相矛盾的状态。
+  group('takeover switches and the running state are one thing', () {
+    late _RecordingSetupAction setup;
+    late ProviderContainer container;
+
+    setUp(() {
+      setup = _RecordingSetupAction();
+      container = ProviderContainer(
+        overrides: [setupActionProvider.overrideWith(() => setup)],
+      );
+      globalState.container = container;
+      container.read(setupActionProvider.notifier);
+      // 能点到这些开关的时候 bootstrap 一定已经跑完（initProvider 为 true）。
+      // 显式置位是为了让对齐逻辑真的执行，而不是走「还没起来就别动」那条短路。
+      container.read(initProvider.notifier).value = true;
+    });
+
+    tearDown(() => container.dispose());
+
+    SystemAction action() => container.read(systemActionProvider.notifier);
+
+    test('turning the system proxy on starts the connection', () {
+      action().updateSystemProxy();
+
+      expect(container.read(networkSettingProvider).systemProxy, isTrue);
+      expect(setup.calls, [true]);
+    });
+
+    test('turning it back off stops the connection', () {
+      action().updateSystemProxy();
+      action().updateSystemProxy();
+
+      expect(container.read(networkSettingProvider).systemProxy, isFalse);
+      expect(setup.calls, [true, false]);
+    });
+
+    test('the TUN switch means the same thing as connecting', () {
+      action().updateTun();
+
+      expect(container.read(patchClashConfigProvider).tun.enable, isTrue);
+      expect(setup.calls, [true]);
+    });
+
+    test('closing one takeover way keeps the connection', () {
+      action().updateTun();
+      action().updateSystemProxy();
+      action().updateTun();
+
+      expect(container.read(patchClashConfigProvider).tun.enable, isFalse);
+      expect(container.read(networkSettingProvider).systemProxy, isTrue);
+      expect(
+        setup.calls,
+        [true],
+        reason: '系统代理还开着，就不该断开',
+      );
+    });
+
+    test('closing both takeover ways stops the connection', () {
+      action().updateTun();
+      action().updateSystemProxy();
+      action().updateSystemProxy();
+      action().updateTun();
+
+      expect(container.read(networkSettingProvider).systemProxy, isFalse);
+      expect(container.read(patchClashConfigProvider).tun.enable, isFalse);
+      expect(setup.calls, [true, false]);
+    });
+
+    test('the main connect entry picks system proxy when nothing is on', () {
+      action().connect();
+
+      expect(container.read(networkSettingProvider).systemProxy, isTrue);
+      expect(setup.calls, [true]);
+    });
+
+    test('the main disconnect entry releases every takeover way', () {
+      action().updateTun();
+      action().disconnect();
+
+      expect(container.read(networkSettingProvider).systemProxy, isFalse);
+      expect(container.read(patchClashConfigProvider).tun.enable, isFalse);
+      expect(setup.calls, [true, false]);
+    });
+
+    test('before the app is ready a switch only flips its own flag', () {
+      container.read(initProvider.notifier).value = false;
+
+      action().updateSystemProxy();
+
+      expect(container.read(networkSettingProvider).systemProxy, isTrue);
+      expect(
+        setup.calls,
+        isEmpty,
+        reason: 'bootstrap 还没跑完，启动要交给它自己的恢复流程',
+      );
     });
   });
 }

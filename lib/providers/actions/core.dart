@@ -29,7 +29,12 @@ class CoreAction extends _$CoreAction {
       await _applyLifecycleResult(result);
     } catch (error) {
       ref.read(coreStatusProvider.notifier).value = CoreStatus.disconnected;
-      dialogs.showNotifier(error.toString(), level: MessageLevel.error);
+      // 内核启动失败时 error 往往是 DesktopCoreFailure，toString() 会甩出一串
+      // 内部字段加英文异常（杀毒软件拦下 core 时最常见）。走统一的用户可读映射。
+      dialogs.showNotifier(
+        userFacingErrorMessage(error, currentAppLocalizations),
+        level: MessageLevel.error,
+      );
     }
   }
 

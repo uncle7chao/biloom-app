@@ -48,7 +48,9 @@ final _toggleCases = <_ToggleCase>[
     'system proxy',
     const SystemProxyItem(),
     (c) => c.read(networkSettingProvider).systemProxy,
-    initial: true,
+    // 默认关（见 NetworkProps.systemProxy 的注释）：这个开关已经与「连接」
+    // 合而为一，默认开着就等于一进软件就处在「已连接」而用户并不知情。
+    // 注意别和上面的 'vpn system proxy' 搞混 —— 那是 VpnProps 上的另一个字段。
   ),
   _ToggleCase('ipv6', const Ipv6Item(), (c) => c.read(vpnSettingProvider).ipv6),
   _ToggleCase(

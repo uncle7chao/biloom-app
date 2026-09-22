@@ -1,7 +1,7 @@
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/models/models.dart';
-import 'package:fl_clash/providers/config.dart';
+import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -31,6 +31,19 @@ ConfigWriter<T> _tunWriter<T>(_TunUpdate<T> update) {
       .update((state) => update(state, value));
 }
 
+/// 「接管方式」开关（系统代理 / TUN）共用同一个语义：打开它就等于「我要开始用代理」。
+///
+/// 所以写入之后统一把运行态对齐到用户意图（细节见 SystemAction.ensureRunning）。
+/// 包在 writer 层、而不是逐个改 onChanged，是因为这两个开关入口很多 —— 首页卡片、
+/// 设置页、托盘菜单、快捷键 —— 逐个改迟早会漏掉一个，而漏掉的那一个就是 Bug。
+ConfigWriter<bool> _takeoverWriter(ConfigWriter<bool> write) {
+  return (ref, value) {
+    write(ref, value);
+    // 与首页卡片、托盘菜单走的是同一条对齐逻辑：开关动完，运行态跟着动。
+    ref.read(systemActionProvider.notifier).syncRunningWithTakeover();
+  };
+}
+
 ConfigToggleItem _vpnToggle({
   required ConfigLabel title,
   required bool Function(VpnProps state) select,
@@ -50,12 +63,14 @@ ConfigToggleItem _networkToggle({
   required bool Function(NetworkProps state) select,
   required _NetworkUpdate<bool> update,
   ConfigLabel? subtitle,
+  bool takeover = false,
 }) {
+  final writer = _networkWriter(update);
   return ConfigToggleItem(
     title: title,
     subtitle: subtitle,
     selector: networkSettingProvider.select(select),
-    onChanged: _networkWriter(update),
+    onChanged: takeover ? _takeoverWriter(writer) : writer,
   );
 }
 
@@ -82,8 +97,8 @@ class TUNItem extends ConsumerWidget {
       title: (l) => l.tun,
       subtitle: (l) => l.tunDesc,
       selector: patchClashConfigProvider.select((state) => state.tun.enable),
-      onChanged: _tunWriter(
-        (state, value) => state.copyWith.tun(enable: value),
+      onChanged: _takeoverWriter(
+        _tunWriter<bool>((state, value) => state.copyWith.tun(enable: value)),
       ),
     );
   }
