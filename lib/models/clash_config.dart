@@ -9,6 +9,97 @@ part 'generated/clash_config.g.dart';
 const defaultClashConfig = PatchClashConfig();
 
 const defaultTun = Tun();
+
+/// 上游 FlClash 原样的 DNS 上游：国内 DoH。
+///
+/// 留这个常量只有一个用途 —— **存量配置迁移时做精确比对**。只有「一个字节都没被
+/// 用户动过」的配置才允许被改写，用户自己填过的（哪怕填的正好是同一个地址）一律不碰。
+const legacyDefaultNameservers = <String>[
+  'https://doh.pub/dns-query',
+  'https://dns.alidns.com/dns-query',
+];
+
+/// 默认 DNS 上游：境外 DoH。
+///
+/// 全部写成 **IP 形式**（而不是 `https://dns.google/dns-query` 这种域名形式）是刻意的：
+/// 域名形式的上游必须先靠 `default-nameserver` 把它的域名解析出来才能建连，
+/// 而那个引导查询恰好是明文的、最容易被打歪的一环；IP 形式则不需要任何引导解析。
+///
+/// 国内域名不走这里 —— 见 `Dns.nameserverPolicy` 里的 `geosite:cn`，那条把国内域名
+/// 指向国内 DoH，既快又不会被跨境链路拖慢。所以这里的默认值只服务「境外域名」，
+/// 它们本来就要出境，把解析也交给出境后的解析器，才和「流量出境」这件事自洽。
+const defaultNameservers = <String>[
+  'https://1.1.1.1/dns-query',
+  'https://1.0.0.1/dns-query',
+  'https://8.8.8.8/dns-query',
+];
+
+/// 上游 FlClash 原样的备用上游：境外 DoT。同样只用于迁移时精确比对。
+const legacyDefaultFallback = <String>['tls://8.8.4.4', 'tls://1.1.1.1'];
+
+/// 上游 FlClash 原样的 `fallback-filter.domain`。只用于迁移时精确比对。
+const legacyFallbackFilterDomains = <String>[
+  '+.google.com',
+  '+.facebook.com',
+  '+.youtube.com',
+];
+
+/// 默认备用上游：与 `defaultNameservers` 同一批境外 DoH。
+///
+/// 从 `tls://`（DoT:853）改成 `https://`（DoH:443）是必须的 —— 853 是个特征极明显的
+/// 端口，在国内被干扰的概率远高于 443，而这些备用上游一旦被调用就是要救场的，
+/// 救场通道本身比主通道更脆弱说不通。
+const defaultFallback = <String>[
+  'https://8.8.8.8/dns-query',
+  'https://1.1.1.1/dns-query',
+];
+
+/// 默认 `fallback-filter.domain`：**空**。
+///
+/// 上游在这里放了 `+.google.com` / `+.facebook.com` / `+.youtube.com`，原因是内核
+/// `dns/resolver.go` 的 `shouldOnlyQueryFallback()` 对命中的域名会**跳过 `nameserver`、
+/// 只查 `fallback`** —— 上游的主上游是国内 DoH（会被污染），所以让这几个敏感域族
+/// 绕开国内解析器直达境外 DoT 是对的。
+///
+/// 但主上游改成境外 DoH 之后，主路径本身就不可污染了（DoH 走 TLS，运营商只能阻断
+/// 连接、无法伪造应答），这个特例就只剩坏处：它让 google/facebook/youtube 反而
+/// **不**走新默认的境外 DoH，继续依赖 DoT:853，且 `fallback` 成为唯一通道 ——
+/// 一旦 853 被干扰，这三个域族直接解析失败，连备用都没有。
+///
+/// 清空之后这些域名回到正常路径（境外 DoH）。注意 `fallback` 的定位也随之变了 ——
+/// 见 `defaultFallbackFilterGeoip`：关掉那个开关之后，`fallback` 不再是「主上游答案
+/// 可疑时的第二意见」，而是**仅在主上游失败时**才顶上的兜底。
+const defaultFallbackFilterDomains = <String>[];
+
+/// 上游 FlClash 原样的 `fallback-filter.geoip` 与配套的 `geoip-code`。只用于迁移时精确比对。
+///
+/// ⚠️ `legacyFallbackFilterGeoipCode` **不是**「当前 `geoip-code` 默认值的镜像」：
+/// 当前默认恰好也是 `'CN'`，但它在这里的身份是「上游那一版的历史值」。所以将来若改了
+/// `Dns` 里 `geoip-code` 的默认值，这两个 `legacy*` 常量**不能跟着改** —— 它们的职责
+/// 是记住「旧配置长什么样」，不是「新配置该长什么样」。
+const legacyFallbackFilterGeoip = true;
+const legacyFallbackFilterGeoipCode = 'CN';
+
+/// 默认 `fallback-filter.geoip`：**关**。
+///
+/// 开着的时候，内核会把「`nameserver` 解析出了**不属于** `geoip-code` 的 IP」当作
+/// 「主上游的应答可能被污染」的信号，进而**丢弃 `nameserver` 的成功结果、改用 `fallback`
+/// 的结果**。判定点在 `rules/common/geoip.go` 的 `DnsFallbackFilter().MatchIp`，它是
+/// **取反**的（`return !matcher.Match(ip)`，即「不属于 `geoip-code` 才算命中」），
+/// 消费点在 `dns/resolver.go` 的 `ipExchange`：只要这个判定返回 true，流程就会走到最后
+/// 那步「无条件把 `fallback` 的结果当作答案返回」—— 哪怕 `nameserver` 已经成功、
+/// 而 `fallback` 失败，抛出去的也是 `fallback` 的错误，不会回落到 `nameserver` 的成功结果。
+/// 也就是说开着它时，**真正回答问题的是 `fallback`，`nameserver` 被架空**。
+///
+/// 上游设成 `true` 是合理的：那时主上游是国内 DoH，会被投毒，需要「解析出国外 IP 就可疑」
+/// 这条启发式。但主上游已换成境外 DoH —— DoH 走 TLS，运营商只能阻断连接、无法伪造应答，
+/// 这条启发式的前提已经不存在，留着它只剩副作用。
+///
+/// 关掉之后 IP 侧只剩 `ipcidr` 的保留段（`240.0.0.0/4`）这一个过滤器，正常公网 IP
+/// 永不命中，于是语义回到本来的样子：**`nameserver` 负责回答，`fallback` 退化为
+/// 仅当主上游失败时才顶上的兜底**（`resolver.go:337-341` 那条路径仍然生效）。
+const defaultFallbackFilterGeoip = false;
+
 const defaultDns = Dns();
 const defaultGeoXUrl = {
   GeoResource.MMDB:
@@ -290,12 +381,16 @@ extension TunExt on Tun {
 @freezed
 abstract class FallbackFilter with _$FallbackFilter {
   const factory FallbackFilter({
-    @Default(true) bool geoip,
+    // 默认关，理由见 defaultFallbackFilterGeoip（开着会架空 nameserver）。
+    @Default(defaultFallbackFilterGeoip) bool geoip,
+    // 仅在 geoip 为 true 时有意义。保留 'CN' 不动：迁移只负责关掉 geoip，
+    // 不在用户看不出差别的地方动他的配置。
     @Default('CN') @JsonKey(name: 'geoip-code') String geoipCode,
+    // 内核已弃用（`config/config.go:1591` 会打 warn 让改用 nameserver-policy）。
     @Default([]) List<String> geosite,
     @Default(['240.0.0.0/4']) List<String> ipcidr,
-    @Default(['+.google.com', '+.facebook.com', '+.youtube.com'])
-    List<String> domain,
+    // 默认空，理由见 defaultFallbackFilterDomains。
+    @Default(defaultFallbackFilterDomains) List<String> domain,
   }) = _FallbackFilter;
 
   factory FallbackFilter.fromJson(Map<String, Object?> json) =>
@@ -331,9 +426,26 @@ abstract class Dns with _$Dns {
     })
     @JsonKey(name: 'nameserver-policy')
     Map<String, String> nameserverPolicy,
-    @Default(['https://doh.pub/dns-query', 'https://dns.alidns.com/dns-query'])
-    List<String> nameserver,
-    @Default(['tls://8.8.4.4', 'tls://1.1.1.1']) List<String> fallback,
+    // 默认值由 defaultNameservers 决定（境外 DoH）。
+    //
+    // 这一条是**真正回答问题的那一个** —— 但这不是自动成立的，而是取决于下面
+    // fallbackFilter 的配置。三路判定的顺序在 `dns/resolver.go` 的 `ipExchange`：
+    //   ① 命中 `nameserver-policy` → 只用那一条（见上面的 `geosite:cn`，国内域名走国内）；
+    //   ② 命中 `fallback-filter.domain` → **跳过本字段，只查 `fallback`**；
+    //   ③ 否则查本字段，仅当返回的 IP 命中 `fallback-filter` 的 IP 过滤器时才改口用
+    //      `fallback` 的结果（而且是**无条件**采用，本字段的成功结果会被丢弃）。
+    // 所以本字段能不能当主力，取决于 ② 是否为空、③ 的过滤器是否会命中：
+    // 现在 `domain` 为空、`geoip` 为 false，IP 侧只剩保留段 `240.0.0.0/4`，
+    // 正常公网 IP 永不命中 ⇒ **本字段负责回答，`fallback` 仅在本字段失败时顶上**。
+    // ⚠️ 谁要把 `geoip` 或 `domain` 改回上游的默认值，这个结论立刻失效。
+    //
+    // 上游原先让本字段指向国内 DoH，等于「流量出境、解析在境内」，境外域名的
+    // 查询记录会落在国内厂商手里。
+    @Default(defaultNameservers) List<String> nameserver,
+    // 默认值由 defaultFallback 决定（境外 DoH）。定位是**兜底**而非「第二意见」：
+    // 只有主上游失败、或返回的 IP 命中了 `fallback-filter` 的 IP 过滤器时才会被采用。
+    // 详见上面 `nameserver` 与下面 `defaultFallbackFilterGeoip` 的说明。
+    @Default(defaultFallback) List<String> fallback,
     @Default(['https://doh.pub/dns-query'])
     @JsonKey(name: 'proxy-server-nameserver')
     List<String> proxyServerNameserver,

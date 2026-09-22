@@ -204,6 +204,410 @@ void main() {
       expect(store.version, Migration.currentVersion);
     });
   });
+
+  group('migrateLegacyDnsNameservers', () {
+    // 这一组钉住一个刻意不对称的取舍：漏迁移只是「没变好」，误迁移是「把用户自己
+    // 精心填过的 DNS 上游覆盖掉」。所以只有与旧默认值**逐项相等**时才允许改写。
+    test('rewrites an untouched legacy default', () {
+      const config = Config(
+        themeProps: defaultThemeProps,
+        patchClashConfig: PatchClashConfig(
+          dns: Dns(nameserver: legacyDefaultNameservers),
+        ),
+      );
+
+      final migrated = config.migrateLegacyDnsNameservers();
+
+      expect(migrated.patchClashConfig.dns.nameserver, defaultNameservers);
+    });
+
+    test('leaves a user-provided list alone even when it overlaps', () {
+      const config = Config(
+        themeProps: defaultThemeProps,
+        patchClashConfig: PatchClashConfig(
+          dns: Dns(nameserver: ['https://doh.pub/dns-query']),
+        ),
+      );
+
+      expect(identical(config.migrateLegacyDnsNameservers(), config), isTrue);
+    });
+
+    test('is idempotent once the new default is in place', () {
+      const config = Config(
+        themeProps: defaultThemeProps,
+        patchClashConfig: PatchClashConfig(
+          dns: Dns(nameserver: defaultNameservers),
+        ),
+      );
+
+      // 返回同一个实例，而不是内容相等的新实例 —— 调用方靠 identical 判断
+      // 「需不需要写盘」，返回副本会让每次启动都白写一次。
+      expect(identical(config.migrateLegacyDnsNameservers(), config), isTrue);
+    });
+
+    test('touches only the nameserver, not the surrounding dns settings', () {
+      const config = Config(
+        themeProps: defaultThemeProps,
+        patchClashConfig: PatchClashConfig(
+          dns: Dns(
+            nameserver: legacyDefaultNameservers,
+            fallback: ['tls://9.9.9.9'],
+            listen: '0.0.0.0:1053',
+          ),
+        ),
+      );
+
+      final dns = config.migrateLegacyDnsNameservers().patchClashConfig.dns;
+
+      expect(dns.nameserver, defaultNameservers);
+      expect(dns.fallback, ['tls://9.9.9.9']);
+      expect(dns.listen, '0.0.0.0:1053');
+      expect(dns.nameserverPolicy, const Dns().nameserverPolicy);
+    });
+  });
+
+  group('Migration dns nameserver upgrade', () {
+    test('persists the upgrade for a stored legacy default', () async {
+      final store = _FakeMigrationStore(
+        configMap: _createConfigMapWithNameserver(legacyDefaultNameservers),
+        version: Migration.currentVersion,
+      );
+
+      final config = await Migration(store: store).run();
+
+      expect(config.patchClashConfig.dns.nameserver, defaultNameservers);
+      expect(
+        store.savedConfig?.patchClashConfig.dns.nameserver,
+        defaultNameservers,
+      );
+      expect(store.events, ['getConfigMap', 'getVersion', 'saveConfig']);
+    });
+
+    test('does not write when the stored nameserver was customised', () async {
+      final store = _FakeMigrationStore(
+        configMap: _createConfigMapWithNameserver([
+          'https://dns.quad9.net/dns-query',
+        ]),
+        version: Migration.currentVersion,
+      );
+
+      final config = await Migration(store: store).run();
+
+      expect(config.patchClashConfig.dns.nameserver, [
+        'https://dns.quad9.net/dns-query',
+      ]);
+      expect(store.events, ['getConfigMap', 'getVersion']);
+    });
+  });
+
+  group('migrateLegacyDnsFallback', () {
+    // 这一组守的是一个「改了主上游就以为改完了」的陷阱。上游那套默认值是**围绕
+    // 「主上游 = 国内 DoH」设计**的，主上游换成境外 DoH 之后，其中三处都会反过来
+    // **架空主上游**（判定都在 `dns/resolver.go` 的 `ipExchange`）：
+    //   · `fallback-filter.domain`：命中它的域名跳过主上游、只查备用上游；
+    //   · `fallback-filter.geoip`：主上游解析出非 CN 的 IP 时，丢弃主上游的成功结果、
+    //     改用备用上游的结果（而且是无条件采用）；
+    //   · `fallback` 本身：DoT:853（特征明显、易被干扰）→ DoH:443。
+    // 所以三个字段都要升级，并且**各自独立判定** —— 用户可能只动过其中一个。
+    test('clears both the legacy bypass list and the legacy DoT fallback', () {
+      const config = Config(
+        themeProps: defaultThemeProps,
+        patchClashConfig: PatchClashConfig(
+          dns: Dns(
+            fallback: legacyDefaultFallback,
+            fallbackFilter: FallbackFilter(
+              domain: legacyFallbackFilterDomains,
+            ),
+          ),
+        ),
+      );
+
+      final dns = config.migrateLegacyDnsFallback().patchClashConfig.dns;
+
+      expect(dns.fallback, defaultFallback);
+      expect(dns.fallbackFilter.domain, isEmpty);
+    });
+
+    test('turns off the legacy geoip filter that discards nameserver answers', () {
+      // 出厂默认三件套同时命中：一起升级。
+      const config = Config(
+        themeProps: defaultThemeProps,
+        patchClashConfig: PatchClashConfig(
+          dns: Dns(
+            fallback: legacyDefaultFallback,
+            fallbackFilter: FallbackFilter(
+              domain: legacyFallbackFilterDomains,
+              geoip: legacyFallbackFilterGeoip,
+              geoipCode: legacyFallbackFilterGeoipCode,
+            ),
+          ),
+        ),
+      );
+
+      final dns = config.migrateLegacyDnsFallback().patchClashConfig.dns;
+
+      expect(dns.fallback, defaultFallback);
+      expect(dns.fallbackFilter.domain, isEmpty);
+      expect(dns.fallbackFilter.geoip, isFalse);
+      // `geoip-code` 本身不是问题（只在 geoip 开着时才被读），留着不动 ——
+      // 迁移不该在用户看不出差别的地方改他的配置。
+      expect(dns.fallbackFilter.geoipCode, 'CN');
+      expect(dns.fallbackFilter.ipcidr, ['240.0.0.0/4']);
+    });
+
+    test('turns off geoip on its own, leaving the rest of the filter intact', () {
+      // 独立判定的第三面：只 `geoip` 是旧的，也必须被单独升级；
+      // 同时证明它不会顺手把兄弟字段（ipcidr）重置掉。
+      const config = Config(
+        themeProps: defaultThemeProps,
+        patchClashConfig: PatchClashConfig(
+          dns: Dns(
+            fallback: defaultFallback,
+            fallbackFilter: FallbackFilter(
+              domain: defaultFallbackFilterDomains,
+              geoip: legacyFallbackFilterGeoip,
+              ipcidr: ['10.0.0.0/8'],
+            ),
+          ),
+        ),
+      );
+
+      final dns = config.migrateLegacyDnsFallback().patchClashConfig.dns;
+
+      expect(dns.fallbackFilter.geoip, isFalse);
+      expect(dns.fallbackFilter.ipcidr, ['10.0.0.0/8']);
+      expect(dns.fallbackFilter.geoipCode, 'CN');
+      expect(dns.fallback, defaultFallback);
+      expect(dns.fallbackFilter.domain, isEmpty);
+    });
+
+    test('leaves a geoip filter alone when the user picked another country', () {
+      // `geoip-code` 不是出厂值 ⇒ 这一组是用户自己配的，一个字节都不碰。
+      // 「宁可漏，不可错」：误改用户配置的代价远高于漏迁移一次。
+      const config = Config(
+        themeProps: defaultThemeProps,
+        patchClashConfig: PatchClashConfig(
+          dns: Dns(
+            fallback: defaultFallback,
+            fallbackFilter: FallbackFilter(
+              domain: defaultFallbackFilterDomains,
+              geoip: true,
+              geoipCode: 'JP',
+            ),
+          ),
+        ),
+      );
+
+      expect(identical(config.migrateLegacyDnsFallback(), config), isTrue);
+    });
+
+    test('upgrades only the untouched half when the other was customised', () {
+      // 用户自己填过备用上游 → 那一半一个字节都不碰；旁路列表没动过 → 照改。
+      const config = Config(
+        themeProps: defaultThemeProps,
+        patchClashConfig: PatchClashConfig(
+          dns: Dns(
+            fallback: ['tls://9.9.9.9'],
+            fallbackFilter: FallbackFilter(
+              domain: legacyFallbackFilterDomains,
+            ),
+          ),
+        ),
+      );
+
+      final dns = config.migrateLegacyDnsFallback().patchClashConfig.dns;
+
+      expect(dns.fallback, ['tls://9.9.9.9']);
+      expect(dns.fallbackFilter.domain, isEmpty);
+    });
+
+    test('leaves a customised bypass list alone', () {
+      const config = Config(
+        themeProps: defaultThemeProps,
+        patchClashConfig: PatchClashConfig(
+          dns: Dns(
+            fallback: legacyDefaultFallback,
+            fallbackFilter: FallbackFilter(domain: ['+.example.com']),
+          ),
+        ),
+      );
+
+      final dns = config.migrateLegacyDnsFallback().patchClashConfig.dns;
+
+      expect(dns.fallback, defaultFallback);
+      expect(dns.fallbackFilter.domain, ['+.example.com']);
+    });
+
+    test('is idempotent once all three are upgraded', () {
+      const config = Config(
+        themeProps: defaultThemeProps,
+        patchClashConfig: PatchClashConfig(
+          dns: Dns(
+            fallback: defaultFallback,
+            fallbackFilter: FallbackFilter(
+              domain: defaultFallbackFilterDomains,
+              geoip: defaultFallbackFilterGeoip,
+            ),
+          ),
+        ),
+      );
+
+      // 同 `migrateLegacyDnsNameservers`：返回同一实例才是「不需要写盘」的信号。
+      expect(identical(config.migrateLegacyDnsFallback(), config), isTrue);
+    });
+
+    test('touches only the legacy fields, not the surrounding dns settings', () {
+      const config = Config(
+        themeProps: defaultThemeProps,
+        patchClashConfig: PatchClashConfig(
+          dns: Dns(
+            fallback: legacyDefaultFallback,
+            fallbackFilter: FallbackFilter(
+              domain: legacyFallbackFilterDomains,
+              // geoip 已经是「关」，不是出厂默认的那一组 → 不该被碰
+              // （它本来就等于目标值，改与不改结果相同，但这里同时也守住了
+              //  「判定基于 geoip + geoipCode 这一组」这个前提）。
+              geoip: false,
+              ipcidr: ['10.0.0.0/8'],
+            ),
+            listen: '0.0.0.0:1053',
+          ),
+        ),
+      );
+
+      final dns = config.migrateLegacyDnsFallback().patchClashConfig.dns;
+
+      expect(dns.listen, '0.0.0.0:1053');
+      // fallback-filter 里只有 domain 是旧默认值 —— 就只改它一个，兄弟字段原样保留。
+      expect(dns.fallbackFilter.geoip, isFalse);
+      expect(dns.fallbackFilter.ipcidr, ['10.0.0.0/8']);
+      expect(dns.fallbackFilter.geoipCode, 'CN');
+    });
+  });
+
+  group('Migration dns fallback upgrade', () {
+    test('persists the upgrade for a stored legacy bypass list', () async {
+      final store = _FakeMigrationStore(
+        configMap: _createConfigMapWithDns(
+          fallback: legacyDefaultFallback,
+          domains: legacyFallbackFilterDomains,
+        ),
+        version: Migration.currentVersion,
+      );
+
+      final config = await Migration(store: store).run();
+      final dns = config.patchClashConfig.dns;
+
+      expect(dns.fallback, defaultFallback);
+      expect(dns.fallbackFilter.domain, isEmpty);
+      expect(store.savedConfig?.patchClashConfig.dns.fallback, defaultFallback);
+      expect(store.events, ['getConfigMap', 'getVersion', 'saveConfig']);
+    });
+
+    test('one save covers the nameserver and every fallback upgrade', () async {
+      // 两个迁移是链式跑的，必须合成**一次**写盘 —— 否则每次启动都白写两遍。
+      final store = _FakeMigrationStore(
+        configMap: _createConfigMapWithDns(
+          nameserver: legacyDefaultNameservers,
+          fallback: legacyDefaultFallback,
+          domains: legacyFallbackFilterDomains,
+          geoip: legacyFallbackFilterGeoip,
+        ),
+        version: Migration.currentVersion,
+      );
+
+      final config = await Migration(store: store).run();
+      final dns = config.patchClashConfig.dns;
+
+      expect(dns.nameserver, defaultNameservers);
+      expect(dns.fallback, defaultFallback);
+      expect(dns.fallbackFilter.domain, isEmpty);
+      expect(dns.fallbackFilter.geoip, isFalse);
+      expect(store.events, ['getConfigMap', 'getVersion', 'saveConfig']);
+    });
+
+    test('persists the geoip upgrade for a stored legacy filter', () async {
+      // 只在 geoip 这一维上还是旧值 —— 也必须单独触发一次写盘。
+      final store = _FakeMigrationStore(
+        configMap: _createConfigMapWithDns(
+          fallback: defaultFallback,
+          domains: defaultFallbackFilterDomains,
+          geoip: legacyFallbackFilterGeoip,
+        ),
+        version: Migration.currentVersion,
+      );
+
+      final config = await Migration(store: store).run();
+
+      expect(config.patchClashConfig.dns.fallbackFilter.geoip, isFalse);
+      expect(
+        store.savedConfig?.patchClashConfig.dns.fallbackFilter.geoip,
+        isFalse,
+      );
+      expect(store.events, ['getConfigMap', 'getVersion', 'saveConfig']);
+    });
+
+    test('does not write when nothing is left at the legacy default', () async {
+      final store = _FakeMigrationStore(
+        configMap: _createConfigMapWithDns(
+          fallback: ['tls://9.9.9.9'],
+          domains: ['+.example.com'],
+          // geoip 这里取**当前**默认（关）→ 三个字段都不是旧默认值。
+        ),
+        version: Migration.currentVersion,
+      );
+
+      final config = await Migration(store: store).run();
+
+      expect(config.patchClashConfig.dns.fallback, ['tls://9.9.9.9']);
+      expect(config.patchClashConfig.dns.fallbackFilter.domain, [
+        '+.example.com',
+      ]);
+      expect(store.events, ['getConfigMap', 'getVersion']);
+    });
+  });
+}
+
+/// 造一份「存下来的配置」。没显式给的那部分取**当前**默认值 —— 所以要模拟存量
+/// 旧配置，必须把旧值显式传进来（这正是各用例在做的）。
+Map<String, Object?> _createConfigMapWithDns({
+  List<String>? nameserver,
+  List<String>? fallback,
+  List<String>? domains,
+  bool? geoip,
+}) {
+  return jsonDecode(
+        jsonEncode(
+          Config(
+            themeProps: defaultThemeProps,
+            patchClashConfig: PatchClashConfig(
+              dns: Dns(
+                nameserver: nameserver ?? defaultNameservers,
+                fallback: fallback ?? defaultFallback,
+                fallbackFilter: FallbackFilter(
+                  domain: domains ?? defaultFallbackFilterDomains,
+                  geoip: geoip ?? defaultFallbackFilterGeoip,
+                ),
+              ),
+            ),
+          ),
+        ),
+      )
+      as Map<String, Object?>;
+}
+
+Map<String, Object?> _createConfigMapWithNameserver(List<String> nameserver) {
+  return jsonDecode(
+        jsonEncode(
+          Config(
+            themeProps: defaultThemeProps,
+            patchClashConfig: PatchClashConfig(
+              dns: Dns(nameserver: nameserver),
+            ),
+          ),
+        ),
+      )
+      as Map<String, Object?>;
 }
 
 Map<String, Object?> _createConfigMap({DAVProps? davProps}) {

@@ -53,7 +53,11 @@ class BackupAction extends _$BackupAction {
     final configMap = data.configMap;
     final config = option == RestoreOption.onlyProfiles || configMap == null
         ? null
-        : Config.fromJson(configMap);
+        // 备份文件可能来自旧版本，里面的 DNS 上游同样是「没被动过的旧默认值」——
+        // 恢复备份是「换机器继续用」的路径，不该在这里把新默认值漏掉。
+        : Config.fromJson(
+          configMap,
+        ).migrateLegacyDnsNameservers().migrateLegacyDnsFallback();
     await database.restore(
       data.profiles,
       data.scripts,

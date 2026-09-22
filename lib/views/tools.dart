@@ -17,6 +17,7 @@ import 'package:path/path.dart' show dirname, join;
 
 import 'config/advanced.dart';
 import 'developer.dart';
+import 'dns_leak.dart';
 import 'theme.dart';
 
 class ToolsView extends ConsumerStatefulWidget {
@@ -75,6 +76,8 @@ class _ToolViewState extends ConsumerState<ToolsView> {
         if (system.isAndroid) const _AccessItem(),
         const _ConfigItem(),
         const _AdvancedConfigItem(),
+        // 紧跟在高级配置后面：DNS 上游就在那里改，改完顺手就能在这里验。
+        const _DnsLeakItem(),
         const _SettingItem(),
       ],
     );
@@ -247,6 +250,20 @@ class _AdvancedConfigItem extends StatelessWidget {
       title: Text(context.appLocalizations.advancedConfig),
       subtitle: Text(context.appLocalizations.advancedConfigDesc),
       widget: const AdvancedConfigView(),
+    );
+  }
+}
+
+class _DnsLeakItem extends StatelessWidget {
+  const _DnsLeakItem();
+
+  @override
+  Widget build(BuildContext context) {
+    return ListItem.open(
+      leading: const Icon(Icons.travel_explore),
+      title: Text(context.appLocalizations.dnsLeakCheck),
+      subtitle: Text(context.appLocalizations.dnsLeakCheckDesc),
+      widget: const DnsLeakView(),
     );
   }
 }

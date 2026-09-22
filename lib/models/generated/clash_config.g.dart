@@ -196,7 +196,7 @@ const _$TunStackEnumMap = {
 _FallbackFilter _$FallbackFilterFromJson(
   Map<String, dynamic> json,
 ) => _FallbackFilter(
-  geoip: json['geoip'] as bool? ?? true,
+  geoip: json['geoip'] as bool? ?? defaultFallbackFilterGeoip,
   geoipCode: json['geoip-code'] as String? ?? 'CN',
   geosite:
       (json['geosite'] as List<dynamic>?)?.map((e) => e as String).toList() ??
@@ -206,7 +206,7 @@ _FallbackFilter _$FallbackFilterFromJson(
       const ['240.0.0.0/4'],
   domain:
       (json['domain'] as List<dynamic>?)?.map((e) => e as String).toList() ??
-      const ['+.google.com', '+.facebook.com', '+.youtube.com'],
+      defaultFallbackFilterDomains,
 );
 
 Map<String, dynamic> _$FallbackFilterToJson(_FallbackFilter instance) =>
@@ -253,10 +253,10 @@ _Dns _$DnsFromJson(Map<String, dynamic> json) => _Dns(
       (json['nameserver'] as List<dynamic>?)
           ?.map((e) => e as String)
           .toList() ??
-      const ['https://doh.pub/dns-query', 'https://dns.alidns.com/dns-query'],
+      defaultNameservers,
   fallback:
       (json['fallback'] as List<dynamic>?)?.map((e) => e as String).toList() ??
-      const ['tls://8.8.4.4', 'tls://1.1.1.1'],
+      defaultFallback,
   proxyServerNameserver:
       (json['proxy-server-nameserver'] as List<dynamic>?)
           ?.map((e) => e as String)
@@ -326,6 +326,7 @@ const _$RuleActionEnumMap = {
   RuleAction.DOMAIN_SUFFIX: 'DOMAIN_SUFFIX',
   RuleAction.DOMAIN_KEYWORD: 'DOMAIN_KEYWORD',
   RuleAction.DOMAIN_REGEX: 'DOMAIN_REGEX',
+  RuleAction.DOMAIN_WILDCARD: 'DOMAIN_WILDCARD',
   RuleAction.GEOSITE: 'GEOSITE',
   RuleAction.IP_CIDR: 'IP_CIDR',
   RuleAction.IP_CIDR6: 'IP_CIDR6',
@@ -342,10 +343,13 @@ const _$RuleActionEnumMap = {
   RuleAction.IN_TYPE: 'IN_TYPE',
   RuleAction.IN_USER: 'IN_USER',
   RuleAction.IN_NAME: 'IN_NAME',
+  RuleAction.REMATCH_NAME: 'REMATCH_NAME',
   RuleAction.PROCESS_PATH: 'PROCESS_PATH',
   RuleAction.PROCESS_PATH_REGEX: 'PROCESS_PATH_REGEX',
+  RuleAction.PROCESS_PATH_WILDCARD: 'PROCESS_PATH_WILDCARD',
   RuleAction.PROCESS_NAME: 'PROCESS_NAME',
   RuleAction.PROCESS_NAME_REGEX: 'PROCESS_NAME_REGEX',
+  RuleAction.PROCESS_NAME_WILDCARD: 'PROCESS_NAME_WILDCARD',
   RuleAction.UID: 'UID',
   RuleAction.NETWORK: 'NETWORK',
   RuleAction.DSCP: 'DSCP',

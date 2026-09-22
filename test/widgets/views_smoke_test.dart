@@ -12,6 +12,7 @@ import 'package:fl_clash/views/config/network.dart';
 import 'package:fl_clash/views/config/on_demand.dart';
 import 'package:fl_clash/views/config/rules.dart';
 import 'package:fl_clash/views/config/scripts.dart';
+import 'package:fl_clash/views/dns_leak.dart';
 import 'package:fl_clash/views/hotkey.dart';
 import 'package:fl_clash/views/profiles/overwrite/custom/groups.dart';
 import 'package:fl_clash/views/profiles/overwrite/custom/proxies.dart';
@@ -49,6 +50,7 @@ void main() {
     'dns config': const Scaffold(body: DnsListView()),
     'network config': const Scaffold(body: NetworkListView()),
     'advanced config': const AdvancedConfigView(),
+    'dns leak check': const DnsLeakView(),
     'on demand config': const OnDemandView(),
     'theme': const ThemeView(),
     'application settings': const ApplicationSettingView(),
@@ -107,6 +109,7 @@ void main() {
     'Backup and restore': BackupAndRestore,
     'Basic configuration': ConfigView,
     'Advanced configuration': AdvancedConfigView,
+    'DNS leak check': DnsLeakView,
     'Application': ApplicationSettingView,
   };
 

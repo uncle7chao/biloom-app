@@ -128,4 +128,41 @@ void main() {
       expect(asked, isFalse);
     });
   });
+
+  group('isIPv4InCidr', () {
+    test('matches inside the fake-ip range and rejects just outside it', () {
+      // 这一组边界值是整个 DNS 自检的判定依据所在：内核返回 fake-ip 段的地址
+      // 就说明查询到过内核。边界算错会把两类结论刚好写反。
+      // 注意 198.18.0.1/16 覆盖的是 198.18.0.0–198.18.255.255，隔壁的 198.19.x.x 不在其中。
+      for (final address in ['198.18.0.1', '198.18.0.5', '198.18.255.255']) {
+        expect(isIPv4InCidr(address, '198.18.0.1/16'), isTrue, reason: address);
+      }
+      for (final address in ['198.17.255.255', '198.19.0.0', '1.1.1.1']) {
+        expect(isIPv4InCidr(address, '198.18.0.1/16'), isFalse, reason: address);
+      }
+    });
+
+    test('the network address of the range need not be aligned', () {
+      // `198.18.0.1/16` 里的主机位必须被掩掉，否则 198.18.x 会被判成不在段内。
+      expect(isIPv4InCidr('198.18.200.7', '198.18.0.1/16'), isTrue);
+    });
+
+    test('handles other prefix lengths', () {
+      expect(isIPv4InCidr('10.1.2.3', '10.0.0.0/8'), isTrue);
+      expect(isIPv4InCidr('11.1.2.3', '10.0.0.0/8'), isFalse);
+      expect(isIPv4InCidr('223.5.5.5', '223.5.5.5/32'), isTrue);
+      expect(isIPv4InCidr('223.5.5.6', '223.5.5.5/32'), isFalse);
+      expect(isIPv4InCidr('223.5.5.6', '0.0.0.0/0'), isTrue);
+    });
+
+    test('rejects anything that is not a plain IPv4/CIDR pair', () {
+      expect(isIPv4InCidr('fe80::1', '198.18.0.1/16'), isFalse);
+      expect(isIPv4InCidr('198.18.0.5', '198.18.0.1'), isFalse);
+      expect(isIPv4InCidr('198.18.0.5', '198.18.0.1/33'), isFalse);
+      expect(isIPv4InCidr('198.18.0.5', '198.18.0.1/x'), isFalse);
+      expect(isIPv4InCidr('not-an-address', '198.18.0.1/16'), isFalse);
+      expect(isIPv4InCidr('198.18.0.999', '198.18.0.1/16'), isFalse);
+      expect(isIPv4InCidr('198.18.0', '198.18.0.1/16'), isFalse);
+    });
+  });
 }

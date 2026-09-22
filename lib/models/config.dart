@@ -80,7 +80,12 @@ abstract class AppSettingProps with _$AppSettingProps {
     @Default(true) bool autoCheckUpdate,
     @Default(false) bool showLabel,
     @Default(false) bool disclaimerAccepted,
+    // BiLoom: no longer read anywhere - Firebase was removed from the fork, so
+    // the data-collection notice keyed off this flag was dropped. Kept so
+    // existing config.json files stay loadable.
     @Default(false) bool crashlyticsTip,
+    // BiLoom: this flag no longer refers to Firebase. It only gates the extra
+    // ApplicationExitInfo probe inside BootGuard.
     @Default(false) bool crashlytics,
     @Default(true) bool minimizeOnExit,
     @Default(false) bool hidden,
@@ -190,7 +195,11 @@ extension AuthenticationPropsExt on AuthenticationProps {
 @freezed
 abstract class NetworkProps with _$NetworkProps {
   const factory NetworkProps({
-    @Default(true) bool systemProxy,
+    // 默认关。这个开关现在与「连接」是同一件事（拨开就自动连接），
+    // 所以它必须诚实反映「此刻有没有在用代理」。默认开着会让新用户看到一个
+    // 亮着的开关却什么都没发生，连不上还以为是软件坏了 —— 那正是要根治的
+    // 「开关骗人」。默认关 + 拨开即连接，用户的心智模型只有一步。
+    @Default(false) bool systemProxy,
     @Default(defaultBypassDomain) List<String> bypassDomain,
     @Default(RouteMode.config) RouteMode routeMode,
     @Default(true) bool autoSetSystemDns,
@@ -281,4 +290,100 @@ abstract class Config with _$Config {
     }
     return _$ConfigFromJson(json);
   }
+}
+
+extension ConfigMigration on Config {
+  /// 把「还是出厂默认值」的 DNS 上游升级成新默认值。
+  ///
+  /// 为什么需要这一步：整份 Config（含 DNS）是持久化在 SharedPreferences 里的，
+  /// 改 `Dns` 的 `@Default` 只影响全新安装 —— 存量用户读回来的仍然是自己那份旧配置。
+  /// 所以上一个版本默认用国内 DoH 的人，升级后依然在把境外域名的查询交给国内厂商。
+  ///
+  /// 为什么只做精确比对：判断「用户是否动过这个设置」没有别的可靠办法，
+  /// 而误判的代价不对称 —— 把用户精心填过的上游覆盖掉是灾难，漏迁移一次只是没变好。
+  /// 所以宁可漏，不可错：只有与旧默认值**逐项相等**时才改写。
+  ///
+  /// 这是幂等的：改过之后再读回来就不等于旧默认值了。
+  Config migrateLegacyDnsNameservers() {
+    final dns = patchClashConfig.dns;
+    if (!_sameList(dns.nameserver, legacyDefaultNameservers)) {
+      return this;
+    }
+    return copyWith(
+      patchClashConfig: patchClashConfig.copyWith.dns(
+        nameserver: List<String>.from(defaultNameservers),
+      ),
+    );
+  }
+
+  /// 把「还是出厂默认值」的 DNS 备用上游、`fallback-filter.domain` 与
+  /// `fallback-filter.geoip` 一并升级。
+  ///
+  /// 与 `migrateLegacyDnsNameservers` 同理：改 `@Default` 只影响全新安装，
+  /// 存量用户读回来的仍是自己那份旧配置。
+  ///
+  /// 这里要修的是同一个问题的三面 —— 上游那套默认值是**围绕「主上游=国内 DoH」**
+  /// 设计的，主上游换成境外 DoH 之后，那三处配置从「有用」变成了「架空主上游」：
+  ///   · `fallback-filter.domain`：命中它的域名**跳过主上游、只查备用上游**
+  ///     （内核 `dns/resolver.go:279-310` 的 `shouldOnlyQueryFallback`）。
+  ///     上游把 google/facebook/youtube 放进列表，配上「主=国内、备=境外」是对的；
+  ///     主上游已境外出 DoH 后，它反让这三个域族绕开新默认值、继续依赖 DoT:853。
+  ///   · `fallback-filter.geoip: true` + `geoip-code: CN`：主上游解析出非 CN 的 IP 时，
+  ///     内核**丢弃主上游的成功结果、改用备用上游的结果**（`ipExchange` 末段无条件返回），
+  ///     等于让 `nameserver` 形同虚设。这条启发式只在主上游会被投毒（国内 DoH）时成立。
+  ///   · `fallback` 本身：从 DoT:853 换成 DoH:443（853 特征明显，更易被干扰）。
+  ///
+  /// 三个字段**各自独立判定、独立改写**：用户可能只动过其中一个（例如自己加过
+  /// 备用上游），那就只升级另两个没被动过的，不因为一个动过就把其他也放过。
+  /// 同样遵循「宁可漏，不可错」——只在与旧默认值精确相等时才改写。
+  ///
+  /// `geoip` 的判据额外要求 `geoip-code` **也**还是出厂值：只看 `geoip` 分不清
+  /// 「原样没动过」和「用户特意开着」，而同时看到 code 也是 `CN`，才说明这一组确实是
+  /// 上游原样。用户换过国家的（例如 `JP`）一律不碰 —— 那是他自己配的，不是我们的默认值。
+  Config migrateLegacyDnsFallback() {
+    final dns = patchClashConfig.dns;
+    final filter = dns.fallbackFilter;
+    final shouldUpgradeFallback = _sameList(dns.fallback, legacyDefaultFallback);
+    final shouldUpgradeDomains = _sameList(
+      filter.domain,
+      legacyFallbackFilterDomains,
+    );
+    final shouldUpgradeGeoip =
+        filter.geoip == legacyFallbackFilterGeoip &&
+        filter.geoipCode == legacyFallbackFilterGeoipCode;
+    if (!shouldUpgradeFallback &&
+        !shouldUpgradeDomains &&
+        !shouldUpgradeGeoip) {
+      return this;
+    }
+    return copyWith(
+      patchClashConfig: patchClashConfig.copyWith.dns(
+        fallback: shouldUpgradeFallback
+            ? List<String>.from(defaultFallback)
+            : dns.fallback,
+        fallbackFilter: (shouldUpgradeDomains || shouldUpgradeGeoip)
+            ? filter.copyWith(
+                domain: shouldUpgradeDomains
+                    ? List<String>.from(defaultFallbackFilterDomains)
+                    : filter.domain,
+                geoip: shouldUpgradeGeoip
+                    ? defaultFallbackFilterGeoip
+                    : filter.geoip,
+              )
+            : filter,
+      ),
+    );
+  }
+}
+
+bool _sameList(List<String> a, List<String> b) {
+  if (a.length != b.length) {
+    return false;
+  }
+  for (var i = 0; i < a.length; i++) {
+    if (a[i] != b[i]) {
+      return false;
+    }
+  }
+  return true;
 }

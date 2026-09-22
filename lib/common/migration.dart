@@ -99,10 +99,28 @@ class Migration {
         final hasPlainTextDavPassword =
             storedDavPassword != null &&
             storedDavPassword == config.davProps?.password;
-        if (hasPlainTextDavPassword && !await _store.saveConfig(config)) {
-          throw StateError('Failed to obfuscate the legacy WebDAV password');
+        // 与 WebDAV 密码混淆同样的处理方式：**不升版本号**的幂等变换，
+        // 每次启动都跑一遍。这类变换的判据必须是「读回来的东西还是老的默认值」，
+        // 换句话说它是自限的 —— 一旦写过一次就不再成立，不会反复写盘。
+        final migrated = config
+            .migrateLegacyDnsNameservers()
+            // 同一套「不升版本号的幂等变换」：主上游换了之后，上游那套**围绕
+            // 「主上游 = 国内 DoH」设计**的 fallback-filter 就全变成了「架空主上游」
+            // 的东西（`domain` 旁路 + `geoip` 反选），必须一并拆掉 —— 详见
+            // `migrateLegacyDnsFallback` 的注释。
+            .migrateLegacyDnsFallback();
+        final reasons = <String>[
+          if (hasPlainTextDavPassword) 'webdav password obfuscation',
+          if (!identical(migrated, config)) 'dns defaults upgrade',
+        ];
+        if (reasons.isNotEmpty) {
+          if (!await _store.saveConfig(migrated)) {
+            throw StateError(
+              'Failed to save migrated preferences (${reasons.join(', ')})',
+            );
+          }
         }
-        return config;
+        return migrated;
       }
     }
 
@@ -127,7 +145,11 @@ class Migration {
       }
     }
 
-    config = Config.realFromJson(data.configMap);
+    // v0 升上来的配置里那个 DNS 上游同样是「从没被改过的旧默认值」，一并升级
+    // （备用上游与 fallback-filter 的 domain / geoip 同理）。
+    config = Config.realFromJson(
+      data.configMap,
+    ).migrateLegacyDnsNameservers().migrateLegacyDnsFallback();
     await _store.restore(data);
     if (!await _store.saveConfig(config)) {
       // An unopenable store is reported later by the corrupt-cache dialog,
