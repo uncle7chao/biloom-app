@@ -32,8 +32,10 @@ double getItemHeight(ProxyCardType proxyCardType) {
   final baseHeight =
       16 + measure.bodyMediumHeight * 2 + 6 + proxyCardMetaHeight + 1;
   return switch (proxyCardType) {
-    ProxyCardType.expand => baseHeight + measure.bodySmallHeight + 6,
-    ProxyCardType.shrink => baseHeight,
+    // 展开卡片原来比另外两种多占一整行（协议名单独一行），2026-09-23 起那一行
+    // 并进了协议胶囊 —— 于是它与 shrink 的第二行结构、高度都一致了。
+    // ⛔ 改这里必须同步 `ProxyCard` 的实际行数，两处各算一遍必溢出。
+    ProxyCardType.expand || ProxyCardType.shrink => baseHeight,
     ProxyCardType.min => baseHeight - measure.bodyMediumHeight,
   };
 }

@@ -109,39 +109,31 @@ class ProxyCard extends ConsumerWidget {
                     children: [
                       proxyNameText,
                       const SizedBox(height: 6),
-                      if (type == ProxyCardType.expand) ...[
-                        SizedBox(
-                          height: measure.bodySmallHeight,
-                          child: _ProxyDesc(proxy: proxy),
-                        ),
-                        const SizedBox(height: 6),
-                        Align(
-                          alignment: AlignmentDirectional.centerStart,
-                          child: _ProxyDelayButton(
-                            proxyName: proxy.name,
-                            testUrl: testUrl,
-                            onTest: () => _handleTestCurrentDelay(ref),
-                          ),
-                        ),
-                      ] else
-                        SizedBox(
-                          height: proxyCardMetaHeight,
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: Align(
-                                  alignment: AlignmentDirectional.centerStart,
-                                  child: _ProxyTypeChip(label: proxy.type),
-                                ),
+                      // 第二行统一成「协议胶囊 + 测速按钮」一行 —— 三种卡片
+                      // 类型都用同一套语言。展开卡片原来多占一整行放描述文字
+                      // （`vless` / `Selector(香港01)`），那行现在并进胶囊里，
+                      // 信息一点没少，只是不再单占一行。
+                      SizedBox(
+                        height: proxyCardMetaHeight,
+                        child: Row(
+                          children: [
+                            Flexible(
+                              child: Align(
+                                alignment: AlignmentDirectional.centerStart,
+                                child: type == ProxyCardType.expand
+                                    ? _ProxyDescChip(proxy: proxy)
+                                    : _ProxyTypeChip(label: proxy.type),
                               ),
-                              _ProxyDelayButton(
-                                proxyName: proxy.name,
-                                testUrl: testUrl,
-                                onTest: () => _handleTestCurrentDelay(ref),
-                              ),
-                            ],
-                          ),
+                            ),
+                            const SizedBox(width: 8),
+                            _ProxyDelayButton(
+                              proxyName: proxy.name,
+                              testUrl: testUrl,
+                              onTest: () => _handleTestCurrentDelay(ref),
+                            ),
+                          ],
                         ),
+                      ),
                     ],
                   ),
                 ),
@@ -216,7 +208,7 @@ class _ProxyTypeChip extends StatelessWidget {
         borderRadius: AppRadius.xs,
         border: Border.all(color: colorScheme.outlineVariant, width: 0.5),
       ),
-      child: Text(
+      child: EmojiText(
         label,
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
@@ -310,21 +302,17 @@ class _ProxyDelayButton extends ConsumerWidget {
   }
 }
 
-class _ProxyDesc extends ConsumerWidget {
+/// 展开卡片的协议胶囊：标签用 `proxyDesc` —— 对普通节点就是协议名（`vless`），
+/// 对策略组成员是 `Selector(香港01)` 这种带子节点的形式。所以它比 `proxy.type`
+/// 多带一层信息，但仍旧用一个中性胶囊装下，不额外占行。
+class _ProxyDescChip extends ConsumerWidget {
   final Proxy proxy;
 
-  const _ProxyDesc({required this.proxy});
+  const _ProxyDescChip({required this.proxy});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final desc = ref.watch(proxyDescProvider(proxy));
-    return EmojiText(
-      desc,
-      overflow: TextOverflow.ellipsis,
-      style: context.textTheme.bodySmall?.copyWith(
-        color: context.textTheme.bodySmall?.color?.opacity80,
-      ),
-    );
+    return _ProxyTypeChip(label: ref.watch(proxyDescProvider(proxy)));
   }
 }
 
