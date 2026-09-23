@@ -204,20 +204,27 @@ class _AddProxyChainViewState extends ConsumerState<AddProxyChainView> {
     dialogs.showMessage(message: TextSpan(text: text), cancelable: false);
   }
 
+  /// ⛔ 这里**不能用 `PagedSheetRoute`**：它的 `buildPage` 会强制包一层
+  /// `ResizableNavigatorRouteContentBoundary`，创建时向上找 `NavigatorResizable`
+  /// 宿主，找不到就是空断言崩溃 —— 全项目唯一的宿主在覆写编辑器的嵌套 sheet 里
+  /// （`overwrite_nested_sheet.dart` 的 `PagedSheet`）。从本面板直接推出去没有宿主，
+  /// 推出去的整页就是空白（release 下无报错、无返回按钮，用户只会看到白屏）。
+  /// 所以选择器改成再开一层自适应 sheet：桌面端是叠在侧滑上的第二层侧滑，
+  /// 移动端是叠在底部弹层上的第二层弹层，都是模态路由，返回值照常拿到。
   Future<String?> _showPicker({
     required String title,
     required List<_PickerSection> sections,
     required String? selected,
     required String emptyLabel,
   }) {
-    return Navigator.of(context).push<String>(
-      PagedSheetRoute(
-        builder: (context) => _TargetPickerView(
-          title: title,
-          sections: sections,
-          selected: selected,
-          emptyLabel: emptyLabel,
-        ),
+    return showSheet<String>(
+      context: context,
+      props: const SheetProps(isScrollControlled: true),
+      builder: (context) => _TargetPickerView(
+        title: title,
+        sections: sections,
+        selected: selected,
+        emptyLabel: emptyLabel,
       ),
     );
   }
@@ -465,8 +472,15 @@ class _TargetPickerViewState extends ConsumerState<_TargetPickerView> {
         height: ref.sheetHeight(context, 0.7),
         child: Column(
           children: [
+            // 底部弹层的工具栏是透明的，搜索框必须让它出顶部空间；侧滑是
+            // 普通AppBar，这里只会多 10px 呼吸感，两种形态都安全。
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              padding: EdgeInsets.fromLTRB(
+                16,
+                context.sheetTopPadding + 8,
+                16,
+                8,
+              ),
               child: TextField(
                 controller: _controller,
                 onChanged: (_) => setState(() {}),
