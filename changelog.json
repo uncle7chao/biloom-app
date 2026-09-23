@@ -2,66 +2,92 @@
   "schemaVersion": 2,
   "versions": [
     {
-      "version": "0.8.98",
-      "tag": "v0.8.98",
-      "date": "2026-09-14",
-      "prerelease": false,
-      "groups": [
-        {
-          "type": "fix",
-          "entries": [
-            {
-              "id": "c5bf5bd",
-              "scope": "resources",
-              "text": "Refresh the geo file size and time after an update finishes"
-            },
-            {
-              "id": "60f371a",
-              "scope": "core",
-              "text": "Keep the core running while Windows sleeps with the app suspended"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "version": "0.8.97",
-      "tag": "v0.8.97",
-      "date": "2026-09-10",
+      "version": "1.0.0",
+      "tag": "v1.0.0",
+      "date": "2026-09-23",
       "prerelease": false,
       "groups": [
         {
           "type": "feat",
           "entries": [
             {
-              "id": "26cfbaf",
+              "id": "f42e328",
+              "scope": "overwrite",
+              "text": "Generate strategy groups per region and store them in the override data"
+            },
+            {
+              "id": "97993ac",
+              "scope": "proxies",
+              "text": "Label every proxy card with its region and filter the list by region"
+            },
+            {
+              "id": "a7f205f",
+              "scope": "common",
+              "text": "Add the region engine: recognise a node's region from its name, bucket it, and plan region groups"
+            },
+            {
+              "id": "15ddf20",
               "scope": "ui",
-              "text": "Rework the app UI and refresh the localization"
+              "text": "Make the subscription update entry a labelled button, add a blank profile, and rework the dashboard"
             },
             {
-              "id": "aaf934c",
-              "scope": "app",
-              "text": "Rework the app layer and window handling, and add proxy authentication"
+              "id": "21f0ef3",
+              "scope": "proxies",
+              "text": "Rework the proxy page cards, make per-node delay testing visible, and add a connect button"
             },
             {
-              "id": "c0fcbc0",
-              "scope": "desktop",
-              "text": "Rework the desktop runners, packaging, and native build"
+              "id": "5b49a83",
+              "scope": "overwrite",
+              "text": "Restrict group types to the ones this core supports, fix stored relay groups, and align the group cards"
             },
             {
-              "id": "ae29f38",
-              "scope": "android",
-              "text": "Rework the Android VPN service and lifecycle handling"
+              "id": "f7d014e",
+              "scope": "ui",
+              "text": "Add the bridge layer: new strings, a drag handle widget, core calls, and models"
             },
             {
-              "id": "adf715f",
-              "scope": "plugins",
-              "text": "Rework the desktop plugins and add the Helper service and Rust bridge"
-            },
-            {
-              "id": "c6eaa0a",
+              "id": "78981bd",
               "scope": "core",
-              "text": "Rework the core IPC and process lifecycle"
+              "text": "Give a blank profile default groups, add node import, and move proxy chaining to dialer-proxy"
+            },
+            {
+              "id": "29d2486",
+              "scope": "dns",
+              "text": "Default to overseas DoH upstreams, migrate existing profiles, and add a DNS leak self-check"
+            },
+            {
+              "id": "d4acbf7",
+              "scope": "ui",
+              "text": "Add one-step connect and align the takeover switch with the running state"
+            },
+            {
+              "id": "592b0b8",
+              "scope": "core",
+              "text": "Add the subscription compatibility layer and default strategy groups"
+            },
+            {
+              "id": "b6b4ec4",
+              "scope": "brand",
+              "text": "Rebrand the fork as BiLoom"
+            }
+          ]
+        },
+        {
+          "type": "fix",
+          "entries": [
+            {
+              "id": "7207c86",
+              "scope": "proxies",
+              "text": "Move the protocol chip onto the second row so all three card types line up"
+            },
+            {
+              "id": "cf05b4f",
+              "scope": "subscription",
+              "text": "Show every strategy group except the ones explicitly marked hidden"
+            },
+            {
+              "id": "3c23327",
+              "text": "Add GPL attribution, fix the About wording, make update checks tri-state, repair TUN, and default fallback-filter.geoip to false"
             }
           ]
         }

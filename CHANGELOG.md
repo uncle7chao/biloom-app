@@ -1,5 +1,31 @@
 # Changelog
 
+## v1.0.0 (2026-09-23)
+
+**Features**
+
+- **overwrite** Generate strategy groups per region and store them in the override data (f42e328)
+- **proxies** Label every proxy card with its region and filter the list by region (97993ac)
+- **common** Add the region engine: recognise a node's region from its name, bucket it, and plan region groups (a7f205f)
+- **ui** Make the subscription update entry a labelled button, add a blank profile, and rework the dashboard (15ddf20)
+- **proxies** Rework the proxy page cards, make per-node delay testing visible, and add a connect button (21f0ef3)
+- **overwrite** Restrict group types to the ones this core supports, fix stored relay groups, and align the group cards (5b49a83)
+- **ui** Add the bridge layer: new strings, a drag handle widget, core calls, and models (f7d014e)
+- **core** Give a blank profile default groups, add node import, and move proxy chaining to dialer-proxy (78981bd)
+- **dns** Default to overseas DoH upstreams, migrate existing profiles, and add a DNS leak self-check (29d2486)
+- **ui** Add one-step connect and align the takeover switch with the running state (d4acbf7)
+- **core** Add the subscription compatibility layer and default strategy groups (592b0b8)
+- **brand** Rebrand the fork as BiLoom (b6b4ec4)
+
+**Bug Fixes**
+
+- **proxies** Move the protocol chip onto the second row so all three card types line up (7207c86)
+- **subscription** Show every strategy group except the ones explicitly marked hidden (cf05b4f)
+- Add GPL attribution, fix the About wording, make update checks tri-state, repair TUN, and default fallback-filter.geoip to false (3c23327)
+
+<!-- changelog:frozen -->
+<!-- Entries below predate the structured pipeline. Their wording is kept as written; only the heading and list style were normalized. -->
+
 ## v0.8.98 (2026-09-14)
 
 **Bug Fixes**
@@ -17,9 +43,6 @@
 - **android** Rework the Android VPN service and lifecycle handling (ae29f38)
 - **plugins** Rework the desktop plugins and add the Helper service and Rust bridge (adf715f)
 - **core** Rework the core IPC and process lifecycle (c6eaa0a)
-
-<!-- changelog:frozen -->
-<!-- Entries below predate the structured pipeline. Their wording is kept as written; only the heading and list style were normalized. -->
 
 ## v0.8.96 (2026-08-17)
 
