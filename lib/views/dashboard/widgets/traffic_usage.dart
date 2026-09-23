@@ -17,7 +17,7 @@ class TrafficUsage extends StatelessWidget {
       height: getWidgetHeight(2),
       child: RepaintBoundary(
         child: CommonCard(
-          radius: AppCorner.lg,
+          radius: AppCorner.xl,
           info: Info(
             label: appLocalizations.trafficUsage,
             iconData: Icons.data_saver_off,
@@ -208,7 +208,7 @@ class _TrafficDataItem extends StatelessWidget {
                 flex: 1,
                 child: Text(
                   value.traffic.value,
-                  style: context.textTheme.bodySmall,
+                  style: context.textTheme.titleMedium?.toLight,
                   maxLines: 1,
                 ),
               ),

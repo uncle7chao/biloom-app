@@ -33,7 +33,7 @@ class OutboundMode extends ConsumerWidget {
               hoverColor: Colors.transparent,
             ),
             child: CommonCard(
-              radius: AppCorner.lg,
+              radius: AppCorner.xl,
               onPressed: () {},
               skipTraversal: true,
               info: Info(
@@ -127,7 +127,7 @@ class OutboundModeV2 extends StatelessWidget {
     return SizedBox(
       height: height,
       child: CommonCard(
-        radius: AppCorner.lg,
+        radius: AppCorner.xl,
         child: Consumer(
           builder: (_, ref, _) {
             final mode = ref.watch(

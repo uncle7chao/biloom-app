@@ -25,7 +25,7 @@ class _QuickSwitchCard extends StatelessWidget {
     return SizedBox(
       height: getWidgetHeight(1),
       child: CommonCard(
-        radius: AppCorner.lg,
+        radius: AppCorner.xl,
         onPressed: () {
           showSheet(
             context: context,

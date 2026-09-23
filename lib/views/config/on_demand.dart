@@ -138,7 +138,7 @@ class _OnDemandViewState extends ConsumerState<OnDemandView>
     required bool isEditing,
   }) {
     final position = ItemPosition.get(index, length);
-    return ReorderableDelayedDragStartListener(
+    return CommonReorderableDragStartListener(
       key: ValueKey(ssid),
       index: index,
       child: Padding(

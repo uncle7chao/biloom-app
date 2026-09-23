@@ -73,7 +73,7 @@ class _MemoryInfoState extends ConsumerState<MemoryInfo>
       height: getWidgetHeight(1),
       child: RepaintBoundary(
         child: CommonCard(
-          radius: AppCorner.lg,
+          radius: AppCorner.xl,
           info: Info(
             iconData: Icons.memory,
             label: appLocalizations.memoryInfo,

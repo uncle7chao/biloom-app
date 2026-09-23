@@ -201,7 +201,9 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
   @override
   Widget build(BuildContext context) {
     final dashboardState = ref.watch(dashboardStateProvider);
-    final spacing = 14.mAp;
+    // 卡片之间留得更松一点：原来 14 的间隙让整块面板挤成一团，尤其深色主题下
+    // 卡片底色本来就接近背景，间隙一窄就分不出是一张卡还是两张。
+    final spacing = 18.mAp;
     final children = [
       ...dashboardState.dashboardWidgets
           .where(

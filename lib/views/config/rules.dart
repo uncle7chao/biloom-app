@@ -114,7 +114,7 @@ class _AddedRulesViewState extends ConsumerState<AddedRulesView> {
             itemBuilder: (context, index) {
               final rule = rules[index];
               final position = ItemPosition.get(index, rules.length);
-              return ReorderableDelayedDragStartListener(
+              return CommonReorderableDragStartListener(
                 key: ObjectKey(rule),
                 index: index,
                 child: ItemPositionProvider(

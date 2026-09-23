@@ -74,13 +74,18 @@ class _ProfilesViewState extends ConsumerState<ProfilesView> {
   List<Widget> _buildActions(List<Profile> profiles) {
     return profiles.isNotEmpty
         ? [
-            IconButton(
-              tooltip: context.appLocalizations.update,
-              onPressed: () {
-                _updateProfiles(profiles);
-              },
-              icon: const Icon(Icons.sync),
+            // 这个入口原来是右上角一个**没有文字的 ↻ 图标**，结果用户找不到它 ——
+            // 「没看到订阅更新按钮」不是没做，是看不出那是更新。所以带文字标签。
+            CommonMinFilledButtonTheme(
+              child: FilledButton.tonalIcon(
+                onPressed: () {
+                  _updateProfiles(profiles);
+                },
+                icon: const Icon(Icons.sync, size: 18),
+                label: Text(context.appLocalizations.update),
+              ),
             ),
+            const SizedBox(width: 4),
             IconButton(
               tooltip: context.appLocalizations.profilesSort,
               onPressed: () {
@@ -354,7 +359,7 @@ class ProfileItem extends ConsumerWidget {
       if (isUrl)
         CommonPopupMenuItem(
           icon: Icons.sync_alt_sharp,
-          label: appLocalizations.sync,
+          label: appLocalizations.updateSubscription,
           onPressed: () {
             updateProfile(ref);
           },
@@ -549,7 +554,9 @@ class _ReorderableProfilesSheetState
     return ItemPositionProvider(
       key: Key(profile.id.toString()),
       position: position,
-      child: ReorderableDelayedDragStartListener(
+      // 这一行没有别的可点交互，整行都是拖动区（也就顺手把行尾那个把手
+      // 一起盖住了）。桌面端按下即抓，不再要长按。
+      child: CommonReorderableDragStartListener(
         index: index,
         child: DecorationListItem(
           trailing: const Icon(Icons.drag_handle),

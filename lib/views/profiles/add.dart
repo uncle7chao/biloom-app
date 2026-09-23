@@ -56,11 +56,48 @@ class AddProfileView extends ConsumerWidget {
     }
   }
 
+  /// 「先建个空的，再自己往里加节点」—— 上游缺的就是这条路：三个既有入口都要求
+  /// 已经有内容来源（二维码/文件/URL），而空配置在内核里本来就是合法状态。
+  Future<void> _handleAddProfileFormBlank(WidgetRef ref) async {
+    final appLocalizations = context.appLocalizations;
+    final label = await dialogs.showCommonDialog<String>(
+      child: InputDialog(
+        autovalidateMode: AutovalidateMode.onUnfocus,
+        title: appLocalizations.createProfile,
+        labelText: appLocalizations.name,
+        value: '',
+        inputFormatters: TextInputLimits.limit(TextInputLimits.name),
+      ),
+    );
+    // null = 用户取消（或点掉了弹窗）；空串 = 用户直接提交。
+    if (label == null) return;
+    final trimmed = label.trim();
+    // 名称留空不算错，给个「创建配置 09:41」的默认名；直接落空名会让配置列表
+    // 显示成一串雪花 ID。用户回头在编辑页改即可。
+    final name = trimmed.isNotEmpty
+        ? trimmed
+        : '${appLocalizations.createProfile} ${_timeStamp()}';
+    unawaited(ref.read(profilesActionProvider.notifier).addProfileFormBlank(name));
+  }
+
+  static String _timeStamp() {
+    final now = DateTime.now();
+    final hour = now.hour.toString().padLeft(2, '0');
+    final minute = now.minute.toString().padLeft(2, '0');
+    return '$hour:$minute';
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final appLocalizations = context.appLocalizations;
     return ListView(
       children: [
+        ListItem(
+          leading: const Icon(Icons.note_add_sharp),
+          title: Text(appLocalizations.createProfile),
+          subtitle: Text(appLocalizations.createProfileDesc),
+          onTap: () => _handleAddProfileFormBlank(ref),
+        ),
         ListItem(
           leading: const Icon(Icons.qr_code_sharp),
           title: Text(appLocalizations.qrcode),

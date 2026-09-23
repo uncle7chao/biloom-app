@@ -40,7 +40,7 @@ class _NetworkDetectionState extends ConsumerState<NetworkDetection> {
     return SizedBox(
       height: getWidgetHeight(1),
       child: CommonCard(
-        radius: AppCorner.lg,
+        radius: AppCorner.xl,
         onPressed: () {},
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -97,14 +97,13 @@ class _NetworkDetectionState extends ConsumerState<NetworkDetection> {
             Container(
               padding: baseInfoEdgeInsets.copyWith(top: 0),
               child: SizedBox(
-                height: globalState.measure.bodyMediumHeight + 2,
+                height: globalState.measure.titleLargeHeight,
                 child: FadeThroughBox(
                   child: ipInfo != null
                       ? TooltipText(
                           text: Text(
                             ipInfo.ip,
-                            style: context.textTheme.bodyMedium?.toLight
-                                .adjustSize(1),
+                            style: context.textTheme.titleLarge?.toLight,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
