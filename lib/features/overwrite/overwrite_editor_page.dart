@@ -117,7 +117,7 @@ class _OverwriteEditorPageState<T> extends ConsumerState<OverwriteEditorPage<T>>
       ),
     );
     if (widget.dragFromRow) {
-      return ReorderableDelayedDragStartListener(
+      return CommonReorderableDragStartListener(
         key: ValueKey(id),
         index: index,
         child: child,

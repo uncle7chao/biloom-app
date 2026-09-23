@@ -68,7 +68,7 @@ class OverwriteDismissItem extends ConsumerWidget {
               children: [
                 if (!isValid)
                   InfoMessageButton(message: invalidMessageOf(context, title)),
-                ReorderableDelayedDragStartListener(
+                CommonReorderableDragStartListener(
                   index: index,
                   child: Container(
                     color: Colors.transparent,

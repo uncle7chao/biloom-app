@@ -100,7 +100,10 @@ Set<int> invalidProxyGroupIds(Ref ref, int profileId) {
   return {
     for (final proxyGroup in overwrite.proxyGroups)
       if (!overwrite.ruleTargets.containsAll(proxyGroup.proxies ?? const []) ||
-          !overwrite.proxyProviders.containsAll(proxyGroup.use ?? const []))
+          !overwrite.proxyProviders.containsAll(proxyGroup.use ?? const []) ||
+          // relay 这个类型在本内核里已被删除，存着它**整份配置都会加载失败**
+          // （不是这一组失效）。所以它必须和「成员引用不到」一样标成异常。
+          proxyGroup.type == GroupType.Relay)
         proxyGroup.id,
   };
 }

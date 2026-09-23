@@ -140,7 +140,7 @@ class _StandardContentState extends ConsumerState<StandardContent> {
             itemBuilder: (_, index) {
               final rule = addedRules[index];
               final position = ItemPosition.get(index, addedRules.length);
-              return ReorderableDelayedDragStartListener(
+              return CommonReorderableDragStartListener(
                 key: ObjectKey(rule),
                 index: index,
                 child: ItemPositionProvider(
