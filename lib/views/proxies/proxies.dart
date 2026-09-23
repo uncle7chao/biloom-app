@@ -12,6 +12,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'add_chain.dart';
 import 'add_node.dart';
+import 'region_groups.dart';
 import 'setting.dart';
 import 'tab.dart';
 
@@ -70,6 +71,13 @@ class _ProxiesViewState extends ConsumerState<ProxiesView> {
               label: appLocalizations.addProxyChain,
               onPressed: () {
                 _handleAddProxyChain(context);
+              },
+            ),
+            CommonPopupMenuItem(
+              icon: Icons.category_outlined,
+              label: appLocalizations.generateRegionGroups,
+              onPressed: () {
+                _handleGenerateRegionGroups(context);
               },
             ),
             CommonPopupMenuItem(
@@ -189,6 +197,37 @@ class _ProxiesViewState extends ConsumerState<ProxiesView> {
     await BaseNavigator.push(
       context,
       CustomProxyGroupsView(profileId, autoAdd: true),
+    );
+  }
+
+  /// 打开「按地区生成分组」面板。
+  ///
+  /// 生成出来的分组存在**覆写数据**里，所以和 [CustomProxyGroupsView] 是同一个前提：
+  /// 配置得先在「自定义覆写」模式下，写进去的分组才真的生效。切模式会改变配置的
+  /// 生成方式，必须先问过用户 —— 直接照搬上面那段确认流程，不另造一套说法。
+  ///
+  /// 面板自己是「现算计划」的（只读），所以这里不需要先把计划算好再打开；关掉面板
+  /// 就什么都不会发生。
+  Future<void> _handleGenerateRegionGroups(BuildContext context) async {
+    final appLocalizations = context.appLocalizations;
+    final profileId = ref.read(currentProfileIdProvider);
+    if (profileId == null) return;
+    final profile = ref.read(profileProvider(profileId));
+    if (profile == null) return;
+    if (profile.overwriteType != OverwriteType.custom) {
+      final confirmed = await dialogs.showMessage(
+        message: TextSpan(text: appLocalizations.customOverwriteRequired),
+      );
+      if (confirmed != true || !context.mounted) return;
+      await ref
+          .read(profilesActionProvider.notifier)
+          .ensureCustomOverwrite(profileId);
+      if (!context.mounted) return;
+    }
+    await showSheet(
+      context: context,
+      props: const SheetProps(isScrollControlled: true),
+      builder: (_) => RegionGroupPlanView(profileId: profileId),
     );
   }
 

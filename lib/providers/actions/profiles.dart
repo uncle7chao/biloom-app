@@ -147,9 +147,7 @@ class ProfilesAction extends _$ProfilesAction {
     final profile = await globalState.loadingRun(
       tag: LoadingTag.profiles,
       () async {
-        return Profile.normal(
-          label: platformFile.name,
-        ).saveFile(
+        return Profile.normal(label: platformFile.name).saveFile(
           bytes,
           validate: (path) => _core.validateConfig(path),
           convert: convertSubscription,
@@ -175,9 +173,7 @@ class ProfilesAction extends _$ProfilesAction {
     final profile = await globalState.loadingRun(
       tag: LoadingTag.profiles,
       () async {
-        return Profile.normal(
-          label: trimmed.isEmpty ? null : trimmed,
-        ).saveFile(
+        return Profile.normal(label: trimmed.isEmpty ? null : trimmed).saveFile(
           // 真的落 0 字节：不替用户写任何「模板」。约定就是「空 = 按默认值跑」，
           // 塞一份骨架反而会让内核那条短路失去意义。
           Uint8List(0),
@@ -200,9 +196,7 @@ class ProfilesAction extends _$ProfilesAction {
     final profile = await globalState.loadingRun(
       tag: LoadingTag.profiles,
       () async {
-        return Profile.normal(
-          url: url,
-        ).update(
+        return Profile.normal(url: url).update(
           validate: (path) => _core.validateConfig(path),
           convert: convertSubscription,
         );
@@ -281,26 +275,22 @@ class ProfilesAction extends _$ProfilesAction {
     required int profileId,
     required String nodes,
   }) async {
-    return globalState.loadingRun(
-      tag: LoadingTag.profiles,
-      () async {
-        final profile = ref.read(profilesProvider).getProfile(profileId);
-        if (profile == null) {
-          throw const MessageException('找不到这份配置，可能已被删除');
-        }
-        final file = await profile.file;
-        final edited = await _core.addProxyNodes(
-          yaml: await file.readAsString(),
-          nodes: nodes,
-        );
-        if (edited.added.isEmpty && edited.skipped.isEmpty) {
-          throw const MessageException('没有解析出任何节点');
-        }
-        await _saveEditedProfile(profile, edited.yaml);
-        return edited;
-      },
-      title: currentAppLocalizations.addProxyNode,
-    );
+    return globalState.loadingRun(tag: LoadingTag.profiles, () async {
+      final profile = ref.read(profilesProvider).getProfile(profileId);
+      if (profile == null) {
+        throw const MessageException('找不到这份配置，可能已被删除');
+      }
+      final file = await profile.file;
+      final edited = await _core.addProxyNodes(
+        yaml: await file.readAsString(),
+        nodes: nodes,
+      );
+      if (edited.added.isEmpty && edited.skipped.isEmpty) {
+        throw const MessageException('没有解析出任何节点');
+      }
+      await _saveEditedProfile(profile, edited.yaml);
+      return edited;
+    }, title: currentAppLocalizations.addProxyNode);
   }
 
   /// 列出这份配置里可以做链式代理的节点与策略组。
@@ -329,23 +319,19 @@ class ProfilesAction extends _$ProfilesAction {
     required String target,
     required String dialer,
   }) async {
-    return globalState.loadingRun(
-      tag: LoadingTag.profiles,
-      () async {
-        final profile = ref.read(profilesProvider).getProfile(profileId);
-        if (profile == null) {
-          throw const MessageException('找不到这份配置，可能已被删除');
-        }
-        final file = await profile.file;
-        final edited = await _core.setProxyChain(
-          yaml: await file.readAsString(),
-          target: target,
-          dialer: dialer,
-        );
-        await _saveEditedProfile(profile, edited.yaml);
-      },
-      title: currentAppLocalizations.addProxyChain,
-    );
+    return globalState.loadingRun(tag: LoadingTag.profiles, () async {
+      final profile = ref.read(profilesProvider).getProfile(profileId);
+      if (profile == null) {
+        throw const MessageException('找不到这份配置，可能已被删除');
+      }
+      final file = await profile.file;
+      final edited = await _core.setProxyChain(
+        yaml: await file.readAsString(),
+        target: target,
+        dialer: dialer,
+      );
+      await _saveEditedProfile(profile, edited.yaml);
+    }, title: currentAppLocalizations.addProxyChain);
   }
 
   /// 把订阅配置转为本地配置。
@@ -390,5 +376,67 @@ class ProfilesAction extends _$ProfilesAction {
       clashConfig.proxyGroups,
       clashConfig.rules,
     );
+  }
+
+  /// 读出「按地区生成分组」的计划 —— **只读，不写任何东西**。
+  ///
+  /// 节点名单取自**这份配置本身**（内核解析 profile 文件得到的），不是运行中的
+  /// 内核：用户正在编辑的这一份未必是当前生效的那份（见 [ProfileTargets] 的说明）。
+  /// 计划里出现的每个节点名都真实存在于配置里，所以生成出来的分组一定不会
+  /// 因为「引用了不存在的节点」而让整份配置加载失败。
+  Future<RegionGroupPlan> readRegionGroupPlan(int profileId) async {
+    final targets = await readProfileTargets(profileId);
+    final groups = await ref.read(proxyGroupsProvider(profileId).future);
+    return buildRegionGroupPlan(
+      nodeNames: targets.proxies.map((target) => target.name),
+      existingGroups: [
+        for (final group in groups)
+          ExistingRegionGroup(
+            name: group.name,
+            proxyNames: group.proxies ?? const <String>[],
+            hasProviderSource: (group.use ?? const <String>[]).isNotEmpty,
+          ),
+      ],
+      // 组名按当前界面语言生成，并带国旗前缀 —— 与「代理」页那些芯片上的写法一致，
+      // 用户在两个页面之间认的是同一个名字。
+      nameOf: (region) => '${region.emoji} ${region.label}',
+    );
+  }
+
+  /// 落盘 [RegionGroupPlan] 的计划。返回**没能写成**的条数（重名被挡下的）。
+  ///
+  /// 不套 `loadingRun`：写入走的是 `ProxyGroups` 的乐观更新，界面立刻就能看到结果，
+  /// 再盖一层全屏遮罩只会闪一下。与 [ensureCustomOverwrite] 的处理一致。
+  ///
+  /// 顺序是**先删后写**：删掉的那些组名与要新建的组名理论上不会撞（组名由地区推导），
+  /// 但先删干净再写能保证 `put` 不会因为「同名不同 id」被挡下来。
+  Future<int> applyRegionGroupPlan(int profileId, RegionGroupPlan plan) async {
+    // 拿 id 要重新读一次现有分组：计划是用户点开面板那一刻算的，中间可能已经变过。
+    final existing = await ref.read(proxyGroupsProvider(profileId).future);
+    final idOfName = <String, int>{
+      for (final group in existing) group.name: group.id,
+    };
+    final notifier = ref.read(proxyGroupsProvider(profileId).notifier);
+    for (final name in plan.removals) {
+      notifier.del(name);
+    }
+    var skipped = 0;
+    for (final draft in plan.upserts) {
+      final group = ProxyGroup(
+        // 命中旧组就复用它的 id —— `put` 会顺带把引用它的规则、以及引用它的
+        // 分组一起改名，重名冲突也由它挡下。
+        id: idOfName[draft.existingName] ?? snowflake.id,
+        name: draft.name,
+        type: GroupType.Selector,
+        proxies: draft.proxyNames,
+      );
+      if (!notifier.put(group)) {
+        skipped++;
+        commonPrint.log(
+          'region group "${draft.name}" skipped: name already taken',
+        );
+      }
+    }
+    return skipped;
   }
 }
