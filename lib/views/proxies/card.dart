@@ -288,10 +288,10 @@ class _ProxyDelayButton extends ConsumerWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 if (pending)
-                  SizedBox(
+                  const SizedBox(
                     width: 12,
                     height: 12,
-                    child: const CommonCircleLoading(),
+                    child: CommonCircleLoading(),
                   )
                 else
                   Icon(Icons.bolt, size: 12, color: color),
