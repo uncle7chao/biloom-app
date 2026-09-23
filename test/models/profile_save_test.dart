@@ -49,7 +49,7 @@ void main() {
         profile.saveFile(
           bytes,
           validate: (_) async => 'invalid config',
-          convert: (data) async => data,
+          convert: (data, {fromRemote}) async => data,
         ),
         throwsA(
           isA<MessageException>().having(
@@ -71,7 +71,7 @@ void main() {
       final saved = await profile.saveFile(
         bytes,
         validate: (_) async => '',
-        convert: (data) async => data,
+        convert: (data, {fromRemote}) async => data,
       );
 
       expect(saved.lastUpdateDate, isNotNull);
@@ -89,7 +89,7 @@ void main() {
       final saved = await profile.saveFile(
         raw,
         validate: (_) async => '',
-        convert: (data) async {
+        convert: (data, {fromRemote}) async {
           expect(utf8.decode(data), 'dmxlc3M6Ly94');
           return Uint8List.fromList(utf8.encode('proxies: []'));
         },
@@ -98,6 +98,60 @@ void main() {
       expect(saved.lastUpdateDate, isNotNull);
       final savedFile = await profile.file;
       expect(await savedFile.readAsString(), 'proxies: []');
+    });
+
+    // 空配置是这次修复的主角：本地保存一份空配置**必须能过** —— 内核的
+    // blankSubscription 专门为它短路（空 profile 是「新建的配置 / 被清空的配置」
+    // 这种合法状态），落盘后 makeRealProfile 会补齐端口/DNS/TUN/rules 脚手架。
+    // 上游把「刚下载的响应体」和「磁盘上的配置」混用一个转换回调，那句为下载写的
+    // 空内容守卫就把本地这条路径也一并拦死了。
+    test('saves an empty config from a local source', () async {
+      final profile = Profile.normal(label: 'p');
+
+      final saved = await profile.saveFile(
+        Uint8List(0),
+        validate: (_) async => '',
+        convert: (data, {fromRemote}) async => data,
+      );
+
+      expect(saved.lastUpdateDate, isNotNull);
+      final savedFile = await profile.file;
+      expect(await savedFile.length(), 0);
+    });
+
+    // 反过来：来源是「刚下载回来的响应体」时必须让转换器知道。空响应体意味着
+    // 链接过期/被限流/被墙，要报错，不能当成一份合法的空配置存下来。
+    test('marks a downloaded body as remote', () async {
+      final profile = Profile.normal(label: 'p');
+      bool? seen;
+
+      await profile.saveFile(
+        Uint8List.fromList(utf8.encode('proxies: []')),
+        fromRemote: true,
+        validate: (_) async => '',
+        convert: (data, {fromRemote}) async {
+          seen = fromRemote;
+          return data;
+        },
+      );
+
+      expect(seen, isTrue);
+    });
+
+    test('a local save does not claim to be remote', () async {
+      final profile = Profile.normal(label: 'p');
+      bool? seen;
+
+      await profile.saveFile(
+        Uint8List.fromList(utf8.encode('proxies: []')),
+        validate: (_) async => '',
+        convert: (data, {fromRemote}) async {
+          seen = fromRemote;
+          return data;
+        },
+      );
+
+      expect(seen, isNot(true));
     });
   });
 }

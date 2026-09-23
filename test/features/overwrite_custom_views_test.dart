@@ -69,23 +69,32 @@ void _setViewport(WidgetTester tester) {
 }
 
 void main() {
-  testWidgets('groups list rounds only the first and last rows', (
+  testWidgets('each group is its own card and the node preview expands', (
     tester,
   ) async {
     _setViewport(tester);
     final profile = Profile.normal().copyWith(
       overwriteType: OverwriteType.custom,
     );
-    final proxyGroups = List.generate(
-      3,
-      (index) => ProxyGroup(
-        id: 100 + index,
+    // 三个普通分组各带两个节点，外加一个「引用全部节点」的分组。最后那个刻意
+    // 没有节点数可报，用来钉住「徽章缺席时卡片要把原因写在脸上」。
+    final proxyGroups = [
+      for (var index = 0; index < 3; index++)
+        ProxyGroup(
+          id: 100 + index,
+          profileId: profile.id,
+          name: 'Group $index',
+          type: GroupType.Selector,
+          proxies: ['N$index-a', 'N$index-b'],
+        ),
+      ProxyGroup(
+        id: 200,
         profileId: profile.id,
-        name: 'Group $index',
-        type: GroupType.Selector,
-        proxies: const ['DIRECT'],
+        name: 'Group all',
+        type: GroupType.URLTest,
+        includeAllProxies: true,
       ),
-    );
+    ];
     final container = ProviderContainer(
       overrides: [
         profilesProvider.overrideWith(() => TestProfiles([profile])),
@@ -94,12 +103,17 @@ void main() {
         customOverwriteDateProvider(profile.id).overrideWithValue(
           CustomOverwriteDate(
             loaded: true,
-            proxyNames: const ['DIRECT'],
-            proxyTypes: const {'DIRECT': 'Direct'},
+            proxyNames: const ['N0-a', 'N0-b'],
+            proxyTypes: const {'N0-a': 'vmess', 'N0-b': 'trojan'},
             proxyGroups: proxyGroups,
             proxyProviders: const {'provider'},
             ruleTargets: {
               ...RuleTarget.baseTargets,
+              // 成员名必须在 ruleTargets 里，否则这个组会被判成「引用了不存在的
+              // 节点」而变红 —— 那是另一条路径，不该混进这条用例。
+              ...proxyGroups.expand(
+                (group) => group.proxies ?? const <String>[],
+              ),
               ...proxyGroups.map((group) => group.name),
             },
           ),
@@ -120,16 +134,32 @@ void main() {
     );
     await tester.pump();
 
-    final rows = find.byType(DecorationListItem);
-    expect(rows, findsNWidgets(3));
-    expect(
-      find.descendant(of: rows.first, matching: find.byType(Divider)),
-      findsOneWidget,
-    );
-    expect(
-      find.descendant(of: rows.last, matching: find.byType(Divider)),
-      findsNothing,
-    );
+    // 每个组一张独立卡片。原来铺的是「整块列表 + 行尾分隔线」，展开态塞不进
+    // 那种结构，所以这两条断言反过来了：卡片数等于分组数、分隔线一条都没有。
+    expect(find.byType(CommonCard), findsNWidgets(4));
+    expect(find.byType(DecorationListItem), findsNothing);
+    expect(find.byType(Divider), findsNothing);
+
+    // 类型徽章人人一份；节点数徽章只有「不引用全部节点」的那三个才有，
+    // 「引用全部节点」用一枚中性胶囊交代原因。
+    expect(find.text('Selector'), findsNWidgets(3));
+    expect(find.text('URLTest'), findsOneWidget);
+    expect(find.text('2'), findsNWidgets(3));
+    expect(find.byIcon(Icons.select_all), findsOneWidget);
+
+    // 折叠时只出摘要，节点一个都不露面。
+    expect(find.text('N0-a'), findsNothing);
+    expect(find.text('N1-a'), findsNothing);
+
+    await tester.tap(find.byIcon(Icons.expand_more).first);
+    await tester.pumpAndSettle();
+
+    // 只展开了第一个：它自己的两个节点出来，后面的组不受影响 ——
+    // 展开状态在页面上、不在卡片里，这条断言就是钉它的。
+    expect(find.text('N0-a'), findsOneWidget);
+    expect(find.text('N0-b'), findsOneWidget);
+    expect(find.text('N1-a'), findsNothing);
+    expect(find.byType(Divider), findsOneWidget);
 
     await tester.pumpWidget(const SizedBox.shrink());
   });
