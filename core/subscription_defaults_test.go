@@ -176,6 +176,68 @@ func TestDefaultSubscriptionGroupsAvoidNodeNameCollisions(t *testing.T) {
 	}
 }
 
+// 「代理」页只该看到两个分组：节点选择 / 自动选择。其余四个是 rules 的目标 ——
+// 规则里必须写一个目标名（`GEOSITE,CN,全球直连` 里的那个名字），所以它们得存在，
+// 但不必各占一个页签，标 hidden。
+//
+// 这条不变量的两头都会静默失效：
+//   - 少标一个 → 用户页签栏里多一个看不懂的标签（这次就是这么被用户发现的：
+//     「这些个标签是你起的？乱七八糟的，根本就没有实际意义」）；
+//   - 多标一个（把 selector / auto 也标上）→ 页签栏直接空掉，用户连节点列表和
+//     测速按钮都找不到。
+//
+// 两头都不编译报错、也不在加载时报错，只在界面上表现出来，所以在这里钉死。
+func TestDefaultSubscriptionGroupsHidePlumbingOnly(t *testing.T) {
+	shape := convertToShape(t, vlessShareLinkFixture+"\n"+trojanShareLinkFixture)
+
+	wantVisible := []string{defaultGroupProxies, defaultGroupAuto}
+	wantHidden := []string{
+		defaultGroupFallback,
+		defaultGroupDirect,
+		defaultGroupAdBlock,
+		defaultGroupFinal,
+	}
+
+	var visible, hidden []string
+	for _, group := range shape.ProxyGroups {
+		name, _ := group["name"].(string)
+		raw, marked := group["hidden"]
+		if !marked {
+			visible = append(visible, name)
+			continue
+		}
+		// 必须是真 bool，不能是字符串 "true"：内核把它解到 Go 的 bool 字段
+		// （outboundgroup/parser.go 的 `group:"hidden,omitempty"`），字符串会让
+		// 整份配置解析失败 —— 而用户看到的是「订阅导入失败」，和分组毫无表面关联。
+		if value, ok := raw.(bool); !ok || !value {
+			t.Fatalf("group %q 的 hidden 不是 true: %#v", name, raw)
+		}
+		hidden = append(hidden, name)
+	}
+
+	// 顺序也管：可见分组里 node select 必须排第一 —— select 组默认选中第一项，
+	// 它不在首位，「代理」页打开时就不在用户入口上了。
+	if strings.Join(visible, ",") != strings.Join(wantVisible, ",") {
+		t.Errorf("「代理」页可见分组 = %v，应只有 %v", visible, wantVisible)
+	}
+	if strings.Join(hidden, ",") != strings.Join(wantHidden, ",") {
+		t.Errorf("隐藏分组 = %v，应为 %v", hidden, wantHidden)
+	}
+
+	// 隐藏的分组必须仍然被规则引用 —— 否则「藏」就退化成了「删」，
+	// 国内分流与广告拦截会一起失效，而且界面上没有任何提示。
+	joined := strings.Join(shape.Rules, "\n")
+	for _, name := range []string{defaultGroupDirect, defaultGroupAdBlock} {
+		if !strings.Contains(joined, ","+name) {
+			t.Errorf("没有任何规则指向隐藏分组 %q：它要么成了死重量，要么分流已经断了", name)
+		}
+	}
+	if !strings.HasSuffix(joined, "MATCH,"+defaultGroupFinal) {
+		t.Errorf("MATCH 没有指向隐藏分组 %q，规则模式下没命中的流量会落到 DIRECT",
+			defaultGroupFinal)
+	}
+}
+
 // 默认规则里的 GEOIP / GEOSITE 分类名必须能被内核解析。写错名字既不会编译报错、
 // 也不会在转换时报错，只会在内核加载配置时失败，而报错内容和「订阅格式」毫无关系，
 // 极难定位 —— 起草这套规则时原本写的是 GEOIP,PRIVATE，而它在默认的 metadb 模式下

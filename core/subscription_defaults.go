@@ -85,16 +85,51 @@ func defaultSubscriptionGroups(proxies []map[string]any) ([]map[string]any, []st
 	selectorTargets := append([]string{auto, fallback}, names...)
 	selectorTargets = append(selectorTargets, "DIRECT")
 
+	// 分组分两类，别混：
+	//
+	//	① 给用户点的 —— selector（选哪个节点）与 auto（让它自己挑最快的），各占一个
+	//	   「代理」页签；
+	//	② 给规则用的 —— 下面四个。规则里必须写一个目标名（`GEOSITE,CN,全球直连` 里的
+	//	   那个名字），所以它们得存在，但不必各占一个页签。标 hidden。
+	//
+	// 标 hidden 的前提（都核过，缺一条这个做法就不成立）：
+	//   - 内核只在 MarshalJSON 里回传这个标记（`adapter/outboundgroup` 下 selector /
+	//     urltest / fallback / loadbalance 四类组都带 `"hidden": xxx.Hidden()`）；
+	//   - FlClash 的代理页按它过滤（`lib/providers/state/proxies.dart`）；
+	//   - **隐藏组照旧是完整的规则目标** —— `GroupBase.GetProxies` 的入参是 touch、
+	//     不是 includeHidden（`groupbase.go:122`），所以隐藏只影响显示、不影响分流。
+	//
+	// 这就是「藏」而不是「删」的依据：分流语义一个字没动，随时能把它们接回来
+	// （以后做「分流开关」时，这四个组就是现成的挂点）。
+	//
+	// 故障转移单独说一句：没有任何规则引用它，它只是 selector 的第 2 个成员 ——
+	// 用户想「平时固定用第一个、断了才换」时会选它。同样标 hidden，而它**不会**因此
+	// 从 selector 的成员列表里消失：成员是 Proxy，Proxy 结构里根本没有 hidden 字段。
 	groups := []map[string]any{
 		{"name": selector, "type": "select", "proxies": selectorTargets},
 		// url-test 的 url / interval / lazy 都不写：内核会补上默认值
 		// （constant.DefaultTestURL + interval 300 + lazy true），这样「测速链接」
 		// 仍然跟着 App 设置走，也不会在启动瞬间对上百个节点同时发探测。
 		{"name": auto, "type": "url-test", "proxies": allNodes(), "tolerance": 50},
-		{"name": fallback, "type": "fallback", "proxies": allNodes()},
-		{"name": direct, "type": "select", "proxies": []string{"DIRECT", selector}},
-		{"name": adBlock, "type": "select", "proxies": []string{"REJECT", "DIRECT"}},
-		{"name": final, "type": "select", "proxies": []string{selector, auto, "DIRECT"}},
+		{"name": fallback, "type": "fallback", "proxies": allNodes(), "hidden": true},
+		{
+			"name":    direct,
+			"type":    "select",
+			"proxies": []string{"DIRECT", selector},
+			"hidden":  true,
+		},
+		{
+			"name":    adBlock,
+			"type":    "select",
+			"proxies": []string{"REJECT", "DIRECT"},
+			"hidden":  true,
+		},
+		{
+			"name":    final,
+			"type":    "select",
+			"proxies": []string{selector, auto, "DIRECT"},
+			"hidden":  true,
+		},
 	}
 
 	rules := []string{

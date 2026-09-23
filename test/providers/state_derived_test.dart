@@ -54,7 +54,15 @@ void main() {
     container
         .read(patchClashConfigProvider.notifier)
         .update((state) => state.copyWith(mode: Mode.global));
-    expect(container.read(currentGroupsStateProvider).value, hasLength(3));
+    // 全局模式也只列可见分组。上游这里是未过滤的 `groups.toList()`，于是「切一次
+    // 出站模式」就会让 profile 里标了 hidden 的分组（订阅转换注入的那四个管道组：
+    // 故障转移 / 全球直连 / 广告拦截 / 漏网之鱼）全部冒回页签栏 —— 清理掉的六个页签
+    // 又会回来六个。GLOBAL 组本身不带 hidden，所以它仍在列表里。
+    final globalGroups = container.read(currentGroupsStateProvider).value;
+    expect(globalGroups.map((group) => group.name), [
+      'Visible',
+      GroupName.GLOBAL.name,
+    ]);
 
     container
         .read(patchClashConfigProvider.notifier)

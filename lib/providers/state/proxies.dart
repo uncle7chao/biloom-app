@@ -15,14 +15,22 @@ GroupsState currentGroupsState(Ref ref) {
       }),
     ),
   );
-  final visible = groups.where((item) => item.hidden == false).toList();
+  // 只隐藏**明确**标了 hidden 的分组。上游写的是 `hidden == false`，那会把
+  // 「字段缺失（null）」也判成隐藏 —— 任何没带上这个标记的分组都会从「代理」页
+  // 静默消失。这类「看不见的状态」正是这轮要清理掉的东西，不能再引入一个。
+  // 内核的四类策略组都会回传 bool（adapter/outboundgroup 的 MarshalJSON），
+  // 所以两种写法在运行时等价，但这一种在缺字段时不会咬人。
+  final visible = groups.where((item) => item.hidden != true).toList();
   final nonGlobal = visible
       .where((item) => item.name != GroupName.GLOBAL.name)
       .toList();
   return GroupsState(
     value: switch (mode) {
       Mode.direct => [],
-      Mode.global => groups.toList(),
+      // 全局模式也要过滤 hidden。上游这里用的是**未过滤**的 groups，于是切一次
+      // 出站模式，profile 里标了 hidden 的分组会全部冒出来 —— 用户刚被我们清理干净的
+      // 页签栏又变回原样。GLOBAL 组本身不带 hidden，所以用 visible 不会把它漏掉。
+      Mode.global => visible,
       // 规则模式下 GLOBAL 通常是冗余的：能落到它的流量本来就该由 profile 自己的
       // 分组承接，所以平时把它藏起来。但一份只带 proxies 的配置（例如直接导入的
       // 订阅转换结果）除 GLOBAL 外没有任何分组，藏掉它会让分组列表为空、
