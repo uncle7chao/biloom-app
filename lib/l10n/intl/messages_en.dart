@@ -84,17 +84,26 @@ class MessageLookup extends MessageLookupByLibrary {
   static String m25(count) =>
       "${Intl.plural(count, one: '1 proxy', other: '${count} proxies')}";
 
-  static String m26(count) =>
-      "${Intl.plural(count, one: '1 rule', other: '${count} rules')}";
+  static String m26(front) => "Front: ${front}";
 
-  static String m27(count) =>
-      "${Intl.plural(count, one: '1 second', other: '${count} seconds')}";
+  static String m27(front, exit) => "Active: ${front} → ${exit}";
 
-  static String m28(count) => "${count} selected";
+  static String m28(count) => "Fixed ${count} group(s)";
 
-  static String m29(label) => "${label} must be a URL";
+  static String m29(count) =>
+      "Found ${count} relay proxy group(s). The core removed this type, so keeping it makes the entire profile fail to load. Change them to \"Selector\" now?";
 
   static String m30(count) =>
+      "${Intl.plural(count, one: '1 rule', other: '${count} rules')}";
+
+  static String m31(count) =>
+      "${Intl.plural(count, one: '1 second', other: '${count} seconds')}";
+
+  static String m32(count) => "${count} selected";
+
+  static String m33(label) => "${label} must be a URL";
+
+  static String m34(count) =>
       "${Intl.plural(count, one: '1 year ago', other: '${count} years ago')}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
@@ -126,7 +135,15 @@ class MessageLookup extends MessageLookupByLibrary {
     "add": MessageLookupByLibrary.simpleMessage("Add"),
     "addProfile": MessageLookupByLibrary.simpleMessage("Add profile"),
     "addProxies": MessageLookupByLibrary.simpleMessage("Add proxies"),
+    "addProxyChain": MessageLookupByLibrary.simpleMessage("Add proxy chain"),
+    "addProxyChainDesc": MessageLookupByLibrary.simpleMessage(
+      "Chain several nodes in order so traffic hops through each one",
+    ),
     "addProxyGroup": MessageLookupByLibrary.simpleMessage("Add proxy group"),
+    "addProxyNode": MessageLookupByLibrary.simpleMessage("Add node"),
+    "addProxyNodeDesc": MessageLookupByLibrary.simpleMessage(
+      "Paste a share link or YAML fragment — vless / vmess / ss / trojan / hysteria2 and more",
+    ),
     "addProxyProviders": MessageLookupByLibrary.simpleMessage(
       "Add proxy providers",
     ),
@@ -270,6 +287,9 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "clearData": MessageLookupByLibrary.simpleMessage("Clear data"),
     "clearSearch": MessageLookupByLibrary.simpleMessage("Clear search"),
+    "clipboardEmpty": MessageLookupByLibrary.simpleMessage(
+      "The clipboard has no usable content",
+    ),
     "clipboardExport": MessageLookupByLibrary.simpleMessage(
       "Export to clipboard",
     ),
@@ -319,6 +339,12 @@ class MessageLookup extends MessageLookupByLibrary {
     "controlGlobalAddedRules": MessageLookupByLibrary.simpleMessage(
       "Control global added rules",
     ),
+    "convertToLocalProfile": MessageLookupByLibrary.simpleMessage(
+      "Convert to local profile",
+    ),
+    "convertToLocalProfileDesc": MessageLookupByLibrary.simpleMessage(
+      "Detach the subscription link so future updates no longer overwrite this profile",
+    ),
     "copy": MessageLookupByLibrary.simpleMessage("Copy"),
     "copyEnvVar": MessageLookupByLibrary.simpleMessage(
       "Copy environment variables",
@@ -336,10 +362,17 @@ class MessageLookup extends MessageLookupByLibrary {
     "crashDetectedTip": m1,
     "crashTest": MessageLookupByLibrary.simpleMessage("Crash test"),
     "create": MessageLookupByLibrary.simpleMessage("Create"),
-    "createProfile": MessageLookupByLibrary.simpleMessage("Create profile"),
+    "createProfile": MessageLookupByLibrary.simpleMessage("Add custom profile"),
+    "createProfileDesc": MessageLookupByLibrary.simpleMessage(
+      "Start from scratch and add nodes manually",
+    ),
     "createProfileFromUrlTip": m2,
     "creationTime": MessageLookupByLibrary.simpleMessage("Creation time"),
+    "currentSelected": MessageLookupByLibrary.simpleMessage("Current"),
     "custom": MessageLookupByLibrary.simpleMessage("Custom"),
+    "customOverwriteRequired": MessageLookupByLibrary.simpleMessage(
+      "Custom proxy groups live in the overwrite data, so subscription updates cannot wipe them. Switch to custom mode now?",
+    ),
     "cut": MessageLookupByLibrary.simpleMessage("Cut"),
     "dark": MessageLookupByLibrary.simpleMessage("Dark"),
     "dashboard": MessageLookupByLibrary.simpleMessage("Dashboard"),
@@ -767,6 +800,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "palette": MessageLookupByLibrary.simpleMessage("Palette"),
     "password": MessageLookupByLibrary.simpleMessage("Password"),
     "paste": MessageLookupByLibrary.simpleMessage("Paste"),
+    "pasteFromClipboard": MessageLookupByLibrary.simpleMessage(
+      "Paste from clipboard",
+    ),
     "pickFromAlbum": MessageLookupByLibrary.simpleMessage("Choose from album"),
     "pinWindow": MessageLookupByLibrary.simpleMessage("Pin window"),
     "pleaseBindWebDAV": MessageLookupByLibrary.simpleMessage(
@@ -798,6 +834,9 @@ class MessageLookup extends MessageLookupByLibrary {
         MessageLookupByLibrary.simpleMessage(
           "Please enter the auto-update interval",
         ),
+    "profileConvertedToLocal": MessageLookupByLibrary.simpleMessage(
+      "Converted to a local profile",
+    ),
     "profileHasUpdate": MessageLookupByLibrary.simpleMessage(
       "The profile has been modified. Turn off auto update?",
     ),
@@ -817,7 +856,34 @@ class MessageLookup extends MessageLookupByLibrary {
     "proxies": MessageLookupByLibrary.simpleMessage("Proxies"),
     "proxiesCount": m25,
     "proxiesEmpty": MessageLookupByLibrary.simpleMessage("Proxies are empty"),
+    "proxyChainClear": MessageLookupByLibrary.simpleMessage("Remove chain"),
+    "proxyChainCleared": MessageLookupByLibrary.simpleMessage(
+      "Proxy chain removed",
+    ),
+    "proxyChainExisting": m26,
+    "proxyChainExit": MessageLookupByLibrary.simpleMessage("Exit node"),
+    "proxyChainExitHint": MessageLookupByLibrary.simpleMessage(
+      "The one that finally reaches the internet",
+    ),
+    "proxyChainFront": MessageLookupByLibrary.simpleMessage("Front proxy"),
+    "proxyChainFrontHint": MessageLookupByLibrary.simpleMessage(
+      "Traffic goes through it first — a node or a group",
+    ),
+    "proxyChainGroupsSection": MessageLookupByLibrary.simpleMessage("Groups"),
+    "proxyChainNoNodes": MessageLookupByLibrary.simpleMessage(
+      "This profile has no inline nodes. A chain is written into the profile itself, so nodes coming from a proxy provider cannot be chained — add a node first.",
+    ),
+    "proxyChainNodesSection": MessageLookupByLibrary.simpleMessage("Nodes"),
+    "proxyChainPickExit": MessageLookupByLibrary.simpleMessage(
+      "Choose an exit node",
+    ),
+    "proxyChainPickFront": MessageLookupByLibrary.simpleMessage(
+      "Choose a front proxy",
+    ),
+    "proxyChainSaved": m27,
     "proxyChains": MessageLookupByLibrary.simpleMessage("Proxy chain"),
+    "proxyDelayTestHint": MessageLookupByLibrary.simpleMessage("Tap to test"),
+    "proxyDelayTestNow": MessageLookupByLibrary.simpleMessage("Test"),
     "proxyDetectedAbnormal": MessageLookupByLibrary.simpleMessage(
       "The selected proxies are abnormal",
     ),
@@ -860,6 +926,11 @@ class MessageLookup extends MessageLookupByLibrary {
     "rainbowScheme": MessageLookupByLibrary.simpleMessage("Rainbow"),
     "redirPort": MessageLookupByLibrary.simpleMessage("Redir port"),
     "redo": MessageLookupByLibrary.simpleMessage("Redo"),
+    "relayGroupFixed": m28,
+    "relayGroupRemovedConfirm": m29,
+    "relayGroupRemovedTip": MessageLookupByLibrary.simpleMessage(
+      "The relay group type was removed by the core — it breaks the whole profile",
+    ),
     "remote": MessageLookupByLibrary.simpleMessage("Remote"),
     "remoteBackupDesc": MessageLookupByLibrary.simpleMessage(
       "Back up data to WebDAV",
@@ -1037,7 +1108,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "ruleSet": MessageLookupByLibrary.simpleMessage("Rule set"),
     "ruleTarget": MessageLookupByLibrary.simpleMessage("Rule target"),
     "rules": MessageLookupByLibrary.simpleMessage("Rules"),
-    "rulesCount": m26,
+    "rulesCount": m30,
     "save": MessageLookupByLibrary.simpleMessage("Save"),
     "saveChanges": MessageLookupByLibrary.simpleMessage("Save the changes?"),
     "script": MessageLookupByLibrary.simpleMessage("Script"),
@@ -1049,7 +1120,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "search": MessageLookupByLibrary.simpleMessage("Search"),
     "seconds": MessageLookupByLibrary.simpleMessage("seconds"),
-    "secondsCount": m27,
+    "secondsCount": m31,
     "selectAll": MessageLookupByLibrary.simpleMessage("Select all"),
     "selectMatchTarget": MessageLookupByLibrary.simpleMessage(
       "Select MATCH-TARGET",
@@ -1068,7 +1139,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Please select a sub-rule",
     ),
     "selected": MessageLookupByLibrary.simpleMessage("Selected"),
-    "selectedCountTitle": m28,
+    "selectedCountTitle": m32,
     "settings": MessageLookupByLibrary.simpleMessage("Settings"),
     "show": MessageLookupByLibrary.simpleMessage("Show"),
     "showLess": MessageLookupByLibrary.simpleMessage("Collapse"),
@@ -1086,6 +1157,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "Start in the background",
     ),
     "size": MessageLookupByLibrary.simpleMessage("Size"),
+    "skippedDuplicateNodes": MessageLookupByLibrary.simpleMessage(
+      "Skipped — these names already exist in this profile",
+    ),
     "socksPort": MessageLookupByLibrary.simpleMessage("SOCKS port"),
     "sort": MessageLookupByLibrary.simpleMessage("Sort"),
     "source": MessageLookupByLibrary.simpleMessage("Source"),
@@ -1118,6 +1192,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "Sub-rule cannot be empty",
     ),
     "submit": MessageLookupByLibrary.simpleMessage("Submit"),
+    "subscribeOverwriteWarning": MessageLookupByLibrary.simpleMessage(
+      "This profile comes from a subscription link; updating it will overwrite the nodes you add",
+    ),
     "subscriptionInfo": MessageLookupByLibrary.simpleMessage(
       "Subscription info",
     ),
@@ -1184,12 +1261,15 @@ class MessageLookup extends MessageLookupByLibrary {
     "unnamed": MessageLookupByLibrary.simpleMessage("Unnamed"),
     "unpinWindow": MessageLookupByLibrary.simpleMessage("Unpin window"),
     "update": MessageLookupByLibrary.simpleMessage("Update"),
+    "updateSubscription": MessageLookupByLibrary.simpleMessage(
+      "Update subscription",
+    ),
     "upload": MessageLookupByLibrary.simpleMessage("Upload"),
     "url": MessageLookupByLibrary.simpleMessage("URL"),
     "urlDesc": MessageLookupByLibrary.simpleMessage(
       "Obtain a profile from a URL",
     ),
-    "urlTip": m29,
+    "urlTip": m33,
     "useHosts": MessageLookupByLibrary.simpleMessage("Use hosts"),
     "useSystemHosts": MessageLookupByLibrary.simpleMessage("Use system hosts"),
     "usedTraffic": MessageLookupByLibrary.simpleMessage("Used traffic"),
@@ -1210,7 +1290,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "WebDAV configuration",
     ),
     "whitelistMode": MessageLookupByLibrary.simpleMessage("Whitelist mode"),
-    "yearsAgo": m30,
+    "yearsAgo": m34,
     "zhCN": MessageLookupByLibrary.simpleMessage("Simplified Chinese"),
   };
 }

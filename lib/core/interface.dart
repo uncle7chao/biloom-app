@@ -27,6 +27,21 @@ mixin CoreInterface {
 
   Future<ConvertSubscriptionResult> convertSubscription(String data);
 
+  Future<AddProxyNodesResult> addProxyNodes({
+    required String yaml,
+    required String nodes,
+  });
+
+  /// 列出这份配置里可以做链式代理的节点与策略组。
+  Future<ProfileTargets> readProfileTargets({required String yaml});
+
+  /// 给某个节点挂上（[dialer] 非空）或解除（[dialer] 为空）前置代理。
+  Future<SetProxyChainResult> setProxyChain({
+    required String yaml,
+    required String target,
+    required String dialer,
+  });
+
   Future<Delay?> asyncTestDelay(String url, String proxyName);
 
   Future<String> updateConfig(UpdateParams updateParams);
@@ -199,6 +214,58 @@ abstract class CoreHandlerInterface with CoreInterface {
       );
     }
     return ConvertSubscriptionResult.fromJson(result);
+  }
+
+  @override
+  Future<AddProxyNodesResult> addProxyNodes({
+    required String yaml,
+    required String nodes,
+  }) async {
+    final result = await _invokeMethod<Map<String, dynamic>>(
+      method: CoreMethod.addProxyNodes,
+      arguments: {'yaml': yaml, 'nodes': nodes},
+    );
+    if (result == null) {
+      throw const CoreMethodException(
+        code: 'empty_result',
+        message: 'Core returned an empty node edit result',
+      );
+    }
+    return AddProxyNodesResult.fromJson(result);
+  }
+
+  @override
+  Future<ProfileTargets> readProfileTargets({required String yaml}) async {
+    final result = await _invokeMethod<Map<String, dynamic>>(
+      method: CoreMethod.readProfileTargets,
+      arguments: {'yaml': yaml},
+    );
+    if (result == null) {
+      throw const CoreMethodException(
+        code: 'empty_result',
+        message: 'Core returned an empty proxy target list',
+      );
+    }
+    return ProfileTargets.fromJson(result);
+  }
+
+  @override
+  Future<SetProxyChainResult> setProxyChain({
+    required String yaml,
+    required String target,
+    required String dialer,
+  }) async {
+    final result = await _invokeMethod<Map<String, dynamic>>(
+      method: CoreMethod.setProxyChain,
+      arguments: {'yaml': yaml, 'target': target, 'dialer': dialer},
+    );
+    if (result == null) {
+      throw const CoreMethodException(
+        code: 'empty_result',
+        message: 'Core returned an empty proxy chain result',
+      );
+    }
+    return SetProxyChainResult.fromJson(result);
   }
 
   @override

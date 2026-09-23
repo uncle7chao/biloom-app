@@ -84,17 +84,26 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m25(count) => "${count} прокси";
 
-  static String m26(count) =>
-      "${Intl.plural(count, one: '${count} правило', few: '${count} правила', many: '${count} правил', other: '${count} правила')}";
+  static String m26(front) => "Спереди: ${front}";
 
-  static String m27(count) =>
-      "${Intl.plural(count, one: '${count} секунда', few: '${count} секунды', many: '${count} секунд', other: '${count} секунды')}";
+  static String m27(front, exit) => "Активно: ${front} → ${exit}";
 
-  static String m28(count) => "Выбрано: ${count}";
+  static String m28(count) => "Исправлено групп: ${count}";
 
-  static String m29(label) => "Значение «${label}» должно быть URL";
+  static String m29(count) =>
+      "Найдено групп типа «relay»: ${count}. Ядро удалило этот тип, поэтому из-за них весь профиль не загружается. Заменить их на «Selector»?";
 
   static String m30(count) =>
+      "${Intl.plural(count, one: '${count} правило', few: '${count} правила', many: '${count} правил', other: '${count} правила')}";
+
+  static String m31(count) =>
+      "${Intl.plural(count, one: '${count} секунда', few: '${count} секунды', many: '${count} секунд', other: '${count} секунды')}";
+
+  static String m32(count) => "Выбрано: ${count}";
+
+  static String m33(label) => "Значение «${label}» должно быть URL";
+
+  static String m34(count) =>
       "${Intl.plural(count, one: '${count} год назад', few: '${count} года назад', many: '${count} лет назад', other: '${count} года назад')}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
@@ -126,8 +135,18 @@ class MessageLookup extends MessageLookupByLibrary {
     "add": MessageLookupByLibrary.simpleMessage("Добавить"),
     "addProfile": MessageLookupByLibrary.simpleMessage("Добавить профиль"),
     "addProxies": MessageLookupByLibrary.simpleMessage("Добавить прокси"),
+    "addProxyChain": MessageLookupByLibrary.simpleMessage(
+      "Добавить цепочку прокси",
+    ),
+    "addProxyChainDesc": MessageLookupByLibrary.simpleMessage(
+      "Несколько узлов соединяются последовательно, трафик идёт по цепочке",
+    ),
     "addProxyGroup": MessageLookupByLibrary.simpleMessage(
       "Добавить группу прокси",
+    ),
+    "addProxyNode": MessageLookupByLibrary.simpleMessage("Добавить узел"),
+    "addProxyNodeDesc": MessageLookupByLibrary.simpleMessage(
+      "Вставьте ссылку-поделиться или фрагмент YAML — vless / vmess / ss / trojan / hysteria2 и другие",
     ),
     "addProxyProviders": MessageLookupByLibrary.simpleMessage(
       "Добавить провайдеров прокси",
@@ -278,6 +297,9 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "clearData": MessageLookupByLibrary.simpleMessage("Очистить данные"),
     "clearSearch": MessageLookupByLibrary.simpleMessage("Очистить поиск"),
+    "clipboardEmpty": MessageLookupByLibrary.simpleMessage(
+      "В буфере обмена нет подходящего содержимого",
+    ),
     "clipboardExport": MessageLookupByLibrary.simpleMessage(
       "Экспорт в буфер обмена",
     ),
@@ -327,6 +349,12 @@ class MessageLookup extends MessageLookupByLibrary {
     "controlGlobalAddedRules": MessageLookupByLibrary.simpleMessage(
       "Управление глобальными добавленными правилами",
     ),
+    "convertToLocalProfile": MessageLookupByLibrary.simpleMessage(
+      "Сделать локальным профилем",
+    ),
+    "convertToLocalProfileDesc": MessageLookupByLibrary.simpleMessage(
+      "Отвязать ссылку подписки, чтобы обновления больше не перезаписывали профиль",
+    ),
     "copy": MessageLookupByLibrary.simpleMessage("Копировать"),
     "copyEnvVar": MessageLookupByLibrary.simpleMessage(
       "Копировать переменные окружения",
@@ -344,10 +372,19 @@ class MessageLookup extends MessageLookupByLibrary {
     "crashDetectedTip": m1,
     "crashTest": MessageLookupByLibrary.simpleMessage("Тест сбоя"),
     "create": MessageLookupByLibrary.simpleMessage("Создать"),
-    "createProfile": MessageLookupByLibrary.simpleMessage("Создать профиль"),
+    "createProfile": MessageLookupByLibrary.simpleMessage(
+      "Добавить свой профиль",
+    ),
+    "createProfileDesc": MessageLookupByLibrary.simpleMessage(
+      "Начать с нуля и добавить узлы вручную",
+    ),
     "createProfileFromUrlTip": m2,
     "creationTime": MessageLookupByLibrary.simpleMessage("Время создания"),
+    "currentSelected": MessageLookupByLibrary.simpleMessage("Текущий"),
     "custom": MessageLookupByLibrary.simpleMessage("Вручную"),
+    "customOverwriteRequired": MessageLookupByLibrary.simpleMessage(
+      "Свои группы прокси хранятся в данных переопределения и не теряются при обновлении подписки. Переключиться в режим «свой»?",
+    ),
     "cut": MessageLookupByLibrary.simpleMessage("Вырезать"),
     "dark": MessageLookupByLibrary.simpleMessage("Тёмная"),
     "dashboard": MessageLookupByLibrary.simpleMessage("Панель"),
@@ -797,6 +834,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "palette": MessageLookupByLibrary.simpleMessage("Палитра"),
     "password": MessageLookupByLibrary.simpleMessage("Пароль"),
     "paste": MessageLookupByLibrary.simpleMessage("Вставить"),
+    "pasteFromClipboard": MessageLookupByLibrary.simpleMessage(
+      "Вставить из буфера обмена",
+    ),
     "pickFromAlbum": MessageLookupByLibrary.simpleMessage("Выбрать из галереи"),
     "pinWindow": MessageLookupByLibrary.simpleMessage(
       "Закрепить поверх всех окон",
@@ -832,6 +872,9 @@ class MessageLookup extends MessageLookupByLibrary {
         MessageLookupByLibrary.simpleMessage("Введите корректный интервал"),
     "profileAutoUpdateIntervalNullValidationDesc":
         MessageLookupByLibrary.simpleMessage("Введите интервал автообновления"),
+    "profileConvertedToLocal": MessageLookupByLibrary.simpleMessage(
+      "Профиль преобразован в локальный",
+    ),
     "profileHasUpdate": MessageLookupByLibrary.simpleMessage(
       "Профиль изменён. Отключить автообновление?",
     ),
@@ -851,7 +894,36 @@ class MessageLookup extends MessageLookupByLibrary {
     "proxies": MessageLookupByLibrary.simpleMessage("Прокси"),
     "proxiesCount": m25,
     "proxiesEmpty": MessageLookupByLibrary.simpleMessage("Список прокси пуст"),
+    "proxyChainClear": MessageLookupByLibrary.simpleMessage("Убрать цепочку"),
+    "proxyChainCleared": MessageLookupByLibrary.simpleMessage(
+      "Цепочка прокси удалена",
+    ),
+    "proxyChainExisting": m26,
+    "proxyChainExit": MessageLookupByLibrary.simpleMessage("Узел выхода"),
+    "proxyChainExitHint": MessageLookupByLibrary.simpleMessage(
+      "Узел, который выходит в интернет последним",
+    ),
+    "proxyChainFront": MessageLookupByLibrary.simpleMessage("Передний прокси"),
+    "proxyChainFrontHint": MessageLookupByLibrary.simpleMessage(
+      "Через него трафик идёт сначала — узел или группа",
+    ),
+    "proxyChainGroupsSection": MessageLookupByLibrary.simpleMessage("Группы"),
+    "proxyChainNoNodes": MessageLookupByLibrary.simpleMessage(
+      "В этом профиле нет узлов, которые можно редактировать напрямую. Цепочка записывается в сам профиль, поэтому узлы из провайдера изменить нельзя — сначала добавьте узел.",
+    ),
+    "proxyChainNodesSection": MessageLookupByLibrary.simpleMessage("Узлы"),
+    "proxyChainPickExit": MessageLookupByLibrary.simpleMessage(
+      "Выберите узел выхода",
+    ),
+    "proxyChainPickFront": MessageLookupByLibrary.simpleMessage(
+      "Выберите передний прокси",
+    ),
+    "proxyChainSaved": m27,
     "proxyChains": MessageLookupByLibrary.simpleMessage("Цепочка прокси"),
+    "proxyDelayTestHint": MessageLookupByLibrary.simpleMessage(
+      "Нажмите для теста",
+    ),
+    "proxyDelayTestNow": MessageLookupByLibrary.simpleMessage("Тест"),
     "proxyDetectedAbnormal": MessageLookupByLibrary.simpleMessage(
       "Обнаружены отклонения в выбранных прокси",
     ),
@@ -896,6 +968,11 @@ class MessageLookup extends MessageLookupByLibrary {
     "rainbowScheme": MessageLookupByLibrary.simpleMessage("Радуга"),
     "redirPort": MessageLookupByLibrary.simpleMessage("Порт Redir"),
     "redo": MessageLookupByLibrary.simpleMessage("Повторить"),
+    "relayGroupFixed": m28,
+    "relayGroupRemovedConfirm": m29,
+    "relayGroupRemovedTip": MessageLookupByLibrary.simpleMessage(
+      "Тип «relay» удалён из ядра — из-за него профиль целиком не загружается",
+    ),
     "remote": MessageLookupByLibrary.simpleMessage("Удалённо"),
     "remoteBackupDesc": MessageLookupByLibrary.simpleMessage(
       "Резервное копирование данных в WebDAV",
@@ -1085,7 +1162,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "ruleSet": MessageLookupByLibrary.simpleMessage("Набор правил"),
     "ruleTarget": MessageLookupByLibrary.simpleMessage("Цель правила"),
     "rules": MessageLookupByLibrary.simpleMessage("Правила"),
-    "rulesCount": m26,
+    "rulesCount": m30,
     "save": MessageLookupByLibrary.simpleMessage("Сохранить"),
     "saveChanges": MessageLookupByLibrary.simpleMessage("Сохранить изменения?"),
     "script": MessageLookupByLibrary.simpleMessage("Скрипт"),
@@ -1097,7 +1174,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "search": MessageLookupByLibrary.simpleMessage("Поиск"),
     "seconds": MessageLookupByLibrary.simpleMessage("секунд"),
-    "secondsCount": m27,
+    "secondsCount": m31,
     "selectAll": MessageLookupByLibrary.simpleMessage("Выбрать всё"),
     "selectMatchTarget": MessageLookupByLibrary.simpleMessage(
       "Выбрать MATCH-TARGET",
@@ -1116,7 +1193,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Выберите подправило",
     ),
     "selected": MessageLookupByLibrary.simpleMessage("Выбрано"),
-    "selectedCountTitle": m28,
+    "selectedCountTitle": m32,
     "settings": MessageLookupByLibrary.simpleMessage("Настройки"),
     "show": MessageLookupByLibrary.simpleMessage("Показать"),
     "showLess": MessageLookupByLibrary.simpleMessage("Свернуть"),
@@ -1134,6 +1211,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "Запускаться в фоновом режиме",
     ),
     "size": MessageLookupByLibrary.simpleMessage("Размер"),
+    "skippedDuplicateNodes": MessageLookupByLibrary.simpleMessage(
+      "Пропущены узлы, имена которых уже есть в профиле",
+    ),
     "socksPort": MessageLookupByLibrary.simpleMessage("Порт SOCKS"),
     "sort": MessageLookupByLibrary.simpleMessage("Сортировка"),
     "source": MessageLookupByLibrary.simpleMessage("Источник"),
@@ -1170,6 +1250,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "Подправило не может быть пустым",
     ),
     "submit": MessageLookupByLibrary.simpleMessage("Отправить"),
+    "subscribeOverwriteWarning": MessageLookupByLibrary.simpleMessage(
+      "Профиль получен по ссылке подписки: обновление подписки перезапишет добавленные узлы",
+    ),
     "subscriptionInfo": MessageLookupByLibrary.simpleMessage(
       "Информация о подписке",
     ),
@@ -1242,10 +1325,13 @@ class MessageLookup extends MessageLookupByLibrary {
     "unnamed": MessageLookupByLibrary.simpleMessage("Без названия"),
     "unpinWindow": MessageLookupByLibrary.simpleMessage("Открепить окно"),
     "update": MessageLookupByLibrary.simpleMessage("Обновить"),
+    "updateSubscription": MessageLookupByLibrary.simpleMessage(
+      "Обновить подписку",
+    ),
     "upload": MessageLookupByLibrary.simpleMessage("Отдача"),
     "url": MessageLookupByLibrary.simpleMessage("URL"),
     "urlDesc": MessageLookupByLibrary.simpleMessage("Получить профиль по URL"),
-    "urlTip": m29,
+    "urlTip": m33,
     "useHosts": MessageLookupByLibrary.simpleMessage("Использовать hosts"),
     "useSystemHosts": MessageLookupByLibrary.simpleMessage(
       "Использовать системный hosts",
@@ -1272,7 +1358,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "whitelistMode": MessageLookupByLibrary.simpleMessage(
       "Режим белого списка",
     ),
-    "yearsAgo": m30,
+    "yearsAgo": m34,
     "zhCN": MessageLookupByLibrary.simpleMessage("Упрощённый китайский"),
   };
 }

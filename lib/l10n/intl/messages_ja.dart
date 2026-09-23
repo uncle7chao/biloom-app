@@ -75,15 +75,24 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m25(count) => "プロキシ ${count} 件";
 
-  static String m26(count) => "ルール ${count} 件";
+  static String m26(front) => "前置: ${front}";
 
-  static String m27(count) => "${count} 秒";
+  static String m27(front, exit) => "有効: ${front} → ${exit}";
 
-  static String m28(count) => "${count} 件選択中";
+  static String m28(count) => "${count} 個のグループを修正しました";
 
-  static String m29(label) => "${label}はURLである必要があります";
+  static String m29(count) =>
+      "チェーンプロキシ型のグループが ${count} 個あります。この型はカーネルから削除されたため、残すとプロファイル全体が読み込めません。「手動選択」に変更しますか？";
 
-  static String m30(count) => "${count} 年前";
+  static String m30(count) => "ルール ${count} 件";
+
+  static String m31(count) => "${count} 秒";
+
+  static String m32(count) => "${count} 件選択中";
+
+  static String m33(label) => "${label}はURLである必要があります";
+
+  static String m34(count) => "${count} 年前";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -112,7 +121,15 @@ class MessageLookup extends MessageLookupByLibrary {
     "add": MessageLookupByLibrary.simpleMessage("追加"),
     "addProfile": MessageLookupByLibrary.simpleMessage("プロファイルを追加"),
     "addProxies": MessageLookupByLibrary.simpleMessage("プロキシを追加"),
+    "addProxyChain": MessageLookupByLibrary.simpleMessage("チェーンプロキシを追加"),
+    "addProxyChainDesc": MessageLookupByLibrary.simpleMessage(
+      "複数のノードを順に接続し、トラフィックを多段で転送します",
+    ),
     "addProxyGroup": MessageLookupByLibrary.simpleMessage("プロキシグループを追加"),
+    "addProxyNode": MessageLookupByLibrary.simpleMessage("ノードを追加"),
+    "addProxyNodeDesc": MessageLookupByLibrary.simpleMessage(
+      "共有リンクまたは YAML 断片を貼り付け（vless / vmess / ss / trojan / hysteria2 など）",
+    ),
     "addProxyProviders": MessageLookupByLibrary.simpleMessage("プロキシプロバイダーを追加"),
     "addRule": MessageLookupByLibrary.simpleMessage("ルールを追加"),
     "addSsid": MessageLookupByLibrary.simpleMessage("SSIDを追加"),
@@ -216,6 +233,9 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "clearData": MessageLookupByLibrary.simpleMessage("データを消去"),
     "clearSearch": MessageLookupByLibrary.simpleMessage("検索をクリア"),
+    "clipboardEmpty": MessageLookupByLibrary.simpleMessage(
+      "クリップボードに使える内容がありません",
+    ),
     "clipboardExport": MessageLookupByLibrary.simpleMessage("クリップボードへエクスポート"),
     "clipboardImport": MessageLookupByLibrary.simpleMessage("クリップボードからインポート"),
     "close": MessageLookupByLibrary.simpleMessage("閉じる"),
@@ -255,6 +275,12 @@ class MessageLookup extends MessageLookupByLibrary {
     "controlGlobalAddedRules": MessageLookupByLibrary.simpleMessage(
       "グローバル追加ルールを管理",
     ),
+    "convertToLocalProfile": MessageLookupByLibrary.simpleMessage(
+      "ローカルプロファイルに変換",
+    ),
+    "convertToLocalProfileDesc": MessageLookupByLibrary.simpleMessage(
+      "購読リンクを解除し、今後の更新で上書きされないようにします",
+    ),
     "copy": MessageLookupByLibrary.simpleMessage("コピー"),
     "copyEnvVar": MessageLookupByLibrary.simpleMessage("環境変数をコピー"),
     "copyLink": MessageLookupByLibrary.simpleMessage("リンクをコピー"),
@@ -270,10 +296,15 @@ class MessageLookup extends MessageLookupByLibrary {
     "crashDetectedTip": m1,
     "crashTest": MessageLookupByLibrary.simpleMessage("クラッシュテスト"),
     "create": MessageLookupByLibrary.simpleMessage("作成"),
-    "createProfile": MessageLookupByLibrary.simpleMessage("プロファイルを作成"),
+    "createProfile": MessageLookupByLibrary.simpleMessage("カスタムプロファイルを追加"),
+    "createProfileDesc": MessageLookupByLibrary.simpleMessage("ゼロから手動でノードを追加"),
     "createProfileFromUrlTip": m2,
     "creationTime": MessageLookupByLibrary.simpleMessage("作成日時"),
+    "currentSelected": MessageLookupByLibrary.simpleMessage("現在"),
     "custom": MessageLookupByLibrary.simpleMessage("カスタム"),
+    "customOverwriteRequired": MessageLookupByLibrary.simpleMessage(
+      "カスタムプロキシグループは上書きデータに保存されるため、購読更新で失われません。カスタムモードに切り替えますか？",
+    ),
     "cut": MessageLookupByLibrary.simpleMessage("切り取り"),
     "dark": MessageLookupByLibrary.simpleMessage("ダーク"),
     "dashboard": MessageLookupByLibrary.simpleMessage("ダッシュボード"),
@@ -629,6 +660,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "palette": MessageLookupByLibrary.simpleMessage("パレット"),
     "password": MessageLookupByLibrary.simpleMessage("パスワード"),
     "paste": MessageLookupByLibrary.simpleMessage("貼り付け"),
+    "pasteFromClipboard": MessageLookupByLibrary.simpleMessage("クリップボードから貼り付け"),
     "pickFromAlbum": MessageLookupByLibrary.simpleMessage("アルバムから選択"),
     "pinWindow": MessageLookupByLibrary.simpleMessage("最前面に固定"),
     "pleaseBindWebDAV": MessageLookupByLibrary.simpleMessage("WebDAVを連携してください"),
@@ -652,6 +684,9 @@ class MessageLookup extends MessageLookupByLibrary {
         MessageLookupByLibrary.simpleMessage("有効な間隔を入力してください"),
     "profileAutoUpdateIntervalNullValidationDesc":
         MessageLookupByLibrary.simpleMessage("自動更新間隔を入力してください"),
+    "profileConvertedToLocal": MessageLookupByLibrary.simpleMessage(
+      "ローカルプロファイルに変換しました",
+    ),
     "profileHasUpdate": MessageLookupByLibrary.simpleMessage(
       "プロファイルが変更されています。自動更新を無効にしますか？",
     ),
@@ -671,7 +706,28 @@ class MessageLookup extends MessageLookupByLibrary {
     "proxies": MessageLookupByLibrary.simpleMessage("プロキシ"),
     "proxiesCount": m25,
     "proxiesEmpty": MessageLookupByLibrary.simpleMessage("プロキシが空です"),
+    "proxyChainClear": MessageLookupByLibrary.simpleMessage("チェーンを解除"),
+    "proxyChainCleared": MessageLookupByLibrary.simpleMessage(
+      "チェーンプロキシを解除しました",
+    ),
+    "proxyChainExisting": m26,
+    "proxyChainExit": MessageLookupByLibrary.simpleMessage("出口ノード"),
+    "proxyChainExitHint": MessageLookupByLibrary.simpleMessage("最終的に外部へ出るノード"),
+    "proxyChainFront": MessageLookupByLibrary.simpleMessage("前置プロキシ"),
+    "proxyChainFrontHint": MessageLookupByLibrary.simpleMessage(
+      "先に経由するもの。ノードまたはグループを指定できます",
+    ),
+    "proxyChainGroupsSection": MessageLookupByLibrary.simpleMessage("グループ"),
+    "proxyChainNoNodes": MessageLookupByLibrary.simpleMessage(
+      "このプロファイルには直接編集できるノードがありません。チェーンはプロファイル本文に書き込むため、プロキシプロバイダ由来のノードには設定できません。先にノードを追加してください。",
+    ),
+    "proxyChainNodesSection": MessageLookupByLibrary.simpleMessage("ノード"),
+    "proxyChainPickExit": MessageLookupByLibrary.simpleMessage("出口ノードを選択"),
+    "proxyChainPickFront": MessageLookupByLibrary.simpleMessage("前置プロキシを選択"),
+    "proxyChainSaved": m27,
     "proxyChains": MessageLookupByLibrary.simpleMessage("プロキシチェーン"),
+    "proxyDelayTestHint": MessageLookupByLibrary.simpleMessage("タップして計測"),
+    "proxyDelayTestNow": MessageLookupByLibrary.simpleMessage("計測"),
     "proxyDetectedAbnormal": MessageLookupByLibrary.simpleMessage(
       "選択したプロキシに異常が見つかりました",
     ),
@@ -712,6 +768,11 @@ class MessageLookup extends MessageLookupByLibrary {
     "rainbowScheme": MessageLookupByLibrary.simpleMessage("レインボー"),
     "redirPort": MessageLookupByLibrary.simpleMessage("Redirポート"),
     "redo": MessageLookupByLibrary.simpleMessage("やり直す"),
+    "relayGroupFixed": m28,
+    "relayGroupRemovedConfirm": m29,
+    "relayGroupRemovedTip": MessageLookupByLibrary.simpleMessage(
+      "チェーンプロキシ型はカーネルから削除されており、プロファイル全体が読み込めなくなります",
+    ),
     "remote": MessageLookupByLibrary.simpleMessage("リモート"),
     "remoteBackupDesc": MessageLookupByLibrary.simpleMessage(
       "WebDAVにデータをバックアップします",
@@ -863,7 +924,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "ruleSet": MessageLookupByLibrary.simpleMessage("ルールセット"),
     "ruleTarget": MessageLookupByLibrary.simpleMessage("ルールターゲット"),
     "rules": MessageLookupByLibrary.simpleMessage("ルール"),
-    "rulesCount": m26,
+    "rulesCount": m30,
     "save": MessageLookupByLibrary.simpleMessage("保存"),
     "saveChanges": MessageLookupByLibrary.simpleMessage("変更を保存しますか？"),
     "script": MessageLookupByLibrary.simpleMessage("スクリプト"),
@@ -873,7 +934,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "scrollToSelected": MessageLookupByLibrary.simpleMessage("選択項目へスクロール"),
     "search": MessageLookupByLibrary.simpleMessage("検索"),
     "seconds": MessageLookupByLibrary.simpleMessage("秒"),
-    "secondsCount": m27,
+    "secondsCount": m31,
     "selectAll": MessageLookupByLibrary.simpleMessage("すべて選択"),
     "selectMatchTarget": MessageLookupByLibrary.simpleMessage(
       "MATCH-TARGET を選択",
@@ -888,7 +949,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "selectSubRule": MessageLookupByLibrary.simpleMessage("サブルールを選択してください"),
     "selected": MessageLookupByLibrary.simpleMessage("選択済み"),
-    "selectedCountTitle": m28,
+    "selectedCountTitle": m32,
     "settings": MessageLookupByLibrary.simpleMessage("設定"),
     "show": MessageLookupByLibrary.simpleMessage("表示"),
     "showLess": MessageLookupByLibrary.simpleMessage("折りたたむ"),
@@ -904,6 +965,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "silentLaunch": MessageLookupByLibrary.simpleMessage("サイレント起動"),
     "silentLaunchDesc": MessageLookupByLibrary.simpleMessage("バックグラウンドで起動します"),
     "size": MessageLookupByLibrary.simpleMessage("サイズ"),
+    "skippedDuplicateNodes": MessageLookupByLibrary.simpleMessage(
+      "以下のノードは既存の名前と重複するためスキップしました",
+    ),
     "socksPort": MessageLookupByLibrary.simpleMessage("SOCKSポート"),
     "sort": MessageLookupByLibrary.simpleMessage("並べ替え"),
     "source": MessageLookupByLibrary.simpleMessage("ソース"),
@@ -932,6 +996,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "subRuleEmpty": MessageLookupByLibrary.simpleMessage("サブルールが空です"),
     "subRuleNotEmpty": MessageLookupByLibrary.simpleMessage("サブルールは空にできません"),
     "submit": MessageLookupByLibrary.simpleMessage("送信"),
+    "subscribeOverwriteWarning": MessageLookupByLibrary.simpleMessage(
+      "このプロファイルは購読リンク由来です。購読を更新すると追加したノードは上書きされます",
+    ),
     "subscriptionInfo": MessageLookupByLibrary.simpleMessage("サブスクリプション情報"),
     "suspended": MessageLookupByLibrary.simpleMessage("一時停止中..."),
     "switchToTun": MessageLookupByLibrary.simpleMessage("TUN に切り替える"),
@@ -986,10 +1053,11 @@ class MessageLookup extends MessageLookupByLibrary {
     "unnamed": MessageLookupByLibrary.simpleMessage("名称未設定"),
     "unpinWindow": MessageLookupByLibrary.simpleMessage("固定を解除"),
     "update": MessageLookupByLibrary.simpleMessage("更新"),
+    "updateSubscription": MessageLookupByLibrary.simpleMessage("サブスクリプションを更新"),
     "upload": MessageLookupByLibrary.simpleMessage("アップロード"),
     "url": MessageLookupByLibrary.simpleMessage("URL"),
     "urlDesc": MessageLookupByLibrary.simpleMessage("URLからプロファイルを取得します"),
-    "urlTip": m29,
+    "urlTip": m33,
     "useHosts": MessageLookupByLibrary.simpleMessage("Hostsを使用"),
     "useSystemHosts": MessageLookupByLibrary.simpleMessage("システムのHostsを使用"),
     "usedTraffic": MessageLookupByLibrary.simpleMessage("使用済みトラフィック"),
@@ -1006,7 +1074,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "vpnTip": MessageLookupByLibrary.simpleMessage("変更はVPNの再起動後に有効になります"),
     "webDAVConfiguration": MessageLookupByLibrary.simpleMessage("WebDAV設定"),
     "whitelistMode": MessageLookupByLibrary.simpleMessage("ホワイトリストモード"),
-    "yearsAgo": m30,
+    "yearsAgo": m34,
     "zhCN": MessageLookupByLibrary.simpleMessage("簡体字中国語"),
   };
 }

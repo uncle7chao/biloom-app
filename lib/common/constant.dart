@@ -114,8 +114,10 @@ const profilesStoreKey = PageStorageKey<String>('profiles');
 const defaultPrimaryColor = 0XFFD8C0C3;
 
 double getWidgetHeight(num lines) {
-  final space = 14.mAp;
-  return max(lines * (80.ap + space) - space, 0);
+  // 间隙和下面对齐（dashboard 的栅格间距也是 18），行高提到 88 是为了让卡片里的
+  // 主数值能用标题级字号 —— 一行 80 时正文级字号刚好贴边，换大一号就溢出。
+  final space = 18.mAp;
+  return max(lines * (88.ap + space) - space, 0);
 }
 
 const maxLogsLength = 5000;

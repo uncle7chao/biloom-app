@@ -11,7 +11,20 @@ part 'generated/profile.freezed.dart';
 part 'generated/profile.g.dart';
 
 typedef ValidateConfig = Future<String> Function(String path);
-typedef ConvertSubscription = Future<Uint8List> Function(Uint8List bytes);
+
+/// 把任意订阅内容转成标准 Clash 配置。
+///
+/// [fromRemote] 区分**这些字节是从哪来的**：`true` 表示刚下载回来的响应体，
+/// 这时「空」意味着链接有问题（过期/被限流/被墙），必须报错；缺省（本地文件、
+/// 编辑页保存）时空内容**是合法状态**，内核会按默认值跑。
+///
+/// 上游没有这个维度：两处来源共用一个回调，于是那句为「下载」写的空守卫
+/// 拦掉了「本地保存」——内核早就为此做好的空 profile 短路（core/subscription.go
+/// 的 blankSubscription）等于没生效。
+typedef ConvertSubscription = Future<Uint8List> Function(
+  Uint8List bytes, {
+  bool? fromRemote,
+});
 
 @freezed
 abstract class SubscriptionInfo with _$SubscriptionInfo {
@@ -192,7 +205,10 @@ extension ProfileExtension on Profile {
       ]),
       subscriptionInfo: SubscriptionInfo.formHString(userinfo),
     ).saveFile(
+      // 这是刚下载回来的响应体。正文为空是「链接有问题」而不是「本地配置是空的」，
+      // 两者必须分开 —— 详见 [ConvertSubscription] 的说明。
       response.data ?? Uint8List.fromList([]),
+      fromRemote: true,
       validate: validate,
       convert: convert,
     );
@@ -200,6 +216,7 @@ extension ProfileExtension on Profile {
 
   Future<Profile> saveFile(
     Uint8List bytes, {
+    bool fromRemote = false,
     required ValidateConfig validate,
     required ConvertSubscription convert,
   }) async {
@@ -207,7 +224,10 @@ extension ProfileExtension on Profile {
     // ssd:// 与 sing-box 配置，这里先转成标准 Clash 配置再落盘，好处是 profile 文件
     // 本身始终是人类可读的 Clash 配置 —— 编辑配置页、覆写模板、节点页、延迟测试
     // 全都不必知道订阅原本是什么格式。
-    final data = await convert(bytes);
+    //
+    // 空内容同样走这里，且**不能被拦**：本地保存一份空配置是合法状态（新建的空白
+    // 配置、被用户清空的配置），转换器会原样放行，落盘后由内核按默认值跑。
+    final data = await convert(bytes, fromRemote: fromRemote);
     final path = await appPath.tempFilePath;
     final tempFile = File(path);
     await tempFile.safeWriteAsBytes(data);

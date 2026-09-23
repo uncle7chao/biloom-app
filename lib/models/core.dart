@@ -217,3 +217,103 @@ class ConvertSubscriptionResult {
     );
   }
 }
+
+/// 往配置里追加节点的结果。
+///
+/// [skipped] 不是失败：Clash 里同名节点会让整份配置加载失败，所以重名的只能留一个。
+/// 内核选择跳过并如实回报，由调用方转成用户看得懂的提示（「跳过 2 个重名节点」）——
+/// 静默丢弃会让用户以为加成功了，然后在节点列表里怎么都找不到。
+class AddProxyNodesResult {
+  const AddProxyNodesResult({
+    required this.yaml,
+    required this.added,
+    required this.skipped,
+  });
+
+  /// 追加之后的配置全文。
+  final String yaml;
+
+  /// 真正加进去的节点名，按输入顺序。
+  final List<String> added;
+
+  /// 因为重名而被跳过的节点名。
+  final List<String> skipped;
+
+  factory AddProxyNodesResult.fromJson(Map<String, dynamic> json) {
+    return AddProxyNodesResult(
+      yaml: json['yaml'] as String? ?? '',
+      added: (json['added'] as List?)?.whereType<String>().toList() ?? const [],
+      skipped:
+          (json['skipped'] as List?)?.whereType<String>().toList() ?? const [],
+    );
+  }
+}
+
+/// 链式代理能引用的一项：一个节点，或者一个策略组。
+///
+/// [dialer] 只对节点有意义 —— 链挂在**节点**上（`dialer-proxy` 是 proxy 级选项），
+/// 所以组的 [dialer] 恒为空。[type] 是给界面显示的（ss / vmess / Selector …）。
+class ProfileTarget {
+  const ProfileTarget({
+    required this.name,
+    required this.type,
+    required this.dialer,
+  });
+
+  final String name;
+  final String type;
+
+  /// 该节点当前的前置代理名；没设过链时为空串。
+  final String dialer;
+
+  bool get isChained => dialer.isNotEmpty;
+
+  factory ProfileTarget.fromJson(Map<String, dynamic> json) {
+    return ProfileTarget(
+      name: json['name'] as String? ?? '',
+      type: json['type'] as String? ?? '',
+      dialer: json['dialer'] as String? ?? '',
+    );
+  }
+}
+
+/// 配置里可以做链式代理的候选名单。
+///
+/// 名单只能从**配置本身**读：节点名与策略组名共用 Clash 的命名空间，而覆写数据里
+/// 并没有完整名单，运行时那份 ClashConfig 反映的又是「当前已生效的配置」——
+/// 用户正在编辑的这一份未必是它。
+class ProfileTargets {
+  const ProfileTargets({required this.proxies, required this.groups});
+
+  final List<ProfileTarget> proxies;
+  final List<ProfileTarget> groups;
+
+  static const ProfileTargets empty = ProfileTargets(
+    proxies: [],
+    groups: [],
+  );
+
+  factory ProfileTargets.fromJson(Map<String, dynamic> json) {
+    List<ProfileTarget> read(String key) {
+      final raw = json[key];
+      if (raw is! List) return const [];
+      return raw
+          .whereType<Map>()
+          .map((item) => ProfileTarget.fromJson(item.cast<String, dynamic>()))
+          .toList();
+    }
+
+    return ProfileTargets(proxies: read('proxies'), groups: read('groups'));
+  }
+}
+
+/// 写入链式代理后的配置全文。
+class SetProxyChainResult {
+  const SetProxyChainResult({required this.yaml});
+
+  final String yaml;
+
+  factory SetProxyChainResult.fromJson(Map<String, dynamic> json) {
+    return SetProxyChainResult(yaml: json['yaml'] as String? ?? '');
+  }
+}

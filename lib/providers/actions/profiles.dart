@@ -43,9 +43,25 @@ class ProfilesAction extends _$ProfilesAction {
   ///
   /// 内核报出来的都是面向用户的中文说明，这里统一改包成 [MessageException]，
   /// 好让它走和「配置校验失败」一样的提示通道（同一个错误弹窗）。
-  Future<Uint8List> convertSubscription(Uint8List bytes) async {
+  ///
+  /// [fromRemote] 表示字节是刚下载回来的响应体。只有这种来源下「空内容」才是错误；
+  /// 本地保存空配置（新建空白配置、清空编辑器）是合法状态，必须放行 —— 见
+  /// [ConvertSubscription] 的说明。
+  Future<Uint8List> convertSubscription(
+    Uint8List bytes, {
+    bool? fromRemote,
+  }) async {
     if (bytes.isEmpty) {
-      throw const MessageException('订阅内容为空，请检查链接是否可以正常访问');
+      // 「服务端响应了、正文却是空的」只可能发生在下载路径上：链接过期、被限流、被墙。
+      if (fromRemote == true) {
+        throw const MessageException('订阅内容为空，请检查链接是否可以正常访问');
+      }
+      // 本地空配置。这里直接原样返回，**不再问内核**：内核的 handleConvertSubscription
+      // 是给「刚下载的内容」写的，对空输入同样回上面那句「订阅内容为空」—— 对本地
+      // 场景文不对题；而读磁盘那条路径（subscriptionToProfileYAML）早就为这个场景
+      // 做了 blankSubscription 短路。上游把两处来源混在一个回调里，才让那句为下载
+      // 写的提示拦掉了本地保存。
+      return bytes;
     }
     try {
       final result = await _core.convertSubscription(
@@ -146,6 +162,36 @@ class ProfilesAction extends _$ProfilesAction {
     }
   }
 
+  /// 新建一份空白配置。
+  ///
+  /// 空配置是内核认可的合法状态（`core/subscription.go` 的 blankSubscription 专门为它
+  /// 短路，否则新建的配置一加载就报「无法识别的订阅」）。落盘后 makeRealProfile 会补齐
+  /// 端口/DNS/TUN/rules 等脚手架，所以它是一份「合法、但还没有节点的完整配置」。
+  ///
+  /// 这是唯一一条**不依赖任何外部来源**（订阅链接 / 本地文件 / 二维码）的入口 ——
+  /// 用户的诉求就是「像别的软件那样先建个空的，再自己往里加节点」。
+  Future<void> addProfileFormBlank([String label = '']) async {
+    final trimmed = label.trim();
+    final profile = await globalState.loadingRun(
+      tag: LoadingTag.profiles,
+      () async {
+        return Profile.normal(
+          label: trimmed.isEmpty ? null : trimmed,
+        ).saveFile(
+          // 真的落 0 字节：不替用户写任何「模板」。约定就是「空 = 按默认值跑」，
+          // 塞一份骨架反而会让内核那条短路失去意义。
+          Uint8List(0),
+          validate: (path) => _core.validateConfig(path),
+          convert: convertSubscription,
+        );
+      },
+      title: currentAppLocalizations.createProfile,
+    );
+    if (profile == null) return;
+    ref.read(currentPageLabelProvider.notifier).toProfiles();
+    putProfile(profile);
+  }
+
   Future<void> addProfileFormURL(String url) async {
     if (globalState.navigatorKey.currentState?.canPop() ?? false) {
       globalState.navigatorKey.currentState?.popUntil((route) => route.isFirst);
@@ -203,5 +249,146 @@ class ProfilesAction extends _$ProfilesAction {
         logLevel: coreFailureLogLevel(error),
       );
     }
+  }
+
+  /// 三个「改配置」动作共用的一段收尾：整份写回 + 落库 + 必要时重新应用。
+  ///
+  /// 为什么整份写回、而不是在文件末尾追加一段文本：配置的其余部分是由内核在
+  /// **语法树层面**原样带回来的（注释、这版内核还不认识的顶层键都在），Dart 侧
+  /// 全程不解析 YAML，所以不存在「拼错一个缩进毁掉整份配置」的可能。
+  ///
+  /// 写回仍然过一遍 validate：用户手写的 YAML 片段里可能带内核不认的字段
+  /// （比如 type 写错），那必须当场报错 —— 让它一路落盘、直到下次连接时才
+  /// 加载失败，排查成本高得多。
+  Future<void> _saveEditedProfile(Profile profile, String yaml) async {
+    final saved = await profile.saveFile(
+      Uint8List.fromList(utf8.encode(yaml)),
+      validate: (path) => _core.validateConfig(path),
+      convert: convertSubscription,
+    );
+    setProfileAndAutoApply(saved);
+  }
+
+  /// 往指定配置里追加节点，返回内核的处理结果（失败时返回 null）。
+  ///
+  /// [nodes] 同时接受分享链接（可多行批量粘贴）与 YAML 片段，由内核自己判断是哪
+  /// 一种 —— 所以界面上只需要一个粘贴框，不必先让用户选「你要加哪种」。
+  ///
+  /// 返回体里的 `skipped` 是重名被跳过的节点：Clash 里同名节点会让整份配置加载
+  /// 失败，所以只能留一个。调用方应当把这件事提示给用户 —— 静默跳过会让他以为
+  /// 加成功了，然后在节点列表里怎么都找不到。
+  Future<AddProxyNodesResult?> addProxyNodesToProfile({
+    required int profileId,
+    required String nodes,
+  }) async {
+    return globalState.loadingRun(
+      tag: LoadingTag.profiles,
+      () async {
+        final profile = ref.read(profilesProvider).getProfile(profileId);
+        if (profile == null) {
+          throw const MessageException('找不到这份配置，可能已被删除');
+        }
+        final file = await profile.file;
+        final edited = await _core.addProxyNodes(
+          yaml: await file.readAsString(),
+          nodes: nodes,
+        );
+        if (edited.added.isEmpty && edited.skipped.isEmpty) {
+          throw const MessageException('没有解析出任何节点');
+        }
+        await _saveEditedProfile(profile, edited.yaml);
+        return edited;
+      },
+      title: currentAppLocalizations.addProxyNode,
+    );
+  }
+
+  /// 列出这份配置里可以做链式代理的节点与策略组。
+  ///
+  /// 不套 [globalState.loadingRun]：界面自己有一层加载态，这里再盖一层全屏遮罩
+  /// 只会让「打开面板」这个动作闪一下白。失败照常往外抛，由调用方决定怎么说。
+  Future<ProfileTargets> readProfileTargets(int profileId) async {
+    final profile = ref.read(profilesProvider).getProfile(profileId);
+    if (profile == null) {
+      throw const MessageException('找不到这份配置，可能已被删除');
+    }
+    final file = await profile.file;
+    return _core.readProfileTargets(yaml: await file.readAsString());
+  }
+
+  /// 给某个节点挂上（[dialer] 非空）或解除（[dialer] 为空）前置代理。
+  ///
+  /// 链式代理写的是配置里的 `dialer-proxy` 字段 —— 本内核已经没有 `type: relay`
+  /// 这种分组了（见 `core/profile_edit.go` 的说明），所以链只能挂在节点上。
+  ///
+  /// 指向不存在的名字会让整份配置加载失败，但 `validateConfig` **拦不住**它
+  /// （那道校验只做 UnmarshalRawConfig，不解析 dialer 解析），所以成环、重名、
+  /// 目标不是节点这些判断全部放在内核的 handleSetProxyChain 里。
+  Future<void> setProxyChainOnProfile({
+    required int profileId,
+    required String target,
+    required String dialer,
+  }) async {
+    return globalState.loadingRun(
+      tag: LoadingTag.profiles,
+      () async {
+        final profile = ref.read(profilesProvider).getProfile(profileId);
+        if (profile == null) {
+          throw const MessageException('找不到这份配置，可能已被删除');
+        }
+        final file = await profile.file;
+        final edited = await _core.setProxyChain(
+          yaml: await file.readAsString(),
+          target: target,
+          dialer: dialer,
+        );
+        await _saveEditedProfile(profile, edited.yaml);
+      },
+      title: currentAppLocalizations.addProxyChain,
+    );
+  }
+
+  /// 把订阅配置转为本地配置。
+  ///
+  /// 做法就是把 url 清空 —— 配置类型与自动更新都由「url 是否为空」推导
+  /// （见 ProfileExtension 的 type / realAutoUpdate），所以清空之后这份配置既不会再被
+  /// 自动更新，手动点「更新」也不会重新下载覆盖。
+  ///
+  /// 这是「往订阅配置里加节点」唯一能让改动长期留下来的办法：订阅正文每次更新都是
+  /// 整份覆盖，加进去的节点必然丢。代价是原订阅链接不再保存在配置里，所以调用方
+  /// 必须先把链接原文给用户看过、并得到明确确认。
+  Future<void> convertProfileToLocal(int profileId) async {
+    final profile = ref.read(profilesProvider).getProfile(profileId);
+    if (profile == null || profile.url.isEmpty) return;
+    ref
+        .read(profilesProvider.notifier)
+        .put(profile.copyWith(url: '', autoUpdate: false));
+  }
+
+  /// 把配置切到「自定义覆写」模式，并在自定义分组还是空的时候用当前分组填充一遍。
+  ///
+  /// 为什么必须先做这一步：自定义策略组存在**覆写数据**里（见
+  /// [database.setProfileCustomData]），只有 `overwriteType == custom` 时才生效。
+  /// 用户直接切过去会看到一个空列表 —— 而且此刻生效配置里一个分组都没有。上游的做法
+  /// 是弹出「检测到配置数据，一键填充」让用户点一下，这里把同一件事替他做掉。
+  ///
+  /// 只在自定义分组**确实是空**的时候才填充，绝不覆盖用户已经编好的自定义分组。
+  Future<void> ensureCustomOverwrite(int profileId) async {
+    final profile = ref.read(profilesProvider).getProfile(profileId);
+    if (profile == null) return;
+    if (profile.overwriteType != OverwriteType.custom) {
+      setProfileAndAutoApply(
+        profile.copyWith(overwriteType: OverwriteType.custom),
+      );
+    }
+    final count = await ref.read(proxyGroupsCountProvider(profileId).future);
+    if (count > 0) return;
+    final clashConfig = await ref.read(clashConfigProvider(profileId).future);
+    if (clashConfig.proxyGroups.isEmpty && clashConfig.rules.isEmpty) return;
+    await database.setProfileCustomData(
+      profileId,
+      clashConfig.proxyGroups,
+      clashConfig.rules,
+    );
   }
 }

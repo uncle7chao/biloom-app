@@ -3595,6 +3595,21 @@ class AppLocalizations {
     return Intl.message('Delay test', name: 'delayTest', desc: '', args: []);
   }
 
+  /// `Test`
+  String get proxyDelayTestNow {
+    return Intl.message('Test', name: 'proxyDelayTestNow', desc: '', args: []);
+  }
+
+  /// `Tap to test`
+  String get proxyDelayTestHint {
+    return Intl.message(
+      'Tap to test',
+      name: 'proxyDelayTestHint',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Proxy group is empty`
   String get proxyGroupEmpty {
     return Intl.message(
@@ -4560,14 +4575,314 @@ class AppLocalizations {
     );
   }
 
-  /// `Create profile`
+  /// `Add custom profile`
   String get createProfile {
     return Intl.message(
-      'Create profile',
+      'Add custom profile',
       name: 'createProfile',
       desc: '',
       args: [],
     );
+  }
+
+  /// `Start from scratch and add nodes manually`
+  String get createProfileDesc {
+    return Intl.message(
+      'Start from scratch and add nodes manually',
+      name: 'createProfileDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Add node`
+  String get addProxyNode {
+    return Intl.message('Add node', name: 'addProxyNode', desc: '', args: []);
+  }
+
+  /// `Paste a share link or YAML fragment — vless / vmess / ss / trojan / hysteria2 and more`
+  String get addProxyNodeDesc {
+    return Intl.message(
+      'Paste a share link or YAML fragment — vless / vmess / ss / trojan / hysteria2 and more',
+      name: 'addProxyNodeDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Add proxy chain`
+  String get addProxyChain {
+    return Intl.message(
+      'Add proxy chain',
+      name: 'addProxyChain',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Chain several nodes in order so traffic hops through each one`
+  String get addProxyChainDesc {
+    return Intl.message(
+      'Chain several nodes in order so traffic hops through each one',
+      name: 'addProxyChainDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Update subscription`
+  String get updateSubscription {
+    return Intl.message(
+      'Update subscription',
+      name: 'updateSubscription',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Exit node`
+  String get proxyChainExit {
+    return Intl.message(
+      'Exit node',
+      name: 'proxyChainExit',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The one that finally reaches the internet`
+  String get proxyChainExitHint {
+    return Intl.message(
+      'The one that finally reaches the internet',
+      name: 'proxyChainExitHint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Front proxy`
+  String get proxyChainFront {
+    return Intl.message(
+      'Front proxy',
+      name: 'proxyChainFront',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Traffic goes through it first — a node or a group`
+  String get proxyChainFrontHint {
+    return Intl.message(
+      'Traffic goes through it first — a node or a group',
+      name: 'proxyChainFrontHint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Choose an exit node`
+  String get proxyChainPickExit {
+    return Intl.message(
+      'Choose an exit node',
+      name: 'proxyChainPickExit',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Choose a front proxy`
+  String get proxyChainPickFront {
+    return Intl.message(
+      'Choose a front proxy',
+      name: 'proxyChainPickFront',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This profile has no inline nodes. A chain is written into the profile itself, so nodes coming from a proxy provider cannot be chained — add a node first.`
+  String get proxyChainNoNodes {
+    return Intl.message(
+      'This profile has no inline nodes. A chain is written into the profile itself, so nodes coming from a proxy provider cannot be chained — add a node first.',
+      name: 'proxyChainNoNodes',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Front: {front}`
+  String proxyChainExisting(Object front) {
+    return Intl.message(
+      'Front: $front',
+      name: 'proxyChainExisting',
+      desc: '',
+      args: [front],
+    );
+  }
+
+  /// `Active: {front} → {exit}`
+  String proxyChainSaved(Object front, Object exit) {
+    return Intl.message(
+      'Active: $front → $exit',
+      name: 'proxyChainSaved',
+      desc: '',
+      args: [front, exit],
+    );
+  }
+
+  /// `Proxy chain removed`
+  String get proxyChainCleared {
+    return Intl.message(
+      'Proxy chain removed',
+      name: 'proxyChainCleared',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Remove chain`
+  String get proxyChainClear {
+    return Intl.message(
+      'Remove chain',
+      name: 'proxyChainClear',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Groups`
+  String get proxyChainGroupsSection {
+    return Intl.message(
+      'Groups',
+      name: 'proxyChainGroupsSection',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Nodes`
+  String get proxyChainNodesSection {
+    return Intl.message(
+      'Nodes',
+      name: 'proxyChainNodesSection',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The relay group type was removed by the core — it breaks the whole profile`
+  String get relayGroupRemovedTip {
+    return Intl.message(
+      'The relay group type was removed by the core — it breaks the whole profile',
+      name: 'relayGroupRemovedTip',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Found {count} relay proxy group(s). The core removed this type, so keeping it makes the entire profile fail to load. Change them to "Selector" now?`
+  String relayGroupRemovedConfirm(Object count) {
+    return Intl.message(
+      'Found $count relay proxy group(s). The core removed this type, so keeping it makes the entire profile fail to load. Change them to "Selector" now?',
+      name: 'relayGroupRemovedConfirm',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `Fixed {count} group(s)`
+  String relayGroupFixed(Object count) {
+    return Intl.message(
+      'Fixed $count group(s)',
+      name: 'relayGroupFixed',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `Paste from clipboard`
+  String get pasteFromClipboard {
+    return Intl.message(
+      'Paste from clipboard',
+      name: 'pasteFromClipboard',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The clipboard has no usable content`
+  String get clipboardEmpty {
+    return Intl.message(
+      'The clipboard has no usable content',
+      name: 'clipboardEmpty',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Skipped — these names already exist in this profile`
+  String get skippedDuplicateNodes {
+    return Intl.message(
+      'Skipped — these names already exist in this profile',
+      name: 'skippedDuplicateNodes',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This profile comes from a subscription link; updating it will overwrite the nodes you add`
+  String get subscribeOverwriteWarning {
+    return Intl.message(
+      'This profile comes from a subscription link; updating it will overwrite the nodes you add',
+      name: 'subscribeOverwriteWarning',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Convert to local profile`
+  String get convertToLocalProfile {
+    return Intl.message(
+      'Convert to local profile',
+      name: 'convertToLocalProfile',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Detach the subscription link so future updates no longer overwrite this profile`
+  String get convertToLocalProfileDesc {
+    return Intl.message(
+      'Detach the subscription link so future updates no longer overwrite this profile',
+      name: 'convertToLocalProfileDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Custom proxy groups live in the overwrite data, so subscription updates cannot wipe them. Switch to custom mode now?`
+  String get customOverwriteRequired {
+    return Intl.message(
+      'Custom proxy groups live in the overwrite data, so subscription updates cannot wipe them. Switch to custom mode now?',
+      name: 'customOverwriteRequired',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Converted to a local profile`
+  String get profileConvertedToLocal {
+    return Intl.message(
+      'Converted to a local profile',
+      name: 'profileConvertedToLocal',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Current`
+  String get currentSelected {
+    return Intl.message('Current', name: 'currentSelected', desc: '', args: []);
   }
 
   /// `Location permission required`

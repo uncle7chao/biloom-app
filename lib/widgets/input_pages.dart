@@ -145,7 +145,7 @@ class _ListInputPageState extends ConsumerState<ListInputPage> {
     required bool isEditing,
   }) {
     final position = ItemPosition.get(index, length);
-    return ReorderableDelayedDragStartListener(
+    return CommonReorderableDragStartListener(
       key: ValueKey(value),
       index: index,
       child: ItemPositionProvider(
@@ -402,7 +402,7 @@ class _MapInputPageState extends ConsumerState<MapInputPage> {
     required bool isEditing,
   }) {
     final position = ItemPosition.get(index, length);
-    return ReorderableDelayedDragStartListener(
+    return CommonReorderableDragStartListener(
       key: ValueKey(value.key),
       index: index,
       child: ItemPositionProvider(

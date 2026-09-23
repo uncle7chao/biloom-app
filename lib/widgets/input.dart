@@ -13,6 +13,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'effect.dart';
 import 'list.dart';
+import 'reorderable.dart';
 import 'theme.dart';
 part 'input_pages.dart';
 

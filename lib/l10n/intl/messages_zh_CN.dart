@@ -75,15 +75,24 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m25(count) => "${count} 个代理";
 
-  static String m26(count) => "${count} 条规则";
+  static String m26(front) => "已有前置：${front}";
 
-  static String m27(count) => "${count} 秒";
+  static String m27(front, exit) => "已生效：${front} → ${exit}";
 
-  static String m28(count) => "已选择 ${count} 项";
+  static String m28(count) => "已修正 ${count} 个分组";
 
-  static String m29(label) => "${label}必须为URL";
+  static String m29(count) =>
+      "检测到 ${count} 个链式代理分组。这个类型已被内核移除，留着它整份配置都无法加载。是否把它们改为「手动选择」？";
 
-  static String m30(count) => "${count} 年前";
+  static String m30(count) => "${count} 条规则";
+
+  static String m31(count) => "${count} 秒";
+
+  static String m32(count) => "已选择 ${count} 项";
+
+  static String m33(label) => "${label}必须为URL";
+
+  static String m34(count) => "${count} 年前";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -110,7 +119,15 @@ class MessageLookup extends MessageLookupByLibrary {
     "add": MessageLookupByLibrary.simpleMessage("添加"),
     "addProfile": MessageLookupByLibrary.simpleMessage("添加配置"),
     "addProxies": MessageLookupByLibrary.simpleMessage("添加代理"),
+    "addProxyChain": MessageLookupByLibrary.simpleMessage("添加链式代理"),
+    "addProxyChainDesc": MessageLookupByLibrary.simpleMessage(
+      "多个节点按顺序串联，流量逐跳转发",
+    ),
     "addProxyGroup": MessageLookupByLibrary.simpleMessage("添加策略组"),
+    "addProxyNode": MessageLookupByLibrary.simpleMessage("新增节点"),
+    "addProxyNodeDesc": MessageLookupByLibrary.simpleMessage(
+      "粘贴分享链接或 YAML 片段，支持 vless / vmess / ss / trojan / hysteria2 等",
+    ),
     "addProxyProviders": MessageLookupByLibrary.simpleMessage("添加代理集"),
     "addRule": MessageLookupByLibrary.simpleMessage("添加规则"),
     "addSsid": MessageLookupByLibrary.simpleMessage("添加SSID"),
@@ -200,6 +217,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "clearData": MessageLookupByLibrary.simpleMessage("清除数据"),
     "clearSearch": MessageLookupByLibrary.simpleMessage("清除搜索"),
+    "clipboardEmpty": MessageLookupByLibrary.simpleMessage("剪贴板里没有可用的内容"),
     "clipboardExport": MessageLookupByLibrary.simpleMessage("导出剪贴板"),
     "clipboardImport": MessageLookupByLibrary.simpleMessage("剪贴板导入"),
     "close": MessageLookupByLibrary.simpleMessage("关闭"),
@@ -227,6 +245,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "contentNotEmpty": MessageLookupByLibrary.simpleMessage("内容不能为空"),
     "contentScheme": MessageLookupByLibrary.simpleMessage("内容主题"),
     "controlGlobalAddedRules": MessageLookupByLibrary.simpleMessage("控制全局附加规则"),
+    "convertToLocalProfile": MessageLookupByLibrary.simpleMessage("转为本地配置"),
+    "convertToLocalProfileDesc": MessageLookupByLibrary.simpleMessage(
+      "断开订阅链接，之后更新订阅不会再覆盖这份配置",
+    ),
     "copy": MessageLookupByLibrary.simpleMessage("复制"),
     "copyEnvVar": MessageLookupByLibrary.simpleMessage("复制环境变量"),
     "copyLink": MessageLookupByLibrary.simpleMessage("复制链接"),
@@ -242,10 +264,15 @@ class MessageLookup extends MessageLookupByLibrary {
     "crashDetectedTip": m1,
     "crashTest": MessageLookupByLibrary.simpleMessage("崩溃测试"),
     "create": MessageLookupByLibrary.simpleMessage("创建"),
-    "createProfile": MessageLookupByLibrary.simpleMessage("创建配置"),
+    "createProfile": MessageLookupByLibrary.simpleMessage("添加自定义配置"),
+    "createProfileDesc": MessageLookupByLibrary.simpleMessage("从零开始手动添加节点"),
     "createProfileFromUrlTip": m2,
     "creationTime": MessageLookupByLibrary.simpleMessage("创建时间"),
+    "currentSelected": MessageLookupByLibrary.simpleMessage("当前"),
     "custom": MessageLookupByLibrary.simpleMessage("自定义"),
+    "customOverwriteRequired": MessageLookupByLibrary.simpleMessage(
+      "自定义策略组保存在覆写数据里，更新订阅不会丢失。是否切换到自定义模式？",
+    ),
     "cut": MessageLookupByLibrary.simpleMessage("剪切"),
     "dark": MessageLookupByLibrary.simpleMessage("深色"),
     "dashboard": MessageLookupByLibrary.simpleMessage("仪表盘"),
@@ -543,6 +570,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "palette": MessageLookupByLibrary.simpleMessage("调色板"),
     "password": MessageLookupByLibrary.simpleMessage("密码"),
     "paste": MessageLookupByLibrary.simpleMessage("粘贴"),
+    "pasteFromClipboard": MessageLookupByLibrary.simpleMessage("从剪贴板粘贴"),
     "pickFromAlbum": MessageLookupByLibrary.simpleMessage("从相册选择"),
     "pinWindow": MessageLookupByLibrary.simpleMessage("窗口置顶"),
     "pleaseBindWebDAV": MessageLookupByLibrary.simpleMessage("请绑定WebDAV"),
@@ -564,6 +592,7 @@ class MessageLookup extends MessageLookupByLibrary {
         MessageLookupByLibrary.simpleMessage("请输入有效间隔时间格式"),
     "profileAutoUpdateIntervalNullValidationDesc":
         MessageLookupByLibrary.simpleMessage("请输入自动更新间隔时间"),
+    "profileConvertedToLocal": MessageLookupByLibrary.simpleMessage("已转为本地配置"),
     "profileHasUpdate": MessageLookupByLibrary.simpleMessage(
       "配置文件已经修改,是否关闭自动更新 ",
     ),
@@ -583,7 +612,26 @@ class MessageLookup extends MessageLookupByLibrary {
     "proxies": MessageLookupByLibrary.simpleMessage("代理"),
     "proxiesCount": m25,
     "proxiesEmpty": MessageLookupByLibrary.simpleMessage("代理为空"),
+    "proxyChainClear": MessageLookupByLibrary.simpleMessage("解除链式代理"),
+    "proxyChainCleared": MessageLookupByLibrary.simpleMessage("已解除链式代理"),
+    "proxyChainExisting": m26,
+    "proxyChainExit": MessageLookupByLibrary.simpleMessage("出口节点"),
+    "proxyChainExitHint": MessageLookupByLibrary.simpleMessage("最终出网的那一个"),
+    "proxyChainFront": MessageLookupByLibrary.simpleMessage("前置代理"),
+    "proxyChainFrontHint": MessageLookupByLibrary.simpleMessage(
+      "先经过它再出去，可以是节点或策略组",
+    ),
+    "proxyChainGroupsSection": MessageLookupByLibrary.simpleMessage("策略组"),
+    "proxyChainNoNodes": MessageLookupByLibrary.simpleMessage(
+      "这份配置里没有可直接编辑的节点。链式代理要写在配置正文里，来自代理集的节点改不了，请先新增节点。",
+    ),
+    "proxyChainNodesSection": MessageLookupByLibrary.simpleMessage("节点"),
+    "proxyChainPickExit": MessageLookupByLibrary.simpleMessage("选择出口节点"),
+    "proxyChainPickFront": MessageLookupByLibrary.simpleMessage("选择前置代理"),
+    "proxyChainSaved": m27,
     "proxyChains": MessageLookupByLibrary.simpleMessage("代理链"),
+    "proxyDelayTestHint": MessageLookupByLibrary.simpleMessage("点击测速"),
+    "proxyDelayTestNow": MessageLookupByLibrary.simpleMessage("测速"),
     "proxyDetectedAbnormal": MessageLookupByLibrary.simpleMessage(
       "检测到选中的代理存在异常",
     ),
@@ -612,6 +660,11 @@ class MessageLookup extends MessageLookupByLibrary {
     "rainbowScheme": MessageLookupByLibrary.simpleMessage("彩虹"),
     "redirPort": MessageLookupByLibrary.simpleMessage("Redir端口"),
     "redo": MessageLookupByLibrary.simpleMessage("重做"),
+    "relayGroupFixed": m28,
+    "relayGroupRemovedConfirm": m29,
+    "relayGroupRemovedTip": MessageLookupByLibrary.simpleMessage(
+      "链式代理组已被内核移除，会让整份配置加载失败",
+    ),
     "remote": MessageLookupByLibrary.simpleMessage("远程"),
     "remoteBackupDesc": MessageLookupByLibrary.simpleMessage("备份数据到WebDAV"),
     "remoteDestination": MessageLookupByLibrary.simpleMessage("远程目标"),
@@ -739,7 +792,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "ruleSet": MessageLookupByLibrary.simpleMessage("规则集"),
     "ruleTarget": MessageLookupByLibrary.simpleMessage("规则目标"),
     "rules": MessageLookupByLibrary.simpleMessage("规则"),
-    "rulesCount": m26,
+    "rulesCount": m30,
     "save": MessageLookupByLibrary.simpleMessage("保存"),
     "saveChanges": MessageLookupByLibrary.simpleMessage("是否保存更改？"),
     "script": MessageLookupByLibrary.simpleMessage("脚本"),
@@ -749,7 +802,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "scrollToSelected": MessageLookupByLibrary.simpleMessage("滚动到已选"),
     "search": MessageLookupByLibrary.simpleMessage("搜索"),
     "seconds": MessageLookupByLibrary.simpleMessage("秒"),
-    "secondsCount": m27,
+    "secondsCount": m31,
     "selectAll": MessageLookupByLibrary.simpleMessage("全选"),
     "selectMatchTarget": MessageLookupByLibrary.simpleMessage(
       "选择 MATCH-TARGET",
@@ -760,7 +813,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "selectSplitStrategy": MessageLookupByLibrary.simpleMessage("请选择分流策略"),
     "selectSubRule": MessageLookupByLibrary.simpleMessage("请选择子规则"),
     "selected": MessageLookupByLibrary.simpleMessage("已选择"),
-    "selectedCountTitle": m28,
+    "selectedCountTitle": m32,
     "settings": MessageLookupByLibrary.simpleMessage("设置"),
     "show": MessageLookupByLibrary.simpleMessage("显示"),
     "showLess": MessageLookupByLibrary.simpleMessage("收起"),
@@ -776,6 +829,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "silentLaunch": MessageLookupByLibrary.simpleMessage("静默启动"),
     "silentLaunchDesc": MessageLookupByLibrary.simpleMessage("后台启动"),
     "size": MessageLookupByLibrary.simpleMessage("尺寸"),
+    "skippedDuplicateNodes": MessageLookupByLibrary.simpleMessage(
+      "以下节点与已有节点重名，已跳过",
+    ),
     "socksPort": MessageLookupByLibrary.simpleMessage("Socks端口"),
     "sort": MessageLookupByLibrary.simpleMessage("排序"),
     "source": MessageLookupByLibrary.simpleMessage("来源"),
@@ -802,6 +858,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "subRuleEmpty": MessageLookupByLibrary.simpleMessage("子规则为空"),
     "subRuleNotEmpty": MessageLookupByLibrary.simpleMessage("子规则不能为空"),
     "submit": MessageLookupByLibrary.simpleMessage("提交"),
+    "subscribeOverwriteWarning": MessageLookupByLibrary.simpleMessage(
+      "这份配置来自订阅链接，更新订阅会覆盖新增的节点",
+    ),
     "subscriptionInfo": MessageLookupByLibrary.simpleMessage("订阅信息"),
     "suspended": MessageLookupByLibrary.simpleMessage("挂起中..."),
     "switchToTun": MessageLookupByLibrary.simpleMessage("改用 TUN 接管"),
@@ -852,10 +911,11 @@ class MessageLookup extends MessageLookupByLibrary {
     "unnamed": MessageLookupByLibrary.simpleMessage("未命名"),
     "unpinWindow": MessageLookupByLibrary.simpleMessage("取消置顶"),
     "update": MessageLookupByLibrary.simpleMessage("更新"),
+    "updateSubscription": MessageLookupByLibrary.simpleMessage("更新订阅"),
     "upload": MessageLookupByLibrary.simpleMessage("上传"),
     "url": MessageLookupByLibrary.simpleMessage("URL"),
     "urlDesc": MessageLookupByLibrary.simpleMessage("通过URL获取配置文件"),
-    "urlTip": m29,
+    "urlTip": m33,
     "useHosts": MessageLookupByLibrary.simpleMessage("使用Hosts"),
     "useSystemHosts": MessageLookupByLibrary.simpleMessage("使用系统Hosts"),
     "usedTraffic": MessageLookupByLibrary.simpleMessage("已用流量"),
@@ -872,7 +932,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "vpnTip": MessageLookupByLibrary.simpleMessage("重启VPN后改变生效"),
     "webDAVConfiguration": MessageLookupByLibrary.simpleMessage("WebDAV配置"),
     "whitelistMode": MessageLookupByLibrary.simpleMessage("白名单模式"),
-    "yearsAgo": m30,
+    "yearsAgo": m34,
     "zhCN": MessageLookupByLibrary.simpleMessage("中文简体"),
   };
 }

@@ -36,6 +36,9 @@ enum CoreMethod {
   clearEffect,
   updateDns,
   convertSubscription,
+  addProxyNodes,
+  readProfileTargets,
+  setProxyChain,
 }
 
 class CoreMethodCall {

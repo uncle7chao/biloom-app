@@ -113,6 +113,35 @@ class CoreController {
     return _interface.convertSubscription(data);
   }
 
+  /// 往配置里追加节点。
+  ///
+  /// 分享链接与 YAML 片段共用这一个入口 —— 内核自己判断输入是哪一种，所以调用方
+  /// 不需要先让用户选「你要加哪种」，粘贴框只有一个。
+  Future<AddProxyNodesResult> addProxyNodes({
+    required String yaml,
+    required String nodes,
+  }) async {
+    return _interface.addProxyNodes(yaml: yaml, nodes: nodes);
+  }
+
+  /// 列出这份配置里可以做链式代理的节点与策略组。
+  Future<ProfileTargets> readProfileTargets({required String yaml}) async {
+    return _interface.readProfileTargets(yaml: yaml);
+  }
+
+  /// 给某个节点挂上（[dialer] 非空）或解除（[dialer] 为空）前置代理。
+  Future<SetProxyChainResult> setProxyChain({
+    required String yaml,
+    required String target,
+    required String dialer,
+  }) async {
+    return _interface.setProxyChain(
+      yaml: yaml,
+      target: target,
+      dialer: dialer,
+    );
+  }
+
   Future<String> updateConfig(UpdateParams updateParams) async {
     return _interface.updateConfig(updateParams);
   }
