@@ -1,5 +1,25 @@
 # Changelog
 
+## v01.00.02 (2026-09-23)
+
+**Features**
+
+- **ui** Add a three-state dashboard connection hero, intent-based proxy grouping with matching custom rules, and a first-run best-preset guide (1cfaa51)
+
+**Bug Fixes**
+
+- **proxies** Open the chain-proxy target picker as a regular sheet so the chain-proxy pages stop rendering blank (af32883)
+
+**Performance**
+
+- Skip automatic batch exit tests on metered connections, move the proxy exit store into the drift database, and rebuild proxy consumers per node name (91589d9)
+
+## v01.00.01 (2026-09-23)
+
+**Features**
+
+- **proxies** Probe every node's real exit region automatically after a delay test, keep the results on disk, and classify nodes by where they actually land instead of what they are named (6a0dbea)
+
 ## v1.0.0 (2026-09-23)
 
 **Features**
