@@ -3445,6 +3445,321 @@ class IconRecordsCompanion extends UpdateCompanion<IconRecord> {
   }
 }
 
+class $ProxyExitsTable extends ProxyExits
+    with TableInfo<$ProxyExitsTable, ProxyExitRecord> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ProxyExitsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _proxyNameMeta = const VerificationMeta(
+    'proxyName',
+  );
+  @override
+  late final GeneratedColumn<String> proxyName = GeneratedColumn<String>(
+    'proxy_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _countryCodeMeta = const VerificationMeta(
+    'countryCode',
+  );
+  @override
+  late final GeneratedColumn<String> countryCode = GeneratedColumn<String>(
+    'country_code',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _ipMeta = const VerificationMeta('ip');
+  @override
+  late final GeneratedColumn<String> ip = GeneratedColumn<String>(
+    'ip',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _testedAtMeta = const VerificationMeta(
+    'testedAt',
+  );
+  @override
+  late final GeneratedColumn<int> testedAt = GeneratedColumn<int>(
+    'tested_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [proxyName, countryCode, ip, testedAt];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'proxy_exits';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ProxyExitRecord> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('proxy_name')) {
+      context.handle(
+        _proxyNameMeta,
+        proxyName.isAcceptableOrUnknown(data['proxy_name']!, _proxyNameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_proxyNameMeta);
+    }
+    if (data.containsKey('country_code')) {
+      context.handle(
+        _countryCodeMeta,
+        countryCode.isAcceptableOrUnknown(
+          data['country_code']!,
+          _countryCodeMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_countryCodeMeta);
+    }
+    if (data.containsKey('ip')) {
+      context.handle(_ipMeta, ip.isAcceptableOrUnknown(data['ip']!, _ipMeta));
+    }
+    if (data.containsKey('tested_at')) {
+      context.handle(
+        _testedAtMeta,
+        testedAt.isAcceptableOrUnknown(data['tested_at']!, _testedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_testedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {proxyName};
+  @override
+  ProxyExitRecord map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ProxyExitRecord(
+      proxyName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}proxy_name'],
+      )!,
+      countryCode: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}country_code'],
+      )!,
+      ip: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}ip'],
+      ),
+      testedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}tested_at'],
+      )!,
+    );
+  }
+
+  @override
+  $ProxyExitsTable createAlias(String alias) {
+    return $ProxyExitsTable(attachedDatabase, alias);
+  }
+}
+
+class ProxyExitRecord extends DataClass
+    implements Insertable<ProxyExitRecord> {
+  final String proxyName;
+  final String countryCode;
+  final String? ip;
+  final int testedAt;
+  const ProxyExitRecord({
+    required this.proxyName,
+    required this.countryCode,
+    this.ip,
+    required this.testedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['proxy_name'] = Variable<String>(proxyName);
+    map['country_code'] = Variable<String>(countryCode);
+    if (!nullToAbsent || ip != null) {
+      map['ip'] = Variable<String>(ip);
+    }
+    map['tested_at'] = Variable<int>(testedAt);
+    return map;
+  }
+
+  ProxyExitsCompanion toCompanion(bool nullToAbsent) {
+    return ProxyExitsCompanion(
+      proxyName: Value(proxyName),
+      countryCode: Value(countryCode),
+      ip: ip == null ? const Value.absent() : Value(ip!),
+      testedAt: Value(testedAt),
+    );
+  }
+
+  factory ProxyExitRecord.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ProxyExitRecord(
+      proxyName: serializer.fromJson<String>(json['proxyName']),
+      countryCode: serializer.fromJson<String>(json['countryCode']),
+      ip: serializer.fromJson<String?>(json['ip']),
+      testedAt: serializer.fromJson<int>(json['testedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'proxyName': serializer.toJson<String>(proxyName),
+      'countryCode': serializer.toJson<String>(countryCode),
+      'ip': serializer.toJson<String?>(ip),
+      'testedAt': serializer.toJson<int>(testedAt),
+    };
+  }
+
+  ProxyExitRecord copyWith({
+    String? proxyName,
+    String? countryCode,
+    String? ip,
+    int? testedAt,
+  }) => ProxyExitRecord(
+    proxyName: proxyName ?? this.proxyName,
+    countryCode: countryCode ?? this.countryCode,
+    ip: ip ?? this.ip,
+    testedAt: testedAt ?? this.testedAt,
+  );
+  ProxyExitRecord copyWithCompanion(ProxyExitsCompanion data) {
+    return ProxyExitRecord(
+      proxyName: data.proxyName.present ? data.proxyName.value : this.proxyName,
+      countryCode: data.countryCode.present
+          ? data.countryCode.value
+          : this.countryCode,
+      ip: data.ip.present ? data.ip.value : this.ip,
+      testedAt: data.testedAt.present ? data.testedAt.value : this.testedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ProxyExitRecord(')
+          ..write('proxyName: $proxyName, ')
+          ..write('countryCode: $countryCode, ')
+          ..write('ip: $ip, ')
+          ..write('testedAt: $testedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(proxyName, countryCode, ip, testedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ProxyExitRecord &&
+          other.proxyName == this.proxyName &&
+          other.countryCode == this.countryCode &&
+          other.ip == this.ip &&
+          other.testedAt == this.testedAt);
+}
+
+class ProxyExitsCompanion extends UpdateCompanion<ProxyExitRecord> {
+  final Value<String> proxyName;
+  final Value<String> countryCode;
+  final Value<String?> ip;
+  final Value<int> testedAt;
+  final Value<int> rowid;
+  const ProxyExitsCompanion({
+    this.proxyName = const Value.absent(),
+    this.countryCode = const Value.absent(),
+    this.ip = const Value.absent(),
+    this.testedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  ProxyExitsCompanion.insert({
+    required String proxyName,
+    required String countryCode,
+    this.ip = const Value.absent(),
+    required int testedAt,
+    this.rowid = const Value.absent(),
+  }) : proxyName = Value(proxyName),
+       countryCode = Value(countryCode),
+       testedAt = Value(testedAt);
+  static Insertable<ProxyExitRecord> custom({
+    Expression<String>? proxyName,
+    Expression<String>? countryCode,
+    Expression<String>? ip,
+    Expression<int>? testedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (proxyName != null) 'proxy_name': proxyName,
+      if (countryCode != null) 'country_code': countryCode,
+      if (ip != null) 'ip': ip,
+      if (testedAt != null) 'tested_at': testedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  ProxyExitsCompanion copyWith({
+    Value<String>? proxyName,
+    Value<String>? countryCode,
+    Value<String?>? ip,
+    Value<int>? testedAt,
+    Value<int>? rowid,
+  }) {
+    return ProxyExitsCompanion(
+      proxyName: proxyName ?? this.proxyName,
+      countryCode: countryCode ?? this.countryCode,
+      ip: ip ?? this.ip,
+      testedAt: testedAt ?? this.testedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (proxyName.present) {
+      map['proxy_name'] = Variable<String>(proxyName.value);
+    }
+    if (countryCode.present) {
+      map['country_code'] = Variable<String>(countryCode.value);
+    }
+    if (ip.present) {
+      map['ip'] = Variable<String>(ip.value);
+    }
+    if (testedAt.present) {
+      map['tested_at'] = Variable<int>(testedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ProxyExitsCompanion(')
+          ..write('proxyName: $proxyName, ')
+          ..write('countryCode: $countryCode, ')
+          ..write('ip: $ip, ')
+          ..write('testedAt: $testedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$Database extends GeneratedDatabase {
   _$Database(QueryExecutor e) : super(e);
   $DatabaseManager get managers => $DatabaseManager(this);
@@ -3456,6 +3771,7 @@ abstract class _$Database extends GeneratedDatabase {
   );
   late final $ProxyGroupsTable proxyGroups = $ProxyGroupsTable(this);
   late final $IconRecordsTable iconRecords = $IconRecordsTable(this);
+  late final $ProxyExitsTable proxyExits = $ProxyExitsTable(this);
   late final Index idxRuleTarget = Index(
     'idx_rule_target',
     'CREATE INDEX idx_rule_target ON rules (rule_target)',
@@ -3477,6 +3793,7 @@ abstract class _$Database extends GeneratedDatabase {
   late final RulesDao rulesDao = RulesDao(this as Database);
   late final ProxyGroupsDao proxyGroupsDao = ProxyGroupsDao(this as Database);
   late final IconRecordsDao iconRecordsDao = IconRecordsDao(this as Database);
+  late final ProxyExitsDao proxyExitsDao = ProxyExitsDao(this as Database);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -3488,6 +3805,7 @@ abstract class _$Database extends GeneratedDatabase {
     profileRuleLinks,
     proxyGroups,
     iconRecords,
+    proxyExits,
     idxRuleTarget,
     idxProfileSceneOrder,
     idxProfileNameOrder,
@@ -5833,6 +6151,190 @@ typedef $$IconRecordsTableProcessedTableManager =
       PrefetchHooks Function()
     >;
 
+typedef $$ProxyExitsTableCreateCompanionBuilder =
+    ProxyExitsCompanion Function({
+      required String proxyName,
+      required String countryCode,
+      Value<String?> ip,
+      required int testedAt,
+      Value<int> rowid,
+    });
+typedef $$ProxyExitsTableUpdateCompanionBuilder =
+    ProxyExitsCompanion Function({
+      Value<String> proxyName,
+      Value<String> countryCode,
+      Value<String?> ip,
+      Value<int> testedAt,
+      Value<int> rowid,
+    });
+
+class $$ProxyExitsTableFilterComposer
+    extends Composer<_$Database, $ProxyExitsTable> {
+  $$ProxyExitsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get proxyName => $composableBuilder(
+    column: $table.proxyName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get countryCode => $composableBuilder(
+    column: $table.countryCode,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get ip => $composableBuilder(
+    column: $table.ip,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get testedAt => $composableBuilder(
+    column: $table.testedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$ProxyExitsTableOrderingComposer
+    extends Composer<_$Database, $ProxyExitsTable> {
+  $$ProxyExitsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get proxyName => $composableBuilder(
+    column: $table.proxyName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get countryCode => $composableBuilder(
+    column: $table.countryCode,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get ip => $composableBuilder(
+    column: $table.ip,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get testedAt => $composableBuilder(
+    column: $table.testedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$ProxyExitsTableAnnotationComposer
+    extends Composer<_$Database, $ProxyExitsTable> {
+  $$ProxyExitsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get proxyName =>
+      $composableBuilder(column: $table.proxyName, builder: (column) => column);
+
+  GeneratedColumn<String> get countryCode =>
+      $composableBuilder(column: $table.countryCode, builder: (column) => column);
+
+  GeneratedColumn<String> get ip =>
+      $composableBuilder(column: $table.ip, builder: (column) => column);
+
+  GeneratedColumn<int> get testedAt => $composableBuilder(
+    column: $table.testedAt,
+    builder: (column) => column,
+  );
+}
+
+class $$ProxyExitsTableTableManager
+    extends
+        RootTableManager<
+          _$Database,
+          $ProxyExitsTable,
+          ProxyExitRecord,
+          $$ProxyExitsTableFilterComposer,
+          $$ProxyExitsTableOrderingComposer,
+          $$ProxyExitsTableAnnotationComposer,
+          $$ProxyExitsTableCreateCompanionBuilder,
+          $$ProxyExitsTableUpdateCompanionBuilder,
+          (
+            ProxyExitRecord,
+            BaseReferences<_$Database, $ProxyExitsTable, ProxyExitRecord>,
+          ),
+          ProxyExitRecord,
+          PrefetchHooks Function()
+        > {
+  $$ProxyExitsTableTableManager(_$Database db, $ProxyExitsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ProxyExitsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ProxyExitsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ProxyExitsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> proxyName = const Value.absent(),
+                Value<String> countryCode = const Value.absent(),
+                Value<String?> ip = const Value.absent(),
+                Value<int> testedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ProxyExitsCompanion(
+                proxyName: proxyName,
+                countryCode: countryCode,
+                ip: ip,
+                testedAt: testedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String proxyName,
+                required String countryCode,
+                Value<String?> ip = const Value.absent(),
+                required int testedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => ProxyExitsCompanion.insert(
+                proxyName: proxyName,
+                countryCode: countryCode,
+                ip: ip,
+                testedAt: testedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$ProxyExitsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$Database,
+      $ProxyExitsTable,
+      ProxyExitRecord,
+      $$ProxyExitsTableFilterComposer,
+      $$ProxyExitsTableOrderingComposer,
+      $$ProxyExitsTableAnnotationComposer,
+      $$ProxyExitsTableCreateCompanionBuilder,
+      $$ProxyExitsTableUpdateCompanionBuilder,
+      (
+        ProxyExitRecord,
+        BaseReferences<_$Database, $ProxyExitsTable, ProxyExitRecord>,
+      ),
+      ProxyExitRecord,
+      PrefetchHooks Function()
+    >;
+
 class $DatabaseManager {
   final _$Database _db;
   $DatabaseManager(this._db);
@@ -5848,6 +6350,8 @@ class $DatabaseManager {
       $$ProxyGroupsTableTableManager(_db, _db.proxyGroups);
   $$IconRecordsTableTableManager get iconRecords =>
       $$IconRecordsTableTableManager(_db, _db.iconRecords);
+  $$ProxyExitsTableTableManager get proxyExits =>
+      $$ProxyExitsTableTableManager(_db, _db.proxyExits);
 }
 
 mixin _$ProfilesDaoMixin on DatabaseAccessor<Database> {
@@ -5921,4 +6425,16 @@ class IconRecordsDaoManager {
   IconRecordsDaoManager(this._db);
   $$IconRecordsTableTableManager get iconRecords =>
       $$IconRecordsTableTableManager(_db.attachedDatabase, _db.iconRecords);
+}
+
+mixin _$ProxyExitsDaoMixin on DatabaseAccessor<Database> {
+  $ProxyExitsTable get proxyExits => attachedDatabase.proxyExits;
+  ProxyExitsDaoManager get managers => ProxyExitsDaoManager(this);
+}
+
+class ProxyExitsDaoManager {
+  final _$ProxyExitsDaoMixin _db;
+  ProxyExitsDaoManager(this._db);
+  $$ProxyExitsTableTableManager get proxyExits =>
+      $$ProxyExitsTableTableManager(_db.attachedDatabase, _db.proxyExits);
 }

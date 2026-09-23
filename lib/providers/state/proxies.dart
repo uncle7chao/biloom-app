@@ -280,9 +280,13 @@ String proxyDesc(Ref ref, Proxy proxy) {
 final proxyRegionProvider = Provider.family<ProxyRegion, Proxy>(
   (ref, proxy) {
     // 落地优先：实测过的节点标签跟着真实出口走（US 名字实落吉隆坡就标 🇲🇾），
-    // 没测过的才按名字认。watch 而不是 read —— 批量测落地时卡片要渐进刷新。
-    final stored =
-        ref.watch(proxyExitStoreProvider).value?[proxy.name];
+    // 没测过的才按名字认。用 **select 按节点名取** 而不是 watch 整表 —— 批量
+    // 测落地时每两秒就有一行变，watch 整表会让**所有**卡片跟着整页重build；
+    // select 之后只有「这条记录变了」的那张卡片重建。未变的行持有同一个
+    // ProxyExitInfo 实例，select 的同一性比较天然不会误触发。
+    final stored = ref.watch(
+      proxyExitStoreProvider.select((state) => state.value?[proxy.name]),
+    );
     if (stored != null) {
       final region = ProxyRegion.ofCountry(stored.countryCode);
       if (region != null) {
@@ -376,56 +380,49 @@ class ProxyExitState {
   final Map<String, ProxyExitInfo?> results;
 }
 
-/// 落地结果的**持久层**（落库）。
-///
-/// 为什么放 shared_preferences 而不是 drift：它是一个纯 KV（节点名 → 出口），
-/// 不需要查询、关联和迁移；而给 drift 加表就得跑 build_runner，代码生成器在
-/// 环境故障期起不来。一个 JSON 键 + 启动时裁剪过期项，就够这一层用的了。
+/// 落地结果的**持久层**（drift 表 `proxy_exits`，经 `ProxyExitsDao`）。
 ///
 /// 为什么只存成功：失败多半是「节点此刻不通」这种暂时态，把它存下来会让
 /// 一个昨天还好的节点今天被标成「测不出」。失败让会话态去表达就够了。
+///
+/// 写放大控制：批测一轮两三百个节点，内存 map 即时更新（卡片渐进刷新），
+/// 磁盘侧攒 2 秒去抖、把窗口内变过的行**一次性 upsert**——一行一次写，
+/// 不再是旧 shared_preferences 方案的「整键 JSON 全量重写」。
 class ProxyExitStore extends AsyncNotifier<Map<String, ProxyExitInfo>> {
-  static const _key = 'proxyExitInfo';
-
   /// 落地会漂移（服务端负载均衡让同一节点不同时刻从不同出口出去），
   /// 超过这个时间的记录不再当作地区依据 —— 过期数据比没数据更糟。
   static const freshness = Duration(days: 14);
 
   Timer? _saveDebounce;
+  final Map<String, ProxyExitInfo> _pending = {};
 
   @override
   Future<Map<String, ProxyExitInfo>> build() async {
-    final now = DateTime.now().millisecondsSinceEpoch;
+    final result = <String, ProxyExitInfo>{};
     try {
-      final prefs = await preferences.sharedPreferencesCompleter.future;
-      final raw = prefs?.getString(_key);
-      if (raw == null || raw.isEmpty) {
-        return const {};
-      }
-      final map = json.decode(raw) as Map<String, dynamic>;
-      final result = <String, ProxyExitInfo>{};
-      for (final entry in map.entries) {
-        if (entry.value is! Map<String, dynamic>) {
-          continue;
-        }
-        try {
-          final info = ProxyExitInfo.fromJson(
-            entry.value as Map<String, dynamic>,
+      final dao = database.proxyExitsDao;
+      // 旧 shared_preferences 方案的一次性搬家：库空而 SP 有货才动。
+      await dao.migrateLegacyIfNeeded();
+      final now = DateTime.now().millisecondsSinceEpoch;
+      for (final row in await dao.all()) {
+        if (now - row.testedAt <= freshness.inMilliseconds) {
+          result[row.proxyName] = ProxyExitInfo(
+            countryCode: row.countryCode,
+            ip: row.ip ?? '',
+            testedAt: row.testedAt,
           );
-          if (now - info.testedAt <= freshness.inMilliseconds) {
-            result[entry.key] = info;
-          }
-        } catch (_) {
-          // 单条坏了只丢那条，不让一份损坏的 JSON 把整层记忆清空。
         }
       }
+      // 过期行顺手清掉，表别越攒越大。
+      await dao.deleteOlderThan(now - freshness.inMilliseconds);
       return result;
     } catch (_) {
+      // 库坏了不挡 UI —— 本次会话退化为纯名字识别，下次探测会再写。
       return const {};
     }
   }
 
-  /// 记录一次成功探测。内存立即生效（卡片渐进刷新），写盘去抖 ——
+  /// 记录一次成功探测。内存立即生效（卡片渐进刷新），写库去抖 ——
   /// 全量测一轮是两三百个节点，一个节点刷一次盘毫无必要。
   void record(String proxyName, ProxyExitInfo info) {
     if (info.countryCode.isEmpty) {
@@ -435,9 +432,30 @@ class ProxyExitStore extends AsyncNotifier<Map<String, ProxyExitInfo>> {
     final current = Map<String, ProxyExitInfo>.from(state.value ?? const {});
     current[proxyName] = info;
     state = AsyncData(current);
-    final toSave = current;
+    _pending[proxyName] = info;
     _saveDebounce?.cancel();
-    _saveDebounce = Timer(const Duration(seconds: 2), () => _save(toSave));
+    _saveDebounce = Timer(const Duration(seconds: 2), _save);
+  }
+
+  Future<void> _save() async {
+    if (_pending.isEmpty) {
+      return;
+    }
+    final batch = Map<String, ProxyExitInfo>.from(_pending);
+    _pending.clear();
+    try {
+      await database.proxyExitsDao.upsertAll([
+        for (final entry in batch.entries)
+          ProxyExitRecord(
+            proxyName: entry.key,
+            countryCode: entry.value.countryCode,
+            ip: entry.value.ip.isEmpty ? null : entry.value.ip,
+            testedAt: entry.value.testedAt,
+          ),
+      ]);
+    } catch (_) {
+      // 写库失败不影响本次会话 —— 内存里那份还在，下次探测会再试。
+    }
   }
 
   /// 节点名 → 国家码，只含新鲜记录。地区识别（标签 / 筛选 / 分组）统一从这里取。
@@ -452,20 +470,6 @@ class ProxyExitStore extends AsyncNotifier<Map<String, ProxyExitInfo>> {
         if (now - entry.value.testedAt <= freshness.inMilliseconds)
           entry.key: entry.value.countryCode,
     };
-  }
-
-  Future<void> _save(Map<String, ProxyExitInfo> data) async {
-    try {
-      final prefs = await preferences.sharedPreferencesCompleter.future;
-      await prefs?.setString(
-        _key,
-        json.encode({
-          for (final entry in data.entries) entry.key: entry.value.toJson(),
-        }),
-      );
-    } catch (_) {
-      // 写盘失败不影响本次会话 —— 内存里那份还在，下次探测会再试。
-    }
   }
 }
 
@@ -526,8 +530,21 @@ class ProxyExit extends Notifier<ProxyExitState> {
   /// 批量测落地：**跳过库里还有新鲜记录的节点**（重复测只是重复烧流量），
   /// 逐个完成后渐进刷新卡片并把结果落库。放在「测延迟」全部结束后由
   /// `ProxiesAction` 调起 —— 与延迟探测抢带宽没有意义。
+  ///
+  /// 蜂窝网络门控：每个探测都真的从节点里走一趟（几百字节请求 + TLS 握手），
+  /// 两三百个节点一轮 1~3 MB，两头吃流量 —— 手机套餐和机场套餐。手机流量
+  /// 下这一步整个跳过，等回 Wi-Fi 的下一轮测延迟再补（新鲜记录会跳过已测的）。
+  /// 判不出网络状态就放行 —— 门控宁可失效也不拦住正常功能。手动单节点
+  /// 「测落地」不走这里，用户点了就是明确意图，不该被拦。
   Future<void> testBatch(Set<String> proxyNames) async {
     if (proxyNames.isEmpty) {
+      return;
+    }
+    if (await _isMeteredNetwork()) {
+      commonPrint.log(
+        'Skip proxy exit batch: metered network',
+        logLevel: LogLevel.info,
+      );
       return;
     }
     final fresh = ref.read(proxyExitStoreProvider).value ?? const {};
@@ -539,6 +556,21 @@ class ProxyExit extends Notifier<ProxyExitState> {
     }
     final pool = TaskPool(_batchConcurrency);
     await Future.wait(queue.map((name) => pool.run(() => _testAndStore(name))));
+  }
+
+  /// 只在「蜂窝在、且没有 Wi-Fi/以太网兜着」时算计费网络。桌面端通常是
+  /// 以太网或 Wi-Fi，天然放行；VPN 开着时结果里会多一个 vpn 项，不影响判断。
+  static Future<bool> _isMeteredNetwork() async {
+    try {
+      final results = await Connectivity().checkConnectivity();
+      final unmetered = results.any(
+        (r) =>
+            r == ConnectivityResult.wifi || r == ConnectivityResult.ethernet,
+      );
+      return results.contains(ConnectivityResult.mobile) && !unmetered;
+    } catch (_) {
+      return false;
+    }
   }
 
   Future<void> _testAndStore(String proxyName) async {
