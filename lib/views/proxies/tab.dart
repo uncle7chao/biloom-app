@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/enum/enum.dart';
+import 'package:fl_clash/models/clash_config.dart';
 import 'package:fl_clash/models/common.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/widgets/widgets.dart';
@@ -11,6 +12,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'card.dart';
 import 'common.dart';
+import 'region_bar.dart';
 
 typedef ProxyGroupViewKeyMap =
     Map<String, GlobalObjectKey<_ProxyGroupViewState>>;
@@ -194,6 +196,12 @@ class ProxiesTabViewState extends ConsumerState<ProxiesTabView>
       proxiesStyleSettingProvider.select((state) => state.layout),
     );
     final groups = state.groups;
+    // 页签下标是「屏幕上正在显示哪个组」的唯一真相（`currentGroupName` 只是它的
+    // 一份延后一帧的镜像）。地区筛选栏挂在当前页签上，所以用它取当前组。
+    final tabIndex = _tabController?.index ?? 0;
+    final currentGroup = (tabIndex >= 0 && tabIndex < groups.length)
+        ? groups[tabIndex]
+        : null;
     _keyMap = {};
     return NullStatusSwitcher(
       isEmpty: groups.isEmpty || _tabController == null,
@@ -260,6 +268,13 @@ class ProxiesTabViewState extends ConsumerState<ProxiesTabView>
               ),
             ),
           ),
+          // 地区筛选栏：把当前页签的节点按出口地区归好，一次点选收窄列表。
+          // 它贴在页签底下、列表之上 —— 换页签换内容，不用回来重新点。
+          if (currentGroup != null)
+            ProxyRegionFilterBar(
+              groupName: currentGroup.name,
+              proxies: currentGroup.all,
+            ),
           Expanded(
             child: LayoutBuilder(
               builder: (_, constraints) {
@@ -308,6 +323,24 @@ class ProxyGroupView extends ConsumerStatefulWidget {
   ConsumerState<ProxyGroupView> createState() => _ProxyGroupViewState();
 }
 
+/// 按地区收窄节点列表。
+///
+/// 收敛不成立时（没选地区 / 选的地区这一组里已经没有了）**原样返回** —— 与
+/// `ProxyRegionFilterBar` 的高亮判断共用 [resolveEffectiveRegionFilter]，
+/// 两侧必须给出同一个答案，否则会出现「芯片标着香港、列表却是全部」。
+List<Proxy> _applyRegionFilter(List<Proxy> proxies, String? regionKey) {
+  final effective = resolveEffectiveRegionFilter(
+    buckets: groupProxyNamesByRegion(proxies.map((proxy) => proxy.name)),
+    key: regionKey,
+  );
+  if (effective == null) {
+    return proxies;
+  }
+  return proxies
+      .where((proxy) => resolveProxyRegion(proxy.name).key == effective)
+      .toList();
+}
+
 class _ProxyGroupViewState extends ConsumerState<ProxyGroupView> {
   late final ScrollController _controller;
 
@@ -343,7 +376,12 @@ class _ProxyGroupViewState extends ConsumerState<ProxyGroupView> {
             getScrollToSelectedOffset(
               ref: ref,
               groupName: widget.group.name,
-              proxies: widget.group.all,
+              // 用**筛选之后**的列表算下标：当前生效的那个节点在筛选后的列表里，
+              // 拿未筛选的列表算出来的位置会偏出去。
+              proxies: _applyRegionFilter(
+                widget.group.all,
+                ref.read(proxyRegionFilterProvider)[widget.group.name],
+              ),
               columns: widget.columns,
             ),
         _controller.position.maxScrollExtent,
@@ -356,7 +394,11 @@ class _ProxyGroupViewState extends ConsumerState<ProxyGroupView> {
   @override
   Widget build(BuildContext context) {
     final group = widget.group;
-    final proxies = group.all;
+    final proxies = _applyRegionFilter(
+      group.all,
+      // 用 `read` 拿不到变化 —— 必须先 `watch` 起来，筛选一改这一页才会重建。
+      ref.watch(proxyRegionFilterProvider.select((state) => state[group.name])),
+    );
     return CommonScrollBar(
       controller: _controller,
       child: GridView.builder(

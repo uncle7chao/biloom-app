@@ -934,5 +934,16 @@ class MessageLookup extends MessageLookupByLibrary {
     "whitelistMode": MessageLookupByLibrary.simpleMessage("白名单模式"),
     "yearsAgo": m34,
     "zhCN": MessageLookupByLibrary.simpleMessage("中文简体"),
+    "proxyRegionAll": MessageLookupByLibrary.simpleMessage("全部"),
+    "proxyRegionCdn": MessageLookupByLibrary.simpleMessage("CF 中转"),
+    "proxyRegionFilter": MessageLookupByLibrary.simpleMessage("按地区筛选"),
+    "generateRegionGroups": MessageLookupByLibrary.simpleMessage("按地区生成分组"),
+    "generateRegionGroupsTip": MessageLookupByLibrary.simpleMessage("把节点按出口地区归到策略组里，方便快速找到某个地区的节点。分组保存在覆写数据里，更新订阅不会丢失。"),
+    "generateRegionGroupsPreview": MessageLookupByLibrary.simpleMessage("将会生成的分组"),
+    "generateRegionGroupsUnknown": MessageLookupByLibrary.simpleMessage("认不出地区的节点不会归组"),
+    "generateRegionGroupsKeep": MessageLookupByLibrary.simpleMessage("保留原样"),
+    "generateRegionGroupsRemoveTip": MessageLookupByLibrary.simpleMessage("以下分组引用的节点已不存在，继续保留会让整份配置无法加载"),
+    "generateRegionGroupsDone": MessageLookupByLibrary.simpleMessage("已按地区生成分组"),
+    "generateRegionGroupsEmpty": MessageLookupByLibrary.simpleMessage("没有识别出可归类的地区"),
   };
 }

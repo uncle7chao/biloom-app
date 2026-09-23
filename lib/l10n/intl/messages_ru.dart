@@ -1360,5 +1360,16 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "yearsAgo": m34,
     "zhCN": MessageLookupByLibrary.simpleMessage("Упрощённый китайский"),
+    "proxyRegionAll": MessageLookupByLibrary.simpleMessage("Все"),
+    "proxyRegionCdn": MessageLookupByLibrary.simpleMessage("CF-релей"),
+    "proxyRegionFilter": MessageLookupByLibrary.simpleMessage("Фильтр по региону"),
+    "generateRegionGroups": MessageLookupByLibrary.simpleMessage("Группировать по регионам"),
+    "generateRegionGroupsTip": MessageLookupByLibrary.simpleMessage("Группирует узлы по региону выхода, чтобы их было проще находить. Группы хранятся в данных переопределения и не теряются при обновлении подписки."),
+    "generateRegionGroupsPreview": MessageLookupByLibrary.simpleMessage("Создаваемые группы"),
+    "generateRegionGroupsUnknown": MessageLookupByLibrary.simpleMessage("Узлы с нераспознанным регионом не группируются"),
+    "generateRegionGroupsKeep": MessageLookupByLibrary.simpleMessage("Без изменений"),
+    "generateRegionGroupsRemoveTip": MessageLookupByLibrary.simpleMessage("Эти группы ссылаются на узлы, которых больше нет; если их оставить, вся конфигурация не загрузится"),
+    "generateRegionGroupsDone": MessageLookupByLibrary.simpleMessage("Группы по регионам созданы"),
+    "generateRegionGroupsEmpty": MessageLookupByLibrary.simpleMessage("Регионы не распознаны"),
   };
 }

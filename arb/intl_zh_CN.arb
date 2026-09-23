@@ -661,5 +661,16 @@
   "dnsLeakNotApplicable": "当前模式无法判定",
   "dnsLeakFailed": "没有问到任何解析器",
   "dnsLeakOnline": "打开在线测试",
-  "dnsLeakExplain": "fake-ip 模式下，内核回答任何域名都会给出 fake-ip 段内的地址；此处若返回真实公网 IP，说明这次查询根本没有到内核手上。在「仅系统代理」模式下这是必然的：系统代理只作用于认它的程序，而 Windows 自身发出的 DNS 查询不在其列。要让整个系统都被接管，请改用 TUN。"
+  "dnsLeakExplain": "fake-ip 模式下，内核回答任何域名都会给出 fake-ip 段内的地址；此处若返回真实公网 IP，说明这次查询根本没有到内核手上。在「仅系统代理」模式下这是必然的：系统代理只作用于认它的程序，而 Windows 自身发出的 DNS 查询不在其列。要让整个系统都被接管，请改用 TUN。",
+  "proxyRegionAll": "全部",
+  "proxyRegionCdn": "CF 中转",
+  "proxyRegionFilter": "按地区筛选",
+  "generateRegionGroups": "按地区生成分组",
+  "generateRegionGroupsTip": "把节点按出口地区归到策略组里，方便快速找到某个地区的节点。分组保存在覆写数据里，更新订阅不会丢失。",
+  "generateRegionGroupsPreview": "将会生成的分组",
+  "generateRegionGroupsUnknown": "认不出地区的节点不会归组",
+  "generateRegionGroupsKeep": "保留原样",
+  "generateRegionGroupsRemoveTip": "以下分组引用的节点已不存在，继续保留会让整份配置无法加载",
+  "generateRegionGroupsDone": "已按地区生成分组",
+  "generateRegionGroupsEmpty": "没有识别出可归类的地区"
 }

@@ -1,7 +1,9 @@
 import 'package:fl_clash/enum/enum.dart';
+import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
 
 import 'app_localizations.dart';
+import 'proxy_region.dart';
 
 extension PageLabelL10n on PageLabel {
   String get label {
@@ -125,5 +127,27 @@ extension LocaleL10n on Locale {
       'zh_CN' => appLocalizations.zhCN,
       final code => code,
     };
+  }
+}
+
+extension ProxyRegionL10n on ProxyRegion {
+  /// 节点所属地区的显示名。
+  ///
+  /// 国家/地区名来自**内置的四语言表**（`proxy_region.dart` 的
+  /// [localizedRegionName]），因为那是数据不是文案 —— 86 个地区 × 4 种语言
+  /// 塞进 arb 就是 350 条纯映射键，会把界面对照表淹掉。真正属于文案的
+  /// 只有 `CF 中转` 与 `其他` 两个，它们仍走 arb。
+  ///
+  /// 语言取 `Intl.defaultLocale`（`AppLocalizations.load` 会把它设成当前
+  /// 界面语言）；尚未初始化时按英文兜底。
+  String get label {
+    final appLocalizations = currentAppLocalizations;
+    if (isCdn) {
+      return appLocalizations.proxyRegionCdn;
+    }
+    if (isUnknown) {
+      return appLocalizations.other;
+    }
+    return localizedRegionName(code, Intl.defaultLocale ?? 'en') ?? code;
   }
 }

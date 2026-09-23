@@ -78,6 +78,7 @@ class ProxyCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final proxyNameText = _buildProxyNameText(context);
+    final region = ref.watch(proxyRegionProvider(proxy));
     return Stack(
       children: [
         Consumer(
@@ -109,20 +110,40 @@ class ProxyCard extends ConsumerWidget {
                     children: [
                       proxyNameText,
                       const SizedBox(height: 6),
-                      // 第二行统一成「协议胶囊 + 测速按钮」一行 —— 三种卡片
-                      // 类型都用同一套语言。展开卡片原来多占一整行放描述文字
+                      // 第二行统一成「地区胶囊 + 协议胶囊 … 测速按钮」一行 —— 三种
+                      // 卡片类型都用同一套语言。展开卡片原来多占一整行放描述文字
                       // （`vless` / `Selector(香港01)`），那行现在并进胶囊里，
                       // 信息一点没少，只是不再单占一行。
                       SizedBox(
                         height: proxyCardMetaHeight,
                         child: Row(
                           children: [
+                            // 左边这一块（地区 + 协议）共用一层 `Align`：它负责把
+                            // 整块顶到行首，同时把右侧剩余空间吃掉 —— 右下角的
+                            // 测速按钮才能贴住卡片右边（`Row` 不会自动把最后一
+                            // 个子项推到行尾）。
                             Flexible(
                               child: Align(
                                 alignment: AlignmentDirectional.centerStart,
-                                child: type == ProxyCardType.expand
-                                    ? _ProxyDescChip(proxy: proxy)
-                                    : _ProxyTypeChip(label: proxy.type),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    // 地区认不出就整块跳过。这里用 collection-if
+                                    // 而不是让胶囊自己返回空盒子 —— 后者会把后面
+                                    // 那 6px 间距留在行里。
+                                    if (!region.isUnknown) ...[
+                                      Flexible(
+                                        child: _ProxyRegionChip(region: region),
+                                      ),
+                                      const SizedBox(width: 6),
+                                    ],
+                                    Flexible(
+                                      child: type == ProxyCardType.expand
+                                          ? _ProxyDescChip(proxy: proxy)
+                                          : _ProxyTypeChip(label: proxy.type),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                             const SizedBox(width: 8),
@@ -185,10 +206,7 @@ class _ProxyStatusDot extends ConsumerWidget {
     if (value == null) {
       return dot;
     }
-    return Tooltip(
-      message: value > 0 ? '$value ms' : 'Timeout',
-      child: dot,
-    );
+    return Tooltip(message: value > 0 ? '$value ms' : 'Timeout', child: dot);
   }
 }
 
@@ -217,6 +235,29 @@ class _ProxyTypeChip extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+/// 节点所属地区的胶囊（`🇭🇰 中国香港` / `🇺🇸 美国` / `☁️ CF 中转`）。
+///
+/// 外观刻意与协议胶囊**完全同一套**（同一档浅底 + 同一圈描边 + 同一个圆角）：
+/// 两个胶囊是「这一行里的两段中性信息」，不该有一个跳出来抢视线。区分度靠名字
+/// 前缀的国旗 emoji —— 一眼扫过去先认旗、再认字，不用读文字。
+///
+/// 认不出地区的节点由调用方整块跳过（`ProxyRegionKind.unknown`），这里不做兜底：
+/// 一个写着「其他」的胶囊对挑节点毫无帮助，只是噪音。
+///
+/// ⛔ 高度必须继续走 `proxyCardMetaHeight`（就是 [_ProxyTypeChip] 自身的高度）——
+/// `getItemHeight` 是按那个数字算的，这里要是自己有内边距，实机立刻
+/// 「A RenderFlex overflowed」。
+class _ProxyRegionChip extends StatelessWidget {
+  final ProxyRegion region;
+
+  const _ProxyRegionChip({required this.region});
+
+  @override
+  Widget build(BuildContext context) {
+    return _ProxyTypeChip(label: '${region.emoji} ${region.label}');
   }
 }
 

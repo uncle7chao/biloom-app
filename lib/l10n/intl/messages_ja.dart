@@ -1076,5 +1076,16 @@ class MessageLookup extends MessageLookupByLibrary {
     "whitelistMode": MessageLookupByLibrary.simpleMessage("ホワイトリストモード"),
     "yearsAgo": m34,
     "zhCN": MessageLookupByLibrary.simpleMessage("簡体字中国語"),
+    "proxyRegionAll": MessageLookupByLibrary.simpleMessage("すべて"),
+    "proxyRegionCdn": MessageLookupByLibrary.simpleMessage("CF 中継"),
+    "proxyRegionFilter": MessageLookupByLibrary.simpleMessage("地域で絞り込み"),
+    "generateRegionGroups": MessageLookupByLibrary.simpleMessage("地域別にグループ化"),
+    "generateRegionGroupsTip": MessageLookupByLibrary.simpleMessage("ノードを出口地域ごとにグループ化し、地域のノードをすぐ探せるようにします。グループは上書きデータに保存されるため、購読を更新しても消えません。"),
+    "generateRegionGroupsPreview": MessageLookupByLibrary.simpleMessage("作成されるグループ"),
+    "generateRegionGroupsUnknown": MessageLookupByLibrary.simpleMessage("地域を判別できないノードはグループ化されません"),
+    "generateRegionGroupsKeep": MessageLookupByLibrary.simpleMessage("そのまま"),
+    "generateRegionGroupsRemoveTip": MessageLookupByLibrary.simpleMessage("以下のグループが参照するノードは既に存在せず、残すと設定全体を読み込めなくなります"),
+    "generateRegionGroupsDone": MessageLookupByLibrary.simpleMessage("地域別グループを作成しました"),
+    "generateRegionGroupsEmpty": MessageLookupByLibrary.simpleMessage("地域を判別できませんでした"),
   };
 }

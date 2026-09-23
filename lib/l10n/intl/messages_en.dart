@@ -1292,5 +1292,16 @@ class MessageLookup extends MessageLookupByLibrary {
     "whitelistMode": MessageLookupByLibrary.simpleMessage("Whitelist mode"),
     "yearsAgo": m34,
     "zhCN": MessageLookupByLibrary.simpleMessage("Simplified Chinese"),
+    "proxyRegionAll": MessageLookupByLibrary.simpleMessage("All"),
+    "proxyRegionCdn": MessageLookupByLibrary.simpleMessage("CF relay"),
+    "proxyRegionFilter": MessageLookupByLibrary.simpleMessage("Filter by region"),
+    "generateRegionGroups": MessageLookupByLibrary.simpleMessage("Group by region"),
+    "generateRegionGroupsTip": MessageLookupByLibrary.simpleMessage("Sorts nodes into strategy groups by egress region so a region's nodes are quick to find. The groups live in the override data, so updating the subscription keeps them."),
+    "generateRegionGroupsPreview": MessageLookupByLibrary.simpleMessage("Groups to create"),
+    "generateRegionGroupsUnknown": MessageLookupByLibrary.simpleMessage("Nodes with an unrecognised region are not grouped"),
+    "generateRegionGroupsKeep": MessageLookupByLibrary.simpleMessage("Left as is"),
+    "generateRegionGroupsRemoveTip": MessageLookupByLibrary.simpleMessage("These groups reference nodes that no longer exist; keeping them makes the whole config fail to load"),
+    "generateRegionGroupsDone": MessageLookupByLibrary.simpleMessage("Region groups created"),
+    "generateRegionGroupsEmpty": MessageLookupByLibrary.simpleMessage("No recognisable regions"),
   };
 }

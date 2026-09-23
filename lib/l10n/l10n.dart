@@ -5534,6 +5534,61 @@ class AppLocalizations {
       args: [],
     );
   }
+
+  /// `All`
+  String get proxyRegionAll {
+    return Intl.message('All', name: 'proxyRegionAll', desc: '', args: []);
+  }
+
+  /// `CF relay`
+  String get proxyRegionCdn {
+    return Intl.message('CF relay', name: 'proxyRegionCdn', desc: '', args: []);
+  }
+
+  /// `Filter by region`
+  String get proxyRegionFilter {
+    return Intl.message('Filter by region', name: 'proxyRegionFilter', desc: '', args: []);
+  }
+
+  /// `Group by region`
+  String get generateRegionGroups {
+    return Intl.message('Group by region', name: 'generateRegionGroups', desc: '', args: []);
+  }
+
+  /// `Sorts nodes into strategy groups by egress region so a region's nodes are quick to find. The groups live in the override data, so updating the subscription keeps them.`
+  String get generateRegionGroupsTip {
+    return Intl.message('Sorts nodes into strategy groups by egress region so a region\'s nodes are quick to find. The groups live in the override data, so updating the subscription keeps them.', name: 'generateRegionGroupsTip', desc: '', args: []);
+  }
+
+  /// `Groups to create`
+  String get generateRegionGroupsPreview {
+    return Intl.message('Groups to create', name: 'generateRegionGroupsPreview', desc: '', args: []);
+  }
+
+  /// `Nodes with an unrecognised region are not grouped`
+  String get generateRegionGroupsUnknown {
+    return Intl.message('Nodes with an unrecognised region are not grouped', name: 'generateRegionGroupsUnknown', desc: '', args: []);
+  }
+
+  /// `Left as is`
+  String get generateRegionGroupsKeep {
+    return Intl.message('Left as is', name: 'generateRegionGroupsKeep', desc: '', args: []);
+  }
+
+  /// `These groups reference nodes that no longer exist; keeping them makes the whole config fail to load`
+  String get generateRegionGroupsRemoveTip {
+    return Intl.message('These groups reference nodes that no longer exist; keeping them makes the whole config fail to load', name: 'generateRegionGroupsRemoveTip', desc: '', args: []);
+  }
+
+  /// `Region groups created`
+  String get generateRegionGroupsDone {
+    return Intl.message('Region groups created', name: 'generateRegionGroupsDone', desc: '', args: []);
+  }
+
+  /// `No recognisable regions`
+  String get generateRegionGroupsEmpty {
+    return Intl.message('No recognisable regions', name: 'generateRegionGroupsEmpty', desc: '', args: []);
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<AppLocalizations> {

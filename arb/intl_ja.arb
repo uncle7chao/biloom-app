@@ -661,5 +661,16 @@
   "dnsLeakNotApplicable": "現在のモードでは判定できません",
   "dnsLeakFailed": "どのリゾルバからも応答がありません",
   "dnsLeakOnline": "オンライン検査を開く",
-  "dnsLeakExplain": "fake-ip モードでは、コアはどのドメインにも fake-ip 範囲のアドレスを返します。ここで実際のグローバル IP が返る場合、その問い合わせはコアに届いていません。「システムプロキシのみ」のモードではこれは避けられません。システムプロキシはそれを認識するアプリにしか作用せず、Windows 自身が行う DNS 問い合わせは対象外だからです。システム全体を引き継ぐには TUN を使用してください。"
+  "dnsLeakExplain": "fake-ip モードでは、コアはどのドメインにも fake-ip 範囲のアドレスを返します。ここで実際のグローバル IP が返る場合、その問い合わせはコアに届いていません。「システムプロキシのみ」のモードではこれは避けられません。システムプロキシはそれを認識するアプリにしか作用せず、Windows 自身が行う DNS 問い合わせは対象外だからです。システム全体を引き継ぐには TUN を使用してください。",
+  "proxyRegionAll": "すべて",
+  "proxyRegionCdn": "CF 中継",
+  "proxyRegionFilter": "地域で絞り込み",
+  "generateRegionGroups": "地域別にグループ化",
+  "generateRegionGroupsTip": "ノードを出口地域ごとにグループ化し、地域のノードをすぐ探せるようにします。グループは上書きデータに保存されるため、購読を更新しても消えません。",
+  "generateRegionGroupsPreview": "作成されるグループ",
+  "generateRegionGroupsUnknown": "地域を判別できないノードはグループ化されません",
+  "generateRegionGroupsKeep": "そのまま",
+  "generateRegionGroupsRemoveTip": "以下のグループが参照するノードは既に存在せず、残すと設定全体を読み込めなくなります",
+  "generateRegionGroupsDone": "地域別グループを作成しました",
+  "generateRegionGroupsEmpty": "地域を判別できませんでした"
 }

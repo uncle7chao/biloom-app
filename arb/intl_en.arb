@@ -661,5 +661,16 @@
   "dnsLeakNotApplicable": "Cannot be judged in this mode",
   "dnsLeakFailed": "No resolver answered",
   "dnsLeakOnline": "Open online test",
-  "dnsLeakExplain": "In fake-ip mode the core answers every domain with an address from the fake-ip range; a real public IP here means the query never reached the core. Under \"system proxy only\" that is unavoidable: the system proxy affects only apps that honour it, and DNS queries made by Windows itself are not among them. Switch to TUN to take over the whole system."
+  "dnsLeakExplain": "In fake-ip mode the core answers every domain with an address from the fake-ip range; a real public IP here means the query never reached the core. Under \"system proxy only\" that is unavoidable: the system proxy affects only apps that honour it, and DNS queries made by Windows itself are not among them. Switch to TUN to take over the whole system.",
+  "proxyRegionAll": "All",
+  "proxyRegionCdn": "CF relay",
+  "proxyRegionFilter": "Filter by region",
+  "generateRegionGroups": "Group by region",
+  "generateRegionGroupsTip": "Sorts nodes into strategy groups by egress region so a region's nodes are quick to find. The groups live in the override data, so updating the subscription keeps them.",
+  "generateRegionGroupsPreview": "Groups to create",
+  "generateRegionGroupsUnknown": "Nodes with an unrecognised region are not grouped",
+  "generateRegionGroupsKeep": "Left as is",
+  "generateRegionGroupsRemoveTip": "These groups reference nodes that no longer exist; keeping them makes the whole config fail to load",
+  "generateRegionGroupsDone": "Region groups created",
+  "generateRegionGroupsEmpty": "No recognisable regions"
 }
