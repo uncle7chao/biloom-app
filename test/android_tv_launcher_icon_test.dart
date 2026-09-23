@@ -82,8 +82,24 @@ void main() {
       'viewportHeight',
     );
 
-    // Conservative bounds of the current logo, including the curved caps.
-    const logoBounds = ui.Rect.fromLTRB(54, 33, 179, 206.5);
+    // The generator fits the whole SVG viewBox into the adaptive viewport, so
+    // the viewBox is exactly the rectangle that gets centred. Read it from the
+    // source instead of hardcoding bounds: a hardcoded rectangle silently went
+    // stale when the brand SVG was redrawn (the old constant described a much
+    // smaller logo), and the test then reported an off-centre icon that was in
+    // fact perfectly centred.
+    final brandSvg = File(
+      'assets_source/brand/biloom-mark.svg',
+    ).readAsStringSync();
+    final viewBox = RegExp(
+      r'viewBox="([-\d.\s]+)"',
+    ).firstMatch(brandSvg)!.group(1)!;
+    final vb = viewBox
+        .trim()
+        .split(RegExp(r'\s+'))
+        .map(double.parse)
+        .toList();
+    final logoBounds = ui.Rect.fromLTWH(vb[0], vb[1], vb[2], vb[3]);
     final transformedBounds = ui.Rect.fromLTRB(
       (logoBounds.left * scaleX + translateX) / viewportWidth * 108,
       (logoBounds.top * scaleY + translateY) / viewportHeight * 108,

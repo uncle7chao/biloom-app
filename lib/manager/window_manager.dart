@@ -656,7 +656,18 @@ class AppIcon extends StatelessWidget {
       padding: const EdgeInsets.all(8),
       child: Transform.translate(
         offset: const Offset(0, -1),
-        child: Image.asset('assets/images/icon.png', width: 34, height: 34),
+        // Deliberately not assets/images/icon.png (that one is plated at 74% and is the
+        // Linux/Windows application icon, so it must not be tinted or rescaled here).
+        // This asset carries its own dark plate because the mark's letterform is the
+        // contrast between the green and whatever shows through the punched-out B: on
+        // this light chip the bare mark measures 1.28:1 and the B disappears.
+        // It also carries the K=8 trace, because at 34px the original mark's stroke
+        // lands on 1.5px.
+        child: Image.asset(
+          'assets/images/icon_titlebar.png',
+          width: 34,
+          height: 34,
+        ),
       ),
     );
   }
