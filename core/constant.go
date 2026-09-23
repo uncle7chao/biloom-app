@@ -122,6 +122,21 @@ type TestDelayParams struct {
 	Timeout   int64  `json:"timeout"`
 }
 
+// RequestProxyIPParams / RequestProxyIPResult 的语义说明在 proxy_ip.go ——
+// 参数结构放在这里是为了和 TestDelayParams 等其余入参保持一处。
+type RequestProxyIPParams struct {
+	Name    string `json:"name"`
+	Url     string `json:"url"`
+	Timeout int64  `json:"timeout"`
+}
+
+// IP 是节点真实出口的地址，Country 是本地 geoip 数据认出的两位国家码
+//（认不出为空串 —— 认不出就交回「未知」，不硬猜）。
+type RequestProxyIPResult struct {
+	IP      string `json:"ip"`
+	Country string `json:"country"`
+}
+
 type Traffic struct {
 	Up   int64 `json:"up"`
 	Down int64 `json:"down"`
@@ -156,6 +171,7 @@ const (
 	getTotalTrafficMethod          CoreMethod = "getTotalTraffic"
 	resetTrafficMethod             CoreMethod = "resetTraffic"
 	asyncTestDelayMethod           CoreMethod = "asyncTestDelay"
+	requestProxyIPMethod           CoreMethod = "requestProxyIP"
 	getConnectionsMethod           CoreMethod = "getConnections"
 	closeConnectionsMethod         CoreMethod = "closeConnections"
 	resetConnectionsMethod         CoreMethod = "resetConnections"

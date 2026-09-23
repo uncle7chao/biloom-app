@@ -672,5 +672,9 @@
   "generateRegionGroupsKeep": "保留原样",
   "generateRegionGroupsRemoveTip": "以下分组引用的节点已不存在，继续保留会让整份配置无法加载",
   "generateRegionGroupsDone": "已按地区生成分组",
-  "generateRegionGroupsEmpty": "没有识别出可归类的地区"
+  "generateRegionGroupsEmpty": "没有识别出可归类的地区",
+  "proxyExitTest": "测落地",
+  "proxyExitTestHint": "测落地：实测该节点出口所在的地区",
+  "proxyExitFailed": "失败",
+  "proxyExitMismatch": "与名字标注的地区不一致"
 }

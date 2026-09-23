@@ -1303,5 +1303,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "generateRegionGroupsRemoveTip": MessageLookupByLibrary.simpleMessage("These groups reference nodes that no longer exist; keeping them makes the whole config fail to load"),
     "generateRegionGroupsDone": MessageLookupByLibrary.simpleMessage("Region groups created"),
     "generateRegionGroupsEmpty": MessageLookupByLibrary.simpleMessage("No recognisable regions"),
+    "proxyExitTest": MessageLookupByLibrary.simpleMessage("Test exit"),
+    "proxyExitTestHint": MessageLookupByLibrary.simpleMessage("Test exit: measure the real exit region of this node"),
+    "proxyExitFailed": MessageLookupByLibrary.simpleMessage("Failed"),
+    "proxyExitMismatch": MessageLookupByLibrary.simpleMessage("Differs from the region in its name"),
   };
 }

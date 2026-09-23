@@ -22,9 +22,10 @@ double get _chipHeight => proxyCardMetaHeight + 8;
 ///
 /// 三条设计取舍：
 ///
-/// - **地区是从节点名现算的，不落盘、不进配置**。订阅一更新，这一栏跟着变，
-///   不存在「分组过期」这回事；也绝不会因为分组引用了已经不存在的节点而让配置
-///   加载失败。代价是它只在界面上「归组」，不改内核里真正生效的那份 `proxy-groups`。
+/// - **地区默认从节点名现算，实测过的以落地为准（落库、不进配置）**。订阅一更新，
+///   名字那一半跟着变，不存在「分组过期」这回事；也绝不会因为分组引用了已经不存在
+///   的节点而让配置加载失败。代价是它只在界面上「归组」，不改内核里真正生效的那份
+///   `proxy-groups` —— 要写进配置请走「按地区生成分组」面板。
 /// - **筛选按页签分开记**（见 `proxyRegionFilterProvider`）：切到别的页签不会
 ///   把这一页的筛选带过去，也就不会切过去看到一片空白。
 /// - **只有一类地区时不出现**：一条只有一个选项的筛选栏除了占地方没别的用。
@@ -49,7 +50,10 @@ class ProxyRegionFilterBar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final buckets = groupProxyNamesByRegion(proxies.map((proxy) => proxy.name));
+    final buckets = groupProxyNamesByRegion(
+      proxies.map((proxy) => proxy.name),
+      landingByProxy: ref.watch(proxyLandingCodesProvider),
+    );
     if (buckets.groups.length < 2) {
       return const SizedBox.shrink();
     }

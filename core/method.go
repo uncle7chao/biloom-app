@@ -209,6 +209,16 @@ var methodHandlers = map[CoreMethod]methodHandler{
 			response.success(handleTestDelay(params))
 		})
 	}),
+	requestProxyIPMethod: withArguments(func(params *RequestProxyIPParams, response MethodResponse) {
+		safeGo(response, func() {
+			result, err := handleRequestProxyIP(params)
+			if err != nil {
+				response.failure("request_proxy_ip_error", err.Error(), nil)
+				return
+			}
+			response.success(result)
+		})
+	}),
 	getConnectionsMethod: withoutArguments(func(response MethodResponse) {
 		response.success(handleGetConnections())
 	}),

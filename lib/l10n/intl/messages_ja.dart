@@ -1087,5 +1087,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "generateRegionGroupsRemoveTip": MessageLookupByLibrary.simpleMessage("以下のグループが参照するノードは既に存在せず、残すと設定全体を読み込めなくなります"),
     "generateRegionGroupsDone": MessageLookupByLibrary.simpleMessage("地域別グループを作成しました"),
     "generateRegionGroupsEmpty": MessageLookupByLibrary.simpleMessage("地域を判別できませんでした"),
+    "proxyExitTest": MessageLookupByLibrary.simpleMessage("出口確認"),
+    "proxyExitTestHint": MessageLookupByLibrary.simpleMessage("出口確認：このノードの実際の出口地域を測定します"),
+    "proxyExitFailed": MessageLookupByLibrary.simpleMessage("失敗"),
+    "proxyExitMismatch": MessageLookupByLibrary.simpleMessage("名前の表示と一致しません"),
   };
 }

@@ -296,6 +296,15 @@ class ProxiesAction extends _$ProxiesAction {
       job.held.clear();
       pending.release(abandoned);
     }
+    // 方案 A：测完延迟顺带把没测过落地的节点排队测一遍 —— 延迟探测与落地探测
+    // 抢带宽没有意义，所以排在延迟全部结束之后；落地本身也顺带回答了
+    // 「这个节点通不通」，延迟不通的节点这里多半也失败，不会白烧流量。
+    // 不 await：落地是渐进刷新的背景任务，不该让调用方（按钮）等它跑完。
+    unawaited(
+      ref
+          .read(proxyExitProvider.notifier)
+          .testBatch(targets.map((target) => target.proxyName).toSet()),
+    );
   }
 
   Future<void> _runDelayTest(_DelayTestJob job, _DelayTestTarget target) async {

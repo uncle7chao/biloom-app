@@ -672,5 +672,9 @@
   "generateRegionGroupsKeep": "そのまま",
   "generateRegionGroupsRemoveTip": "以下のグループが参照するノードは既に存在せず、残すと設定全体を読み込めなくなります",
   "generateRegionGroupsDone": "地域別グループを作成しました",
-  "generateRegionGroupsEmpty": "地域を判別できませんでした"
+  "generateRegionGroupsEmpty": "地域を判別できませんでした",
+  "proxyExitTest": "出口確認",
+  "proxyExitTestHint": "出口確認：このノードの実際の出口地域を測定します",
+  "proxyExitFailed": "失敗",
+  "proxyExitMismatch": "名前の表示と一致しません"
 }

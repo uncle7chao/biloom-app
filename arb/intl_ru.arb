@@ -672,5 +672,9 @@
   "generateRegionGroupsKeep": "Без изменений",
   "generateRegionGroupsRemoveTip": "Эти группы ссылаются на узлы, которых больше нет; если их оставить, вся конфигурация не загрузится",
   "generateRegionGroupsDone": "Группы по регионам созданы",
-  "generateRegionGroupsEmpty": "Регионы не распознаны"
+  "generateRegionGroupsEmpty": "Регионы не распознаны",
+  "proxyExitTest": "Выход",
+  "proxyExitTestHint": "Проверить выход: измерить реальный регион выхода этого узла",
+  "proxyExitFailed": "Ошибка",
+  "proxyExitMismatch": "Не совпадает с регионом в названии"
 }

@@ -5589,6 +5589,26 @@ class AppLocalizations {
   String get generateRegionGroupsEmpty {
     return Intl.message('No recognisable regions', name: 'generateRegionGroupsEmpty', desc: '', args: []);
   }
+
+  /// `Test exit`
+  String get proxyExitTest {
+    return Intl.message('Test exit', name: 'proxyExitTest', desc: '', args: []);
+  }
+
+  /// `Test exit: measure the real exit region of this node`
+  String get proxyExitTestHint {
+    return Intl.message('Test exit: measure the real exit region of this node', name: 'proxyExitTestHint', desc: '', args: []);
+  }
+
+  /// `Failed`
+  String get proxyExitFailed {
+    return Intl.message('Failed', name: 'proxyExitFailed', desc: '', args: []);
+  }
+
+  /// `Differs from the region in its name`
+  String get proxyExitMismatch {
+    return Intl.message('Differs from the region in its name', name: 'proxyExitMismatch', desc: '', args: []);
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<AppLocalizations> {

@@ -387,6 +387,9 @@ class ProfilesAction extends _$ProfilesAction {
   Future<RegionGroupPlan> readRegionGroupPlan(int profileId) async {
     final targets = await readProfileTargets(profileId);
     final groups = await ref.read(proxyGroupsProvider(profileId).future);
+    // 实测过落地的节点按真实出口归组 —— 「应用归类」要应用的就是这个真相；
+    // 没测过的按名字认。库只存新鲜记录，这里不用再判时间。
+    final landing = await ref.read(proxyExitStoreProvider.future);
     return buildRegionGroupPlan(
       nodeNames: targets.proxies.map((target) => target.name),
       existingGroups: [
@@ -400,6 +403,10 @@ class ProfilesAction extends _$ProfilesAction {
       // 组名按当前界面语言生成，并带国旗前缀 —— 与「代理」页那些芯片上的写法一致，
       // 用户在两个页面之间认的是同一个名字。
       nameOf: (region) => '${region.emoji} ${region.label}',
+      landingByProxy: {
+        for (final entry in landing.entries)
+          entry.key: entry.value.countryCode,
+      },
     );
   }
 

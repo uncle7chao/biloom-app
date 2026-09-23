@@ -945,5 +945,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "generateRegionGroupsRemoveTip": MessageLookupByLibrary.simpleMessage("以下分组引用的节点已不存在，继续保留会让整份配置无法加载"),
     "generateRegionGroupsDone": MessageLookupByLibrary.simpleMessage("已按地区生成分组"),
     "generateRegionGroupsEmpty": MessageLookupByLibrary.simpleMessage("没有识别出可归类的地区"),
+    "proxyExitTest": MessageLookupByLibrary.simpleMessage("测落地"),
+    "proxyExitTestHint": MessageLookupByLibrary.simpleMessage("测落地：实测该节点出口所在的地区"),
+    "proxyExitFailed": MessageLookupByLibrary.simpleMessage("失败"),
+    "proxyExitMismatch": MessageLookupByLibrary.simpleMessage("与名字标注的地区不一致"),
   };
 }

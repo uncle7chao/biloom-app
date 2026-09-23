@@ -147,6 +147,10 @@ class ProxyCard extends ConsumerWidget {
                               ),
                             ),
                             const SizedBox(width: 8),
+                            _ProxyExitButton(
+                              proxyName: proxy.name,
+                            ),
+                            const SizedBox(width: 6),
                             _ProxyDelayButton(
                               proxyName: proxy.name,
                               testUrl: testUrl,
@@ -332,6 +336,128 @@ class _ProxyDelayButton extends ConsumerWidget {
                 Text(
                   label,
                   maxLines: 1,
+                  style: context.textTheme.labelSmall?.copyWith(color: color),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// 单个节点的「测落地」按钮。
+///
+/// 名字里的地区是机场随手写的（实测本订阅 `US-*` 落在吉隆坡、`SG-*` 落在
+/// 马尼拉），要知道真实落地只有把请求从节点里发出去看出口 IP。与
+/// [_ProxyDelayButton] 同一套语言：没测过显示「测落地」带文字入口，测完
+/// 显示 `→ 🇲🇾`；**实测地区与名字标注不一致时整颗按钮变警示色** —— 这正是
+/// 用户点它的理由，不一致不该藏进 tooltip 里。
+///
+/// 结果两层：本次会话测的（含失败 —— 失败是「刚才测不出」，不能被旧记录盖住）
+/// 优先；会话里没有就回退到落库的那份（[ProxyExitStore]，批量测落地写进去的）。
+/// 所以重进页面、重启应用之后，测过的节点依然显示 `→ 🇲🇾` 而不是回到入口态。
+/// 不一致的比较对象始终是**名字认出的地区** —— 卡片标签本身已跟随落地，
+/// 拿标签比就永远一致，警示就永远不亮了。
+class _ProxyExitButton extends ConsumerWidget {
+  final String proxyName;
+
+  const _ProxyExitButton({required this.proxyName});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final appLocalizations = context.appLocalizations;
+    final colorScheme = context.colorScheme;
+    final isTesting = ref.watch(
+      proxyExitProvider.select((state) => state.testing.contains(proxyName)),
+    );
+    // 会话里测过（含失败）就用会话的，否则回退落库记录。
+    final hasSessionResult = ref.watch(
+      proxyExitProvider.select((state) => state.results.containsKey(proxyName)),
+    );
+    final sessionResult = hasSessionResult
+        ? ref.watch(
+            proxyExitProvider.select((state) => state.results[proxyName]),
+          )
+        : null;
+    final storedResult = ref.watch(
+      proxyExitStoreProvider.select((state) => state.value?[proxyName]),
+    );
+    final result = hasSessionResult ? sessionResult : storedResult;
+    // 只在「名字标了国家」时才判不一致：CF 中转没有可对照的地区，认不出
+    // 更没有 —— 拿它们比只会永远显示警示色，把真问题淹没。
+    final nameRegion = resolveProxyRegion(proxyName);
+    final mismatch =
+        result != null &&
+        nameRegion.isCountry &&
+        result.countryCode.isNotEmpty &&
+        result.countryCode != nameRegion.code;
+    final color = mismatch ? colorScheme.error : colorScheme.onSurfaceVariant;
+
+    final String label;
+    if (isTesting) {
+      label = appLocalizations.proxyExitTest;
+    } else if (result == null) {
+      label = appLocalizations.proxyExitTest;
+    } else if (result.countryCode.isEmpty) {
+      label = appLocalizations.proxyExitFailed;
+    } else {
+      label = '→ ${countryCodeToEmoji(result.countryCode)}';
+    }
+
+    final tooltipMessage = switch ((isTesting, result)) {
+      (true, _) => appLocalizations.proxyExitTestHint,
+      (false, null) => appLocalizations.proxyExitTestHint,
+      (false, ProxyExitInfo(countryCode: '', ip: _)) =>
+        appLocalizations.proxyExitFailed,
+      (false, ProxyExitInfo(countryCode: final code, ip: final ip)) =>
+        '${countryCodeToEmoji(code)} '
+            '${localizedRegionName(code, Localizations.localeOf(context).languageCode) ?? code}'
+            ' · $ip'
+            '${mismatch ? '\n${appLocalizations.proxyExitMismatch}' : ''}',
+    };
+
+    return Tooltip(
+      message: tooltipMessage,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: isTesting
+              ? null
+              : () => ref.read(proxyExitProvider.notifier).test(proxyName),
+          borderRadius: AppRadius.xs,
+          child: Container(
+            height: proxyCardMetaHeight,
+            padding: const EdgeInsets.symmetric(horizontal: 6),
+            decoration: BoxDecoration(
+              color: colorScheme.surfaceContainerLow,
+              borderRadius: AppRadius.xs,
+              border: Border.all(
+                color: mismatch
+                    ? colorScheme.error
+                    : isTesting
+                    ? colorScheme.primary
+                    : colorScheme.outlineVariant,
+                width: 0.5,
+              ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (isTesting)
+                  const SizedBox(
+                    width: 12,
+                    height: 12,
+                    child: CommonCircleLoading(),
+                  )
+                else
+                  Icon(Icons.travel_explore, size: 12, color: color),
+                const SizedBox(width: 4),
+                EmojiText(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: context.textTheme.labelSmall?.copyWith(color: color),
                 ),
               ],

@@ -129,6 +129,30 @@ class ProxyRegion {
 /// 里面的机场码就认不出来了。
 final _tokenSeparators = RegExp(r'[-_.\s/|,;:+()[\]{}@#]+');
 
+/// 落地优先的地区识别：**实测过落地的节点以实测为准**，没测过（或测出的码
+/// 超出显示白名单）回退按名字识别。
+///
+/// 为什么落地可信而服务器 IP 不可信（硬规矩 1 的例外）：落地是**请求真的从
+/// 节点里走出去之后**回显服务看到的出口 —— CF 中转也好、机场乱标也好，都骗
+/// 不过它；而「拿 server 域名解析出的 IP 查 GeoIP」看到的是 Cloudflare 边缘，
+/// 与落地无关。这是两条完全不同的路，前者是真话，后者是编。
+///
+/// [landingByProxy]：节点名 → 两位国家码，来自「测落地」结果（须由调用方
+/// 保证只传新鲜记录 —— 落地会漂移，过期数据比没数据更糟）。
+ProxyRegion resolveProxyRegionWithLanding(
+  String proxyName,
+  Map<String, String> landingByProxy,
+) {
+  final code = landingByProxy[proxyName];
+  if (code != null) {
+    final region = ProxyRegion.ofCountry(code);
+    if (region != null) {
+      return region;
+    }
+  }
+  return resolveProxyRegion(proxyName);
+}
+
 /// 从节点名认出地区。
 ///
 /// 顺序是有讲究的（从最可靠到最宽松）：
@@ -691,6 +715,10 @@ class ProxyRegionBuckets {
 
 /// 按地区把节点名分桶 —— 「地区筛选」与「按地区分组」共用的同一份口径。
 ///
+/// [landingByProxy] 非空时**实测落地优先**：测过的节点归到它真实出口的地区，
+/// 没测过的按名字认。两个来源在同一个桶里自然汇合 —— 比如名字带 HKG 的和实测
+/// 落香港的都进「🇭🇰」桶，用户不用关心这个节点是靠哪种方式认出来的。
+///
 /// 排序：**节点多的地区在前**，数量相同按地区码升序，**认不出地区的固定最后**。
 /// 筛选栏上先出现的就应该是节点最多、最可能被点的那个；用地区码兜底是为了同数量时
 /// 顺序**稳定**，否则每次重建都可能换位，芯片会自己跳。「其他」放最后是因为它不是一个
@@ -698,14 +726,17 @@ class ProxyRegionBuckets {
 ///
 /// 名字先按**首次出现顺序**去重：同一批节点常在多个策略组里重复出现
 /// （`GLOBAL` + 自己的组），不去重会把数量夸大。
-ProxyRegionBuckets groupProxyNamesByRegion(Iterable<String> proxyNames) {
+ProxyRegionBuckets groupProxyNamesByRegion(
+  Iterable<String> proxyNames, {
+  Map<String, String> landingByProxy = const {},
+}) {
   final seen = <String>{};
   final counters = <String, ProxyRegionGroup>{};
   for (final name in proxyNames) {
     if (!seen.add(name)) {
       continue;
     }
-    final region = resolveProxyRegion(name);
+    final region = resolveProxyRegionWithLanding(name, landingByProxy);
     final group = counters[region.key] ??= ProxyRegionGroup(
       region: region,
       proxyNames: <String>[],
@@ -772,11 +803,17 @@ class ExistingRegionGroup {
 /// 第 3 条是防误删的关键：用户自建的「🇭🇰 香港节点」如果混进了日本节点，就不算
 /// 我们的，既不重写也不删除。反过来说，一个名字叫香港、成员全是香港节点的组 ——
 /// 哪怕当初是手建的，把它刷成「当前所有香港节点」也正是他要的。
-bool looksLikeGeneratedRegionGroup(ExistingRegionGroup group) {
+///
+/// [landingByProxy] 与成员判定走同一个口径：分桶时按落地归的组，成员校验也得
+/// 按落地认，否则「落地归类生成的组」会被当成来历不明而误删。
+bool looksLikeGeneratedRegionGroup(
+  ExistingRegionGroup group, {
+  Map<String, String> landingByProxy = const {},
+}) {
   if (group.hasProviderSource) {
     return false;
   }
-  final region = resolveProxyRegion(group.name);
+  final region = resolveProxyRegionWithLanding(group.name, landingByProxy);
   if (region.isUnknown) {
     return false;
   }
@@ -784,7 +821,8 @@ bool looksLikeGeneratedRegionGroup(ExistingRegionGroup group) {
     return false;
   }
   for (final name in group.proxyNames) {
-    if (resolveProxyRegion(name).key != region.key) {
+    if (resolveProxyRegionWithLanding(name, landingByProxy).key !=
+        region.key) {
       return false;
     }
   }
@@ -854,7 +892,9 @@ class RegionGroupPlan {
 ///
 /// - [nodeNames]：这份配置里真实存在的节点名（从配置解析，不是从运行中的内核）；
 /// - [existingGroups]：当前自定义分组（覆写数据里的那份）；
-/// - [nameOf]：地区 → 组名。语言相关，由调用方注入，本文件保持无语言状态。
+/// - [nameOf]：地区 → 组名。语言相关，由调用方注入，本文件保持无语言状态；
+/// - [landingByProxy]：实测落地（节点名 → 国家码），见
+///   [resolveProxyRegionWithLanding]。
 ///
 /// 「其他」桶**不生成分组**：认不出地区的那一堆不是一个地区，给它在配置里造一个
 /// `其他` 组只会让规则里多一个语义不清的目标（界面上的「其他」芯片照样能筛到它们）。
@@ -862,8 +902,9 @@ RegionGroupPlan buildRegionGroupPlan({
   required Iterable<String> nodeNames,
   required List<ExistingRegionGroup> existingGroups,
   required String Function(ProxyRegion region) nameOf,
+  Map<String, String> landingByProxy = const {},
 }) {
-  final buckets = groupProxyNamesByRegion(nodeNames);
+  final buckets = groupProxyNamesByRegion(nodeNames, landingByProxy: landingByProxy);
   final claimed = <String>{};
   final upserts = <RegionGroupDraft>[];
   for (final bucket in buckets.groups) {
@@ -871,8 +912,13 @@ RegionGroupPlan buildRegionGroupPlan({
       continue;
     }
     final name = nameOf(bucket.region);
-    ExistingRegionGroup? hit = _matchByName(existingGroups, name, claimed);
-    hit ??= _matchByRegion(existingGroups, bucket.region.key, claimed);
+    ExistingRegionGroup? hit = _matchByName(
+      existingGroups,
+      name,
+      claimed,
+      landingByProxy,
+    );
+    hit ??= _matchByRegion(existingGroups, bucket.region.key, claimed, landingByProxy);
     if (hit != null) {
       claimed.add(hit.name);
     }
@@ -891,10 +937,13 @@ RegionGroupPlan buildRegionGroupPlan({
   };
   final removals = <String>[];
   for (final group in existingGroups) {
-    if (claimed.contains(group.name) || !looksLikeGeneratedRegionGroup(group)) {
+    if (claimed.contains(group.name) ||
+        !looksLikeGeneratedRegionGroup(group, landingByProxy: landingByProxy)) {
       continue;
     }
-    if (currentKeys.contains(resolveProxyRegion(group.name).key)) {
+    if (currentKeys.contains(
+      resolveProxyRegionWithLanding(group.name, landingByProxy).key,
+    )) {
       continue;
     }
     removals.add(group.name);
@@ -910,11 +959,12 @@ ExistingRegionGroup? _matchByName(
   List<ExistingRegionGroup> groups,
   String name,
   Set<String> claimed,
+  Map<String, String> landingByProxy,
 ) {
   for (final group in groups) {
     if (group.name == name &&
         !claimed.contains(group.name) &&
-        looksLikeGeneratedRegionGroup(group)) {
+        looksLikeGeneratedRegionGroup(group, landingByProxy: landingByProxy)) {
       return group;
     }
   }
@@ -927,12 +977,14 @@ ExistingRegionGroup? _matchByRegion(
   List<ExistingRegionGroup> groups,
   String key,
   Set<String> claimed,
+  Map<String, String> landingByProxy,
 ) {
   for (final group in groups) {
-    if (claimed.contains(group.name) || !looksLikeGeneratedRegionGroup(group)) {
+    if (claimed.contains(group.name) ||
+        !looksLikeGeneratedRegionGroup(group, landingByProxy: landingByProxy)) {
       continue;
     }
-    if (resolveProxyRegion(group.name).key == key) {
+    if (resolveProxyRegionWithLanding(group.name, landingByProxy).key == key) {
       return group;
     }
   }

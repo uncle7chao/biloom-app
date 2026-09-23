@@ -1371,5 +1371,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "generateRegionGroupsRemoveTip": MessageLookupByLibrary.simpleMessage("Эти группы ссылаются на узлы, которых больше нет; если их оставить, вся конфигурация не загрузится"),
     "generateRegionGroupsDone": MessageLookupByLibrary.simpleMessage("Группы по регионам созданы"),
     "generateRegionGroupsEmpty": MessageLookupByLibrary.simpleMessage("Регионы не распознаны"),
+    "proxyExitTest": MessageLookupByLibrary.simpleMessage("Выход"),
+    "proxyExitTestHint": MessageLookupByLibrary.simpleMessage("Проверить выход: измерить реальный регион выхода этого узла"),
+    "proxyExitFailed": MessageLookupByLibrary.simpleMessage("Ошибка"),
+    "proxyExitMismatch": MessageLookupByLibrary.simpleMessage("Не совпадает с регионом в названии"),
   };
 }

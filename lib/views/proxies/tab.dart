@@ -328,16 +328,30 @@ class ProxyGroupView extends ConsumerStatefulWidget {
 /// 收敛不成立时（没选地区 / 选的地区这一组里已经没有了）**原样返回** —— 与
 /// `ProxyRegionFilterBar` 的高亮判断共用 [resolveEffectiveRegionFilter]，
 /// 两侧必须给出同一个答案，否则会出现「芯片标着香港、列表却是全部」。
-List<Proxy> _applyRegionFilter(List<Proxy> proxies, String? regionKey) {
+/// [landingByProxy] 与筛选栏传的是同一份实测落地 —— 两侧对同一个节点必须
+/// 归到同一个地区，否则会出现「芯片在『其他』里、列表却被筛进『🇲🇾』」。
+List<Proxy> _applyRegionFilter(
+  List<Proxy> proxies,
+  String? regionKey,
+  Map<String, String> landingByProxy,
+) {
   final effective = resolveEffectiveRegionFilter(
-    buckets: groupProxyNamesByRegion(proxies.map((proxy) => proxy.name)),
+    buckets: groupProxyNamesByRegion(
+      proxies.map((proxy) => proxy.name),
+      landingByProxy: landingByProxy,
+    ),
     key: regionKey,
   );
   if (effective == null) {
     return proxies;
   }
   return proxies
-      .where((proxy) => resolveProxyRegion(proxy.name).key == effective)
+      .where(
+        (proxy) => resolveProxyRegionWithLanding(
+          proxy.name,
+          landingByProxy,
+        ).key == effective,
+      )
       .toList();
 }
 
@@ -381,6 +395,7 @@ class _ProxyGroupViewState extends ConsumerState<ProxyGroupView> {
               proxies: _applyRegionFilter(
                 widget.group.all,
                 ref.read(proxyRegionFilterProvider)[widget.group.name],
+                ref.read(proxyLandingCodesProvider),
               ),
               columns: widget.columns,
             ),
@@ -398,6 +413,7 @@ class _ProxyGroupViewState extends ConsumerState<ProxyGroupView> {
       group.all,
       // 用 `read` 拿不到变化 —— 必须先 `watch` 起来，筛选一改这一页才会重建。
       ref.watch(proxyRegionFilterProvider.select((state) => state[group.name])),
+      ref.watch(proxyLandingCodesProvider),
     );
     return CommonScrollBar(
       controller: _controller,

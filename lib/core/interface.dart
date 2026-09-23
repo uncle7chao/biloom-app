@@ -44,6 +44,15 @@ mixin CoreInterface {
 
   Future<Delay?> asyncTestDelay(String url, String proxyName);
 
+  /// 「测落地」：让一个 GET 请求真的从 [proxyName] 这个节点走出去，拿回
+  /// 出口 IP 与内核**本地** geoip 数据认出的国家码（认不出为空串）。
+  /// 地理分类在内核完成 —— 外部地理 API 有限流，自动测落地撑不住。
+  /// 内核侧见 `core/proxy_ip.go`。
+  Future<({String ip, String country})> requestProxyIP({
+    required String proxyName,
+    required int timeoutMs,
+  });
+
   Future<String> updateConfig(UpdateParams updateParams);
 
   Future<String> setupConfig(SetupParams setupParams);
@@ -438,6 +447,30 @@ abstract class CoreHandlerInterface with CoreInterface {
       timeout: delayTestGuardDuration,
     );
     return data == null ? null : Delay.fromJson(data);
+  }
+
+  @override
+  Future<({String ip, String country})> requestProxyIP({
+    required String proxyName,
+    required int timeoutMs,
+  }) async {
+    final data = await _invokeMethod<Map<String, dynamic>>(
+      method: CoreMethod.requestProxyIP,
+      arguments: {'name': proxyName, 'timeout': timeoutMs},
+      // 留出内核侧排队、JSON 编解码与管道往返的余量；超时太贴会把一次
+      // 还在正常等慢节点的探测误判成失败。
+      timeout: Duration(milliseconds: timeoutMs + 5000),
+    );
+    if (data == null) {
+      throw const CoreMethodException(
+        code: 'empty_result',
+        message: 'Core returned an empty proxy ip result',
+      );
+    }
+    return (
+      ip: data['ip'] as String? ?? '',
+      country: data['country'] as String? ?? '',
+    );
   }
 
   @override

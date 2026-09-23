@@ -672,5 +672,9 @@
   "generateRegionGroupsKeep": "Left as is",
   "generateRegionGroupsRemoveTip": "These groups reference nodes that no longer exist; keeping them makes the whole config fail to load",
   "generateRegionGroupsDone": "Region groups created",
-  "generateRegionGroupsEmpty": "No recognisable regions"
+  "generateRegionGroupsEmpty": "No recognisable regions",
+  "proxyExitTest": "Test exit",
+  "proxyExitTestHint": "Test exit: measure the real exit region of this node",
+  "proxyExitFailed": "Failed",
+  "proxyExitMismatch": "Differs from the region in its name"
 }

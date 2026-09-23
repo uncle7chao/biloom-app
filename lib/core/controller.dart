@@ -135,11 +135,7 @@ class CoreController {
     required String target,
     required String dialer,
   }) async {
-    return _interface.setProxyChain(
-      yaml: yaml,
-      target: target,
-      dialer: dialer,
-    );
+    return _interface.setProxyChain(yaml: yaml, target: target, dialer: dialer);
   }
 
   Future<String> updateConfig(UpdateParams updateParams) async {
@@ -236,6 +232,17 @@ class CoreController {
 
   Future<Delay?> getDelay(String url, String proxyName) async {
     return _interface.asyncTestDelay(url, proxyName);
+  }
+
+  /// 「测落地」：见 [CoreInterface.requestProxyIP]。
+  Future<({String ip, String country})> requestProxyIP({
+    required String proxyName,
+    required int timeoutMs,
+  }) {
+    return _interface.requestProxyIP(
+      proxyName: proxyName,
+      timeoutMs: timeoutMs,
+    );
   }
 
   Future<Map<String, dynamic>> getConfig(int id) async {
