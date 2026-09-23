@@ -280,6 +280,30 @@ var methodHandlers = map[CoreMethod]methodHandler{
 		}
 		response.success(result)
 	}),
+	addProxyNodesMethod: withArguments(func(params *AddProxyNodesParams, response MethodResponse) {
+		result, err := handleAddProxyNodes(params)
+		if err != nil {
+			response.failure("add_proxy_nodes_error", err.Error(), nil)
+			return
+		}
+		response.success(result)
+	}),
+	readProfileTargetsMethod: withArguments(func(params *ReadProfileTargetsParams, response MethodResponse) {
+		result, err := handleReadProfileTargets(params)
+		if err != nil {
+			response.failure("read_profile_targets_error", err.Error(), nil)
+			return
+		}
+		response.success(result)
+	}),
+	setProxyChainMethod: withArguments(func(params *SetProxyChainParams, response MethodResponse) {
+		result, err := handleSetProxyChain(params)
+		if err != nil {
+			response.failure("set_proxy_chain_error", err.Error(), nil)
+			return
+		}
+		response.success(result)
+	}),
 }
 
 func registerMethod(method CoreMethod, handler methodHandler) {

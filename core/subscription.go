@@ -332,7 +332,22 @@ func subscriptionToProfileYAML(buf []byte) (convertedSubscription, error) {
 	}
 	if format == subscriptionFormatClash {
 		// 已经是 Clash 配置：它自带服务商设计好的分组与规则，原样放行。
-		return convertedSubscription{YAML: buf, Format: format}, nil
+		//
+		// 例外只有一种：**有节点、却一个策略组都没有**。手写的只有 proxies 的片段、
+		// 以及「先建空白配置、再加节点」的中间态都长这样，而原样放行会让用户拿到一份
+		// 用不了的配置 —— 代理页签由分组驱动、会整块消失，且所有流量都走 DIRECT
+		// （内核在规则全不命中时把连接交给 DIRECT）。所以只在这一种情况下补默认分组
+		// 与兜底规则；补不动就退回原样放行，绝不因为补组失败而让配置加载不了。
+		patched, changed, nodeCount, err := patchMissingDefaults(buf)
+		if err != nil || !changed {
+			return convertedSubscription{YAML: buf, Format: format}, nil
+		}
+		return convertedSubscription{
+			YAML:      patched,
+			Format:    format,
+			NodeCount: nodeCount,
+			Changed:   true,
+		}, nil
 	}
 	groups, rules := defaultSubscriptionGroups(proxies)
 	profile := map[string]any{
@@ -367,7 +382,13 @@ func subscriptionToFullConfigYAML(buf []byte) ([]byte, subscriptionFormat, error
 		return nil, format, err
 	}
 	if format == subscriptionFormatClash {
-		return buf, format, nil
+		// 同 subscriptionToProfileYAML：只有「有节点但没有任何策略组」这一种情况
+		// 才补默认值，其余一律原样放行。
+		patched, changed, _, err := patchMissingDefaults(buf)
+		if err != nil || !changed {
+			return buf, format, nil
+		}
+		return patched, format, nil
 	}
 	groups, rules := defaultSubscriptionGroups(proxies)
 	rawConfig := config.DefaultRawConfig()

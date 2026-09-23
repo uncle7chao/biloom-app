@@ -16,13 +16,37 @@ import (
 // 逐节点覆盖顶层字段、sing-box 的 outbounds 里混着 selector/direct。
 
 const (
-	clashProfileFixture = `proxies:
+	// bareProxiesFixture 刻意**只有 proxies**：它模拟的是「用户手写的片段」或
+	// 「先建空白配置、再加节点」的中间态，而不是机场订阅的形状 —— 服务商吐出来的
+	// Clash 配置一定带 proxy-groups 与 rules。两种形状会走到转换层的不同分支，
+	// 所以两个 fixture 都得留着。
+	bareProxiesFixture = `proxies:
   - name: clash-ss
     type: ss
     server: 1.2.3.4
     port: 8388
     cipher: aes-256-gcm
     password: pass
+`
+
+	// clashWithGroupsFixture 是机场订阅的真实形状：自带分组与规则，还带注释。
+	// 转换层对它必须一个字节都不改 —— 那是服务商自己的设计。
+	clashWithGroupsFixture = `# 服务商写的注释，必须原样保留
+proxies:
+  - name: HK-01
+    type: ss
+    server: 1.2.3.4
+    port: 8388
+    cipher: aes-256-gcm
+    password: pass
+proxy-groups:
+  - name: 机场自选
+    type: select
+    proxies:
+      - HK-01
+      - DIRECT
+rules:
+  - MATCH,机场自选
 `
 
 	vlessShareLinkFixture = "vless://8dd89a84-66b6-4d39-ab12-c2b2b2c4ff66@v.example.com:443" +
@@ -96,7 +120,7 @@ func convertToShape(t *testing.T, input string) profileShape {
 }
 
 func TestConvertSubscriptionClashPassthrough(t *testing.T) {
-	converted, err := subscriptionToProfileYAML([]byte(clashProfileFixture))
+	converted, err := subscriptionToProfileYAML([]byte(clashWithGroupsFixture))
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -106,8 +130,37 @@ func TestConvertSubscriptionClashPassthrough(t *testing.T) {
 	if converted.Changed {
 		t.Fatal("a Clash profile must be passed through untouched")
 	}
-	if string(converted.YAML) != clashProfileFixture {
+	if string(converted.YAML) != clashWithGroupsFixture {
 		t.Fatalf("payload was rewritten:\n%s", converted.YAML)
+	}
+}
+
+// 只有 proxies、没有任何策略组的配置，原样放行等于给用户一份用不了的配置：
+// 「代理」页签由分组驱动会整块消失，且所有流量都走 DIRECT（内核在规则全不命中时
+// 把连接交给 DIRECT）。转换层要补上默认分组与兜底规则 —— 但**不能碰节点本身**。
+func TestConvertSubscriptionBackfillsMissingGroups(t *testing.T) {
+	converted, err := subscriptionToProfileYAML([]byte(bareProxiesFixture))
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !converted.Changed {
+		t.Fatal("a bare proxies profile must be backfilled with default groups")
+	}
+	var shape profileShape
+	if err := yaml.Unmarshal(converted.YAML, &shape); err != nil {
+		t.Fatalf("backfilled output is not parseable YAML: %v\n%s", err, converted.YAML)
+	}
+	if len(shape.Proxies) != 1 || shape.Proxies[0]["name"] != "clash-ss" {
+		t.Fatalf("original nodes must survive backfilling, got %+v", shape.Proxies)
+	}
+	if len(shape.ProxyGroups) == 0 {
+		t.Fatal("default groups were not injected")
+	}
+	if len(shape.Rules) == 0 {
+		t.Fatal("fallback rules were not injected")
+	}
+	if converted.NodeCount != 1 {
+		t.Fatalf("node count = %d, want 1", converted.NodeCount)
 	}
 }
 
