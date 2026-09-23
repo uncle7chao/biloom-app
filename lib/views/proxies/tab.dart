@@ -366,7 +366,10 @@ class _ProxyGroupViewState extends ConsumerState<ProxyGroupView> {
           top: 16,
           left: 16,
           right: 16,
-          bottom: 16 + BottomInsetScope.of(context),
+          // `BottomInsetScope` 只按「一颗 56 高的 FAB」给了 72，而右下角现在
+          // 叠了两颗（测速 + 启动），差出来的那一截得自己补上，否则滚到底时
+          // 最后一排节点会被按钮压住。
+          bottom: 16 + BottomInsetScope.of(context) + proxiesExtraFabInset,
         ),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: widget.columns,
@@ -443,6 +446,7 @@ class _DelayTestButtonState extends State<DelayTestButton>
   @override
   Widget build(BuildContext context) {
     final appLocalizations = context.appLocalizations;
+    final colorScheme = context.colorScheme;
     return AnimatedBuilder(
       animation: _controller.view,
       builder: (_, child) {
@@ -451,10 +455,16 @@ class _DelayTestButtonState extends State<DelayTestButton>
           child: ScaleTransition(scale: _animation, child: child),
         );
       },
-      child: CommonFloatingActionButton(
+      // 这一颗从「带文字的 extended」降级成小圆按钮：右下角的主位让给「启动」，
+      // 整组测速是次级操作（**单节点**的测速入口现在直接画在每张卡片上，
+      // 分组头里那颗 `Icons.network_ping` 也还在）。颜色刻意不跟启动按钮抢主题色。
+      child: FloatingActionButton.small(
+        heroTag: null,
+        tooltip: appLocalizations.delayTest,
         onPressed: _healthcheck,
-        label: appLocalizations.delayTest,
-        icon: const Icon(Icons.network_ping),
+        backgroundColor: colorScheme.surfaceContainerHigh,
+        foregroundColor: colorScheme.onSurfaceVariant,
+        child: const Icon(Icons.network_ping),
       ),
     );
   }

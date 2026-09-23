@@ -9,12 +9,30 @@ double get listHeaderHeight {
   return 20 + measure.titleMediumHeight + 4 + measure.bodyMediumHeight + 2;
 }
 
+/// 卡片第二行里那个胶囊的高度（协议胶囊与测速胶囊同高）。
+///
+/// = `labelSmall` 一行字 + 上下各 2px 内边距 + 1px 描边，再留 1px 余量。
+/// 单独抽成 getter 是因为 `getItemHeight` 也必须用同一份数字 ——
+/// 两处各算一遍的话，只要差一点点，`SliverFixedExtentList` 就会在实机上报
+/// 「A RenderFlex overflowed」。
+double get proxyCardMetaHeight => globalState.measure.labelSmallHeight + 6;
+
+/// 右下角悬浮按钮区比 `BottomInsetScope` 假设的多出来的那一截。
+///
+/// `BottomInsetScope.floatingActionButtonInset` 是按「一颗 56 高的 FAB」
+/// 定死的 72（`kFloatingActionButtonMargin + 56`）。「代理」页（tab 布局）的
+/// 右下角现在叠了两颗 —— 小测速按钮 40 + 间距 10 + 启动按钮 56 = 106，
+/// 比它多 50。不补这一截，滚到底时最后一排节点会被按钮压住。
+const double proxiesExtraFabInset = 52;
+
 double getItemHeight(ProxyCardType proxyCardType) {
   final measure = globalState.measure;
+  // 卡片内部从上到下：8 上边距 + 名称 + 6 + 第二行 + 8 下边距（+ 1 余量）。
+  // 第二行从「一行纯文字」换成了「胶囊」，高度跟 [proxyCardMetaHeight] 走。
   final baseHeight =
-      16 + measure.bodyMediumHeight * 2 + measure.bodySmallHeight + 8 + 4;
+      16 + measure.bodyMediumHeight * 2 + 6 + proxyCardMetaHeight + 1;
   return switch (proxyCardType) {
-    ProxyCardType.expand => baseHeight + measure.labelSmallHeight + 6,
+    ProxyCardType.expand => baseHeight + measure.bodySmallHeight + 6,
     ProxyCardType.shrink => baseHeight,
     ProxyCardType.min => baseHeight - measure.bodyMediumHeight,
   };
