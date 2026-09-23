@@ -85,6 +85,32 @@ class CommonAction extends _$CommonAction {
     return res.status == UpdateCheckStatus.hasUpdate;
   }
 
+  /// 首启一次性引导：检测设备能力并推荐接管方式，用户可选「一键应用」。
+  ///
+  /// 出现条件只有「从未出现过」（shared_preferences 的一次性标记，不复用
+  /// appSetting —— 那个模型加字段要跑代码生成器，为一个布尔值不值）。
+  /// 无论用户选什么都标记完成：这不是一个要反复纠缠的推销位。
+  Future<void> maybeShowFirstRunGuide() async {
+    final prefs = await preferences.sharedPreferencesCompleter.future;
+    if (prefs?.getBool('bestPresetGuideDone') == true) {
+      return;
+    }
+    await prefs?.setBool('bestPresetGuideDone', true);
+    final context = globalState.navigatorKey.currentContext;
+    if (context == null) {
+      return;
+    }
+    final appLocalizations = currentAppLocalizations;
+    final confirmed = await dialogs.showMessage(
+      title: appLocalizations.bestPresetTitle,
+      message: TextSpan(text: appLocalizations.bestPresetFirstRunTip),
+      confirmText: appLocalizations.bestPresetApply,
+    );
+    if (confirmed == true) {
+      await ref.read(systemActionProvider.notifier).applyBestPreset();
+    }
+  }
+
   TextSpan _releaseSpan(BuildContext context, String tagName, String? body) {
     final textTheme = context.textTheme;
     final version = parseReleaseChangelog(body);

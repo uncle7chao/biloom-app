@@ -676,5 +676,22 @@
   "proxyExitTest": "测落地",
   "proxyExitTestHint": "测落地：实测该节点出口所在的地区",
   "proxyExitFailed": "失败",
-  "proxyExitMismatch": "与名字标注的地区不一致"
+  "proxyExitMismatch": "与名字标注的地区不一致",
+  "connectionStateDisconnected": "未连接",
+  "connectionStateConnecting": "连接中…",
+  "connectionStateConnected": "已连接",
+  "connectionHeroTapToConnect": "点按一键连接",
+  "connectionHeroTapToDisconnect": "点按断开连接",
+  "intentGroups": "意图分组",
+  "intentGroupsTip": "按使用意图把对应域名分流到独立分组：勾选生成组与规则（规则插在订阅规则最前），取消勾选会删掉已生成的组与规则。",
+  "intentStreaming": "流媒体",
+  "intentAi": "AI 服务",
+  "intentSocial": "社交平台",
+  "intentGroupsDone": "已生成意图分组",
+  "bestPresetTitle": "恢复最佳设置",
+  "bestPresetDesc": "按当前设备能力自动选好接管方式",
+  "bestPresetFirstRunTip": "可以根据设备能力自动选择接管方式：具备权限时使用 TUN 虚拟网卡模式（拦截最彻底），否则使用系统代理模式。现在应用吗？",
+  "bestPresetApply": "一键应用",
+  "bestPresetTunApplied": "已打开 TUN 虚拟网卡模式",
+  "bestPresetSystemProxyApplied": "已打开系统代理模式（当前未以管理员身份运行，TUN 模式不可用；如需 TUN 请以管理员身份重新启动应用后再试）"
 }

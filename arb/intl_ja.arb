@@ -676,5 +676,22 @@
   "proxyExitTest": "出口確認",
   "proxyExitTestHint": "出口確認：このノードの実際の出口地域を測定します",
   "proxyExitFailed": "失敗",
-  "proxyExitMismatch": "名前の表示と一致しません"
+  "proxyExitMismatch": "名前の表示と一致しません",
+  "connectionStateDisconnected": "未接続",
+  "connectionStateConnecting": "接続中…",
+  "connectionStateConnected": "接続済み",
+  "connectionHeroTapToConnect": "タップして接続",
+  "connectionHeroTapToDisconnect": "タップして切断",
+  "intentGroups": "用途別グループ",
+  "intentGroupsTip": "用途ごとに該当ドメインを専用グループへ振り分けます：チェックでグループとルールを作成（ルールは購読ルールの前に挿入）、チェックを外すと両方とも削除されます。",
+  "intentStreaming": "ストリーミング",
+  "intentAi": "AI サービス",
+  "intentSocial": "ソーシャル",
+  "intentGroupsDone": "用途別グループを作成しました",
+  "bestPresetTitle": "推奨設定を復元",
+  "bestPresetDesc": "この端末に最適な接管方式を自動で選択します",
+  "bestPresetFirstRunTip": "端末の能力に合わせて接管方式を選択できます：権限があれば TUN モード、なければシステムプロキシを使用します。今適用しますか？",
+  "bestPresetApply": "適用",
+  "bestPresetTunApplied": "TUN モードを有効にしました",
+  "bestPresetSystemProxyApplied": "システムプロキシを有効にしました（管理者として実行していないため TUN は使用できません；TUN を使う場合は管理者として再起動してください）"
 }

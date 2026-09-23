@@ -250,3 +250,42 @@ bool takeoverOpen(Ref ref) {
   );
   return systemProxy || tunEnable;
 }
+
+/// 首页的三态：未连接 / 连接中 / 已连接。
+///
+/// 「连接中」不是从内核读来的 —— 内核只有「起来了 / 没起来」两个相。
+/// 这一相来自 [connectingBusyProvider]：连接动作从点下到内核回报运行态之间
+/// 有几百毫秒到数秒不等的空窗（写配置、起进程、apply profile），这个空窗
+/// 什么都不标的话，用户看到的就是「点了没反应」，然后再「突然连上」。
+enum ConnectionPhase { disconnected, connecting, connected }
+
+/// 一次连接/断开动作正在进行中。动作完没完成由动作方（SystemAction）标记。
+class ConnectingBusy extends Notifier<bool> {
+  @override
+  bool build() => false;
+
+  void set(bool value) {
+    if (state != value) {
+      state = value;
+    }
+  }
+}
+
+final connectingBusyProvider = NotifierProvider<ConnectingBusy, bool>(
+  ConnectingBusy.new,
+);
+
+/// 三态只读视图：运行中 → 已连接；没运行但动作在飞 → 连接中；否则未连接。
+///
+/// 断开动作进行中仍显示「已连接」—— 内核确实还在跑，此时标「连接中」
+/// 反而让用户误会成「正在连」。等内核真正停下，这一相自己会落到「未连接」。
+final connectionPhaseProvider = Provider<ConnectionPhase>((ref) {
+  final running = ref.watch(runTimeProvider) != null;
+  if (running) {
+    return ConnectionPhase.connected;
+  }
+  if (ref.watch(connectingBusyProvider)) {
+    return ConnectionPhase.connecting;
+  }
+  return ConnectionPhase.disconnected;
+});

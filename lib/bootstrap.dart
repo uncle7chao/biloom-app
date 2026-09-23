@@ -167,6 +167,9 @@ class Bootstrap {
       await _container.read(setupActionProvider.notifier).initStatus();
     }
     _container.read(initProvider.notifier).value = true;
+    // 首启引导放在 init 之后：applyBestPreset 里的一切（内核、配置、对话框）
+    // 此时才真正可用；放在 crash 恢复提示之后，不与那边的弹窗打架。
+    await _container.read(commonActionProvider.notifier).maybeShowFirstRunGuide();
     await bootGuard.markRunning();
     permissions.check(_container.read);
   }

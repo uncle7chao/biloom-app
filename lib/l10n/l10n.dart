@@ -5609,6 +5609,91 @@ class AppLocalizations {
   String get proxyExitMismatch {
     return Intl.message('Differs from the region in its name', name: 'proxyExitMismatch', desc: '', args: []);
   }
+
+  /// `Disconnected`
+  String get connectionStateDisconnected {
+    return Intl.message('Disconnected', name: 'connectionStateDisconnected', desc: '', args: []);
+  }
+
+  /// `Connecting…`
+  String get connectionStateConnecting {
+    return Intl.message('Connecting…', name: 'connectionStateConnecting', desc: '', args: []);
+  }
+
+  /// `Connected`
+  String get connectionStateConnected {
+    return Intl.message('Connected', name: 'connectionStateConnected', desc: '', args: []);
+  }
+
+  /// `Tap to connect`
+  String get connectionHeroTapToConnect {
+    return Intl.message('Tap to connect', name: 'connectionHeroTapToConnect', desc: '', args: []);
+  }
+
+  /// `Tap to disconnect`
+  String get connectionHeroTapToDisconnect {
+    return Intl.message('Tap to disconnect', name: 'connectionHeroTapToDisconnect', desc: '', args: []);
+  }
+
+  /// `Intent groups`
+  String get intentGroups {
+    return Intl.message('Intent groups', name: 'intentGroups', desc: '', args: []);
+  }
+
+  /// `Route matching domains into a dedicated group per intent: checking one creates its group and rules (rules go before the subscription rules), unchecking removes both.`
+  String get intentGroupsTip {
+    return Intl.message('Route matching domains into a dedicated group per intent: checking one creates its group and rules (rules go before the subscription rules), unchecking removes both.', name: 'intentGroupsTip', desc: '', args: []);
+  }
+
+  /// `Streaming`
+  String get intentStreaming {
+    return Intl.message('Streaming', name: 'intentStreaming', desc: '', args: []);
+  }
+
+  /// `AI services`
+  String get intentAi {
+    return Intl.message('AI services', name: 'intentAi', desc: '', args: []);
+  }
+
+  /// `Social`
+  String get intentSocial {
+    return Intl.message('Social', name: 'intentSocial', desc: '', args: []);
+  }
+
+  /// `Intent groups applied`
+  String get intentGroupsDone {
+    return Intl.message('Intent groups applied', name: 'intentGroupsDone', desc: '', args: []);
+  }
+
+  /// `Restore recommended settings`
+  String get bestPresetTitle {
+    return Intl.message('Restore recommended settings', name: 'bestPresetTitle', desc: '', args: []);
+  }
+
+  /// `Pick the best takeover mode for this device automatically`
+  String get bestPresetDesc {
+    return Intl.message('Pick the best takeover mode for this device automatically', name: 'bestPresetDesc', desc: '', args: []);
+  }
+
+  /// `We can pick the takeover mode that fits this device: TUN mode when the device grants the needed privileges, otherwise the system proxy. Apply now?`
+  String get bestPresetFirstRunTip {
+    return Intl.message('We can pick the takeover mode that fits this device: TUN mode when the device grants the needed privileges, otherwise the system proxy. Apply now?', name: 'bestPresetFirstRunTip', desc: '', args: []);
+  }
+
+  /// `Apply`
+  String get bestPresetApply {
+    return Intl.message('Apply', name: 'bestPresetApply', desc: '', args: []);
+  }
+
+  /// `TUN mode is now enabled`
+  String get bestPresetTunApplied {
+    return Intl.message('TUN mode is now enabled', name: 'bestPresetTunApplied', desc: '', args: []);
+  }
+
+  /// `System proxy is now enabled (the app is not running as administrator, so TUN is unavailable; restart it as administrator to use TUN)`
+  String get bestPresetSystemProxyApplied {
+    return Intl.message('System proxy is now enabled (the app is not running as administrator, so TUN is unavailable; restart it as administrator to use TUN)', name: 'bestPresetSystemProxyApplied', desc: '', args: []);
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<AppLocalizations> {

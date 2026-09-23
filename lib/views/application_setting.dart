@@ -1,6 +1,6 @@
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/models/models.dart';
-import 'package:fl_clash/providers/config.dart';
+import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -27,6 +27,7 @@ class ApplicationSettingView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final items = <Widget>[
+      const _BestPresetItem(),
       _appSettingToggle(
         title: (l) => l.minimizeOnExit,
         subtitle: (l) => l.minimizeOnExitDesc,
@@ -116,6 +117,35 @@ class ApplicationSettingView extends StatelessWidget {
         separatorBuilder: (_, _) => const Divider(height: 0),
         itemCount: items.length,
       ),
+    );
+  }
+}
+
+/// 「恢复最佳设置」—— 方案 C 的一键入口：不引导，随时一键回到推荐预设。
+///
+/// 动作本身在 [SystemAction.applyBestPreset]：按设备能力选接管方式，
+/// 应用后弹窗说明选了什么、为什么。放在设置页最顶上，因为它作用于
+/// 下面所有开关的总和，语义上是这一页的「快捷键」而不是其中一项。
+class _BestPresetItem extends ConsumerWidget {
+  const _BestPresetItem();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final appLocalizations = context.appLocalizations;
+    return ListItem(
+      leading: const Icon(Icons.auto_fix_high),
+      title: Text(appLocalizations.bestPresetTitle),
+      subtitle: Text(appLocalizations.bestPresetDesc),
+      onTap: () async {
+        final confirmed = await dialogs.showMessage(
+          title: appLocalizations.bestPresetTitle,
+          message: TextSpan(text: appLocalizations.bestPresetFirstRunTip),
+          confirmText: appLocalizations.bestPresetApply,
+        );
+        if (confirmed == true) {
+          await ref.read(systemActionProvider.notifier).applyBestPreset();
+        }
+      },
     );
   }
 }

@@ -676,5 +676,22 @@
   "proxyExitTest": "Выход",
   "proxyExitTestHint": "Проверить выход: измерить реальный регион выхода этого узла",
   "proxyExitFailed": "Ошибка",
-  "proxyExitMismatch": "Не совпадает с регионом в названии"
+  "proxyExitMismatch": "Не совпадает с регионом в названии",
+  "connectionStateDisconnected": "Нет подключения",
+  "connectionStateConnecting": "Подключение…",
+  "connectionStateConnected": "Подключено",
+  "connectionHeroTapToConnect": "Нажмите, чтобы подключить",
+  "connectionHeroTapToDisconnect": "Нажмите, чтобы отключить",
+  "intentGroups": "Группы по назначению",
+  "intentGroupsTip": "Направляет домены каждого назначения в отдельную группу: отметка создаёт группу и правила (правила ставятся перед правилами подписки), снятие отметки удаляет и то и другое.",
+  "intentStreaming": "Стриминг",
+  "intentAi": "AI-сервисы",
+  "intentSocial": "Соцсети",
+  "intentGroupsDone": "Группы по назначению применены",
+  "bestPresetTitle": "Вернуть рекомендованные настройки",
+  "bestPresetDesc": "Автоматически выбрать лучший режим для этого устройства",
+  "bestPresetFirstRunTip": "Мы можем выбрать режим под это устройство: TUN при наличии нужных прав, иначе системный прокси. Применить сейчас?",
+  "bestPresetApply": "Применить",
+  "bestPresetTunApplied": "Режим TUN включён",
+  "bestPresetSystemProxyApplied": "Системный прокси включён (приложение запущено без прав администратора, TUN недоступен; перезапустите с правами администратора, чтобы использовать TUN)"
 }

@@ -446,4 +446,101 @@ class ProfilesAction extends _$ProfilesAction {
     }
     return skipped;
   }
+
+  /// 读出「意图分组」的计划 —— **只读，不写任何东西**。与 [readRegionGroupPlan]
+  /// 同一哲学：成员名单全部来自这份配置真实存在的节点与分组，组名锚点
+  /// （节点选择/自动选择）只在现有分组里真的有才引用。
+  Future<IntentGroupPlan> readIntentGroupPlan(
+    int profileId,
+    Set<IntentKey> enabled,
+  ) async {
+    final targets = await readProfileTargets(profileId);
+    final groups = await ref.read(proxyGroupsProvider(profileId).future);
+    return buildIntentGroupPlan(
+      enabled: enabled,
+      proxyNames: targets.proxies.map((target) => target.name),
+      existingGroups: [
+        for (final group in groups)
+          ExistingRegionGroup(
+            name: group.name,
+            proxyNames: group.proxies ?? const <String>[],
+            hasProviderSource: (group.use ?? const <String>[]).isNotEmpty,
+          ),
+      ],
+      nameOf: (template) => '${template.emoji} ${intentLabelOf(template)}',
+    );
+  }
+
+  /// 组名按当前界面语言生成 —— 与「按地区生成分组」的组名同一套语言注入。
+  String intentLabelOf(IntentTemplate template) {
+    final appLocalizations = currentAppLocalizations;
+    return switch (template.key) {
+      IntentKey.streaming => appLocalizations.intentStreaming,
+      IntentKey.ai => appLocalizations.intentAi,
+      IntentKey.social => appLocalizations.intentSocial,
+    };
+  }
+
+  /// 落盘「意图分组」计划：每个意图一个 select 组 + 若干条 GEOSITE 规则。
+  ///
+  /// 规则必须排在订阅自带规则**之前**（排在 GEOSITE,CN 直连后面就永远轮不到），
+  /// `ProfileCustomRules.put` 的 autoOrder 恰好把新规则插到最前 —— 依赖这个
+  /// 行为而不是自己拼 order 键。取消勾选的意图会连同它的规则一起删掉。
+  Future<int> applyIntentGroupPlan(
+    int profileId,
+    IntentGroupPlan plan,
+  ) async {
+    final existing = await ref.read(proxyGroupsProvider(profileId).future);
+    final idOfName = <String, int>{
+      for (final group in existing) group.name: group.id,
+    };
+    final groupNotifier = ref.read(proxyGroupsProvider(profileId).notifier);
+    final rulesNotifier = ref.read(
+      profileCustomRulesProvider(profileId).notifier,
+    );
+    // 先删：被取消的意图组连同指向它的规则一起收掉。规则按 ruleTarget 反查。
+    for (final name in plan.removals) {
+      groupNotifier.del(name);
+      final deadRules = ref
+          .read(profileCustomRulesProvider(profileId))
+          .value
+          ?.where((rule) => rule.ruleTarget == name)
+          .toList();
+      rulesNotifier.delAll((deadRules ?? const []).map((rule) => rule.id));
+    }
+    var skipped = 0;
+    for (final draft in plan.upserts) {
+      final group = ProxyGroup(
+        id: idOfName[draft.name] ?? snowflake.id,
+        name: draft.name,
+        type: GroupType.Selector,
+        proxies: draft.members,
+      );
+      if (!groupNotifier.put(group)) {
+        skipped++;
+        commonPrint.log(
+          'intent group "${draft.name}" skipped: name already taken',
+        );
+        continue;
+      }
+      // 旧规则先清再写：类目名单调整过（比如上一版 AI 只有 openai，新版
+      // 又加了别的）时，靠「先删后写」保证不残留指向同一组的旧条目。
+      final staleRules = ref
+          .read(profileCustomRulesProvider(profileId))
+          .value
+          ?.where((rule) => rule.ruleTarget == draft.name)
+          .toList();
+      rulesNotifier.delAll((staleRules ?? const []).map((rule) => rule.id));
+      for (final category in draft.categories) {
+        rulesNotifier.put(
+          Rule(
+            ruleAction: RuleAction.GEOSITE,
+            content: category,
+            ruleTarget: draft.name,
+          ),
+        );
+      }
+    }
+    return skipped;
+  }
 }

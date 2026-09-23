@@ -12,6 +12,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'add_chain.dart';
 import 'add_node.dart';
+import 'intent_groups.dart';
 import 'region_groups.dart';
 import 'setting.dart';
 import 'tab.dart';
@@ -78,6 +79,13 @@ class _ProxiesViewState extends ConsumerState<ProxiesView> {
               label: appLocalizations.generateRegionGroups,
               onPressed: () {
                 _handleGenerateRegionGroups(context);
+              },
+            ),
+            CommonPopupMenuItem(
+              icon: Icons.interests,
+              label: appLocalizations.intentGroups,
+              onPressed: () {
+                _handleIntentGroups(context);
               },
             ),
             CommonPopupMenuItem(
@@ -228,6 +236,30 @@ class _ProxiesViewState extends ConsumerState<ProxiesView> {
       context: context,
       props: const SheetProps(isScrollControlled: true),
       builder: (_) => RegionGroupPlanView(profileId: profileId),
+    );
+  }
+
+  /// 与「按地区生成分组」同一流程：确认切覆写模式 → 打开计划面板。
+  Future<void> _handleIntentGroups(BuildContext context) async {
+    final appLocalizations = context.appLocalizations;
+    final profileId = ref.read(currentProfileIdProvider);
+    if (profileId == null) return;
+    final profile = ref.read(profileProvider(profileId));
+    if (profile == null) return;
+    if (profile.overwriteType != OverwriteType.custom) {
+      final confirmed = await dialogs.showMessage(
+        message: TextSpan(text: appLocalizations.customOverwriteRequired),
+      );
+      if (confirmed != true || !context.mounted) return;
+      await ref
+          .read(profilesActionProvider.notifier)
+          .ensureCustomOverwrite(profileId);
+      if (!context.mounted) return;
+    }
+    await showSheet(
+      context: context,
+      props: const SheetProps(isScrollControlled: true),
+      builder: (_) => IntentGroupPlanView(profileId: profileId),
     );
   }
 

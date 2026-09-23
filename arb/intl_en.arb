@@ -676,5 +676,22 @@
   "proxyExitTest": "Test exit",
   "proxyExitTestHint": "Test exit: measure the real exit region of this node",
   "proxyExitFailed": "Failed",
-  "proxyExitMismatch": "Differs from the region in its name"
+  "proxyExitMismatch": "Differs from the region in its name",
+  "connectionStateDisconnected": "Disconnected",
+  "connectionStateConnecting": "Connecting…",
+  "connectionStateConnected": "Connected",
+  "connectionHeroTapToConnect": "Tap to connect",
+  "connectionHeroTapToDisconnect": "Tap to disconnect",
+  "intentGroups": "Intent groups",
+  "intentGroupsTip": "Route matching domains into a dedicated group per intent: checking one creates its group and rules (rules go before the subscription rules), unchecking removes both.",
+  "intentStreaming": "Streaming",
+  "intentAi": "AI services",
+  "intentSocial": "Social",
+  "intentGroupsDone": "Intent groups applied",
+  "bestPresetTitle": "Restore recommended settings",
+  "bestPresetDesc": "Pick the best takeover mode for this device automatically",
+  "bestPresetFirstRunTip": "We can pick the takeover mode that fits this device: TUN mode when the device grants the needed privileges, otherwise the system proxy. Apply now?",
+  "bestPresetApply": "Apply",
+  "bestPresetTunApplied": "TUN mode is now enabled",
+  "bestPresetSystemProxyApplied": "System proxy is now enabled (the app is not running as administrator, so TUN is unavailable; restart it as administrator to use TUN)"
 }

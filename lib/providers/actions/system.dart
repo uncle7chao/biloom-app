@@ -176,11 +176,19 @@ class SystemAction extends _$SystemAction {
     if (shouldRun == running) return;
     // 能走到这里就说明已经启动完成：内核进程在、配置也 apply 过，缺的只是
     // 「接管流量」这一步，所以不必再走一遍完整的 applyProfile（initialize: false）。
-    unawaited(
-      globalState.safeRun(
-        () => ref.read(setupActionProvider.notifier).setRunning(shouldRun),
-      ),
-    );
+    unawaited(() async {
+      // 动作在飞期间首页要显示「连接中」而不是「点了没反应」。
+      ref.read(connectingBusyProvider.notifier).set(true);
+      try {
+        await globalState.safeRun(
+          () => ref.read(setupActionProvider.notifier).setRunning(shouldRun),
+        );
+      } finally {
+        if (ref.mounted) {
+          ref.read(connectingBusyProvider.notifier).set(false);
+        }
+      }
+    }());
   }
 
   /// 主连接按钮的「连接」语义：先确保有一种接管方式，再把运行态拉起来。
@@ -205,6 +213,52 @@ class SystemAction extends _$SystemAction {
         .read(patchClashConfigProvider.notifier)
         .update((state) => state.copyWith.tun(enable: false));
     syncRunningWithTakeover();
+  }
+
+  /// 按设备能力把接管方式调到当下最优，并**说清楚选了什么、为什么**。
+  ///
+  /// Android：VpnService 即 TUN，直接开（系统会自己弹授权）。
+  /// 桌面：有管理员/授权能力走 TUN（拦截最彻底），否则退系统代理 ——
+  /// 「能用的最好」而不是「理论上的最好」。
+  Future<void> applyBestPreset() async {
+    final appLocalizations = currentAppLocalizations;
+    if (system.isAndroid) {
+      ref
+          .read(patchClashConfigProvider.notifier)
+          .update((state) => state.copyWith.tun(enable: true));
+      syncRunningWithTakeover();
+      await dialogs.showMessage(
+        title: appLocalizations.bestPresetTitle,
+        message: TextSpan(text: appLocalizations.bestPresetTunApplied),
+        cancelable: false,
+      );
+      return;
+    }
+    final isAdmin = await system.checkIsAdmin();
+    if (isAdmin) {
+      ref
+          .read(patchClashConfigProvider.notifier)
+          .update((state) => state.copyWith.tun(enable: true));
+      syncRunningWithTakeover();
+      await dialogs.showMessage(
+        title: appLocalizations.bestPresetTitle,
+        message: TextSpan(text: appLocalizations.bestPresetTunApplied),
+        cancelable: false,
+      );
+      return;
+    }
+    ref
+        .read(networkSettingProvider.notifier)
+        .update((state) => state.copyWith(systemProxy: true));
+    ref
+        .read(patchClashConfigProvider.notifier)
+        .update((state) => state.copyWith.tun(enable: false));
+    syncRunningWithTakeover();
+    await dialogs.showMessage(
+      title: appLocalizations.bestPresetTitle,
+      message: TextSpan(text: appLocalizations.bestPresetSystemProxyApplied),
+      cancelable: false,
+    );
   }
 
   void updateAutoLaunch() {

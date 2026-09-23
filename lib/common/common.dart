@@ -35,6 +35,7 @@ export 'path.dart';
 export 'picker.dart';
 export 'preferences.dart';
 export 'print.dart';
+export 'intent_groups.dart';
 export 'protocol.dart';
 export 'provider_reader.dart';
 export 'proxy.dart';
