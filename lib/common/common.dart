@@ -38,6 +38,7 @@ export 'print.dart';
 export 'protocol.dart';
 export 'provider_reader.dart';
 export 'proxy.dart';
+export 'proxy_region.dart';
 export 'render.dart';
 export 'request.dart';
 export 'scroll.dart';
