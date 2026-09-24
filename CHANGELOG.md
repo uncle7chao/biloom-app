@@ -1,5 +1,11 @@
 # Changelog
 
+## v01.00.06 (2026-09-24)
+
+**Features**
+
+- **core** Auto-convert pasted V2rayN/Xray-exported JSON and sing-box JSON into mihomo nodes (full config or single outbound), with stream/reality/tls mapping and non-node outbounds skipped (7a4c15e)
+
 ## v01.00.05 (2026-09-24)
 
 **Features**

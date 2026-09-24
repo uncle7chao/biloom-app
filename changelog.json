@@ -2,6 +2,24 @@
   "schemaVersion": 2,
   "versions": [
     {
+      "version": "01.00.06",
+      "tag": "v01.00.06",
+      "date": "2026-09-24",
+      "prerelease": false,
+      "groups": [
+        {
+          "type": "feat",
+          "entries": [
+            {
+              "id": "7a4c15e",
+              "scope": "core",
+              "text": "Auto-convert pasted V2rayN/Xray-exported JSON and sing-box JSON into mihomo nodes (full config or single outbound), with stream/reality/tls mapping and non-node outbounds skipped"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "version": "01.00.05",
       "tag": "v01.00.05",
       "date": "2026-09-24",
