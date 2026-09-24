@@ -2,6 +2,24 @@
   "schemaVersion": 2,
   "versions": [
     {
+      "version": "01.00.05",
+      "tag": "v01.00.05",
+      "date": "2026-09-24",
+      "prerelease": false,
+      "groups": [
+        {
+          "type": "feat",
+          "entries": [
+            {
+              "id": "f6d73d3",
+              "scope": "proxies",
+              "text": "Add an add-node entry to profile card menus and let the add-node panel pick its target profile, defaulting to the profile it was opened from"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "version": "01.00.04",
       "tag": "v01.00.04",
       "date": "2026-09-24",

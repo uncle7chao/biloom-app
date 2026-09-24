@@ -1,5 +1,11 @@
 # Changelog
 
+## v01.00.05 (2026-09-24)
+
+**Features**
+
+- **proxies** Add an add-node entry to profile card menus and let the add-node panel pick its target profile, defaulting to the profile it was opened from (f6d73d3)
+
 ## v01.00.04 (2026-09-24)
 
 **Bug Fixes**
