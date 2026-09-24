@@ -1139,5 +1139,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "proxyFieldObfsPassword": MessageLookupByLibrary.simpleMessage("混淆パスワード"),
     "proxyFieldUp": MessageLookupByLibrary.simpleMessage("上り帯域"),
     "proxyFieldDown": MessageLookupByLibrary.simpleMessage("下り帯域"),
+    "addNodeTargetProfile": MessageLookupByLibrary.simpleMessage("対象プロファイル"),
   };
 }

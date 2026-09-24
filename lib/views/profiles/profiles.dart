@@ -15,6 +15,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'add.dart';
 import 'edit.dart';
 import 'preview.dart';
+import '../proxies/add_node.dart';
 
 class ProfilesView extends ConsumerStatefulWidget {
   const ProfilesView({super.key});
@@ -347,6 +348,19 @@ class ProfileItem extends ConsumerWidget {
         label: appLocalizations.edit,
         onPressed: () {
           _handleShowEditExtendPage(context);
+        },
+      ),
+      // 「添加节点」直接从配置卡片进：默认目标就是这份配置，面板里仍可改选。
+      // 不必先激活配置再跑去代理页 —— 入口跟着数据走，而不是跟着当前选中态走。
+      CommonPopupMenuItem(
+        icon: Icons.add_circle_outline,
+        label: appLocalizations.addProxyNode,
+        onPressed: () {
+          showSheet(
+            context: context,
+            props: const SheetProps(isScrollControlled: true),
+            builder: (_) => AddProxyNodeView(profileId: profile.id),
+          );
         },
       ),
       CommonPopupMenuItem(

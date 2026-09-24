@@ -1355,5 +1355,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "proxyFieldObfsPassword": MessageLookupByLibrary.simpleMessage("Obfuscation password"),
     "proxyFieldUp": MessageLookupByLibrary.simpleMessage("Upload bandwidth"),
     "proxyFieldDown": MessageLookupByLibrary.simpleMessage("Download bandwidth"),
+    "addNodeTargetProfile": MessageLookupByLibrary.simpleMessage("Target profile"),
   };
 }

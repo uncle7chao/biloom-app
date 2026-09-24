@@ -5849,6 +5849,11 @@ class AppLocalizations {
   String get proxyFieldDown {
     return Intl.message('Download bandwidth', name: 'proxyFieldDown', desc: '', args: []);
   }
+
+  /// `Target profile`
+  String get addNodeTargetProfile {
+    return Intl.message('Target profile', name: 'addNodeTargetProfile', desc: '', args: []);
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<AppLocalizations> {

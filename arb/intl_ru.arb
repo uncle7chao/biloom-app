@@ -724,5 +724,6 @@
   "proxyFieldObfs": "Обфускация",
   "proxyFieldObfsPassword": "Пароль обфускации",
   "proxyFieldUp": "Исходящая полоса",
-  "proxyFieldDown": "Входящая полоса"
+  "proxyFieldDown": "Входящая полоса",
+  "addNodeTargetProfile": "Целевой профиль"
 }

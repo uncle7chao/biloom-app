@@ -724,5 +724,6 @@
   "proxyFieldObfs": "Obfuscation",
   "proxyFieldObfsPassword": "Obfuscation password",
   "proxyFieldUp": "Upload bandwidth",
-  "proxyFieldDown": "Download bandwidth"
+  "proxyFieldDown": "Download bandwidth",
+  "addNodeTargetProfile": "Target profile"
 }

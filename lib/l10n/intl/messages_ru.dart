@@ -1423,5 +1423,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "proxyFieldObfsPassword": MessageLookupByLibrary.simpleMessage("Пароль обфускации"),
     "proxyFieldUp": MessageLookupByLibrary.simpleMessage("Исходящая полоса"),
     "proxyFieldDown": MessageLookupByLibrary.simpleMessage("Входящая полоса"),
+    "addNodeTargetProfile": MessageLookupByLibrary.simpleMessage("Целевой профиль"),
   };
 }

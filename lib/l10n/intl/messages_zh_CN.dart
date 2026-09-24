@@ -997,5 +997,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "proxyFieldObfsPassword": MessageLookupByLibrary.simpleMessage("混淆密码"),
     "proxyFieldUp": MessageLookupByLibrary.simpleMessage("上行带宽"),
     "proxyFieldDown": MessageLookupByLibrary.simpleMessage("下行带宽"),
+    "addNodeTargetProfile": MessageLookupByLibrary.simpleMessage("目标配置"),
   };
 }

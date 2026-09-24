@@ -34,6 +34,9 @@ class _AddProxyNodeViewState extends ConsumerState<AddProxyNodeView> {
   final _formKey = GlobalKey<ProxyNodeFormState>();
   bool _manual = false;
 
+  /// 目标配置：入口传进来的那份只是**默认值**，面板里可以随时换。
+  late int _profileId = widget.profileId;
+
   @override
   void dispose() {
     _controller.dispose();
@@ -45,7 +48,7 @@ class _AddProxyNodeViewState extends ConsumerState<AddProxyNodeView> {
   /// 订阅配置的正文会在每次「更新订阅」时被整份覆盖，所以往它里面加节点是**临时**的。
   /// 必须在动手之前就把这件事说清楚 —— 等用户下次更新完发现节点没了再解释就晚了。
   bool get _isSubscription =>
-      (ref.read(profileProvider(widget.profileId))?.url ?? '').isNotEmpty;
+      (ref.read(profileProvider(_profileId))?.url ?? '').isNotEmpty;
 
   Future<void> _handlePasteFromClipboard() async {
     // 先把文案取出来：读剪贴板是异步的，await 之后再用 context 就得额外加
@@ -68,7 +71,7 @@ class _AddProxyNodeViewState extends ConsumerState<AddProxyNodeView> {
   }
 
   Future<void> _handleConvertToLocal() async {
-    final url = ref.read(profileProvider(widget.profileId))?.url ?? '';
+    final url = ref.read(profileProvider(_profileId))?.url ?? '';
     final confirmed = await dialogs.showMessage(
       // 把订阅链接原文一并显示：断开之后它就没了，让用户有机会先记下来。
       message: TextSpan(
@@ -103,7 +106,7 @@ class _AddProxyNodeViewState extends ConsumerState<AddProxyNodeView> {
     }
     final result = await ref
         .read(profilesActionProvider.notifier)
-        .addProxyNodesToProfile(profileId: widget.profileId, nodes: nodes);
+        .addProxyNodesToProfile(profileId: _profileId, nodes: nodes);
     // result 为 null 表示内核或校验已经报过错（loadingRun 会弹出来），这里不再补一句。
     if (!mounted || result == null) return;
     await _showResult(result);
@@ -136,6 +139,40 @@ class _AddProxyNodeViewState extends ConsumerState<AddProxyNodeView> {
 
   void _showMessage(String text) {
     dialogs.showMessage(message: TextSpan(text: text), cancelable: false);
+  }
+
+  /// 目标配置选择器：入口默认选中传进来的那份，可手动换成任何一份配置。
+  ///
+  /// 节点最终要写进某份配置的正文，所以「加到哪」必须在提交之前就摆在明面上 ——
+  /// 埋在高级选项里只会让人加完节点后到别的配置里找不到。
+  Widget _buildProfileSelector() {
+    final appLocalizations = context.appLocalizations;
+    final profiles = ref.watch(profilesProvider);
+    // 选中值失效（配置刚被删）时回退到列表第一份，避免下拉出现悬空选中。
+    final validIds = profiles.map((profile) => profile.id).toSet();
+    if (!validIds.contains(_profileId) && profiles.isNotEmpty) {
+      _profileId = profiles.first.id;
+    }
+    return DropdownButtonFormField<int>(
+      initialValue: _profileId,
+      decoration: InputDecoration(
+        labelText: appLocalizations.addNodeTargetProfile,
+        border: const OutlineInputBorder(),
+        prefixIcon: const Icon(Icons.layers_outlined, size: 20),
+      ),
+      items: profiles
+          .map(
+            (profile) => DropdownMenuItem(
+              value: profile.id,
+              child: Text(profile.label, overflow: TextOverflow.ellipsis),
+            ),
+          )
+          .toList(),
+      onChanged: (value) {
+        if (value == null || value == _profileId) return;
+        setState(() => _profileId = value);
+      },
+    );
   }
 
   Widget _buildSubscriptionNotice() {
@@ -267,6 +304,8 @@ class _AddProxyNodeViewState extends ConsumerState<AddProxyNodeView> {
             horizontal: 16,
           ).copyWith(top: context.sheetTopPadding, bottom: 20),
           children: [
+            _buildProfileSelector(),
+            const SizedBox(height: 12),
             if (_isSubscription) _buildSubscriptionNotice(),
             _buildInput(),
           ],

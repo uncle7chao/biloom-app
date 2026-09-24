@@ -724,5 +724,6 @@
   "proxyFieldObfs": "混淆",
   "proxyFieldObfsPassword": "混淆パスワード",
   "proxyFieldUp": "上り帯域",
-  "proxyFieldDown": "下り帯域"
+  "proxyFieldDown": "下り帯域",
+  "addNodeTargetProfile": "対象プロファイル"
 }
