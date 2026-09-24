@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
@@ -233,6 +234,38 @@ func parseProxyFragment(text string) ([]map[string]any, error) {
 		}
 		if _, ok := typed["name"]; ok {
 			return []map[string]any{typed}, nil
+		}
+		// V2rayN / Xray 导出的 JSON：整份配置带 outbounds，或用户只拷了单个
+		// outbound（有 protocol + settings，没有 name/type）。JSON 是 YAML 子集，
+		// 所以它们会一路走到这里 —— 在放弃之前先做一次自动转化。
+		// sing-box 的节点同样住在 outbounds 里，但它用 type 标类型（Xray 用
+		// protocol），且字段是 server/server_port 这套下划线命名 —— 两条转化路线
+		// 按 outbound 的判别键分流，订阅侧的 convertSingBoxSubscription 原样复用。
+		if raw, ok := typed["outbounds"]; ok {
+			if xrayStyleOutbounds(raw) {
+				return convertXrayConfig(typed)
+			}
+			return convertSingBoxSubscription([]byte(text))
+		}
+		if _, ok := typed["protocol"]; ok {
+			if nodes, err := convertXrayConfig(
+				map[string]any{"outbounds": []any{typed}},
+			); err == nil && len(nodes) > 0 {
+				return nodes, nil
+			}
+		}
+		if _, ok := typed["type"]; ok {
+			// sing-box 单 outbound（type + server + server_port，没有 name）。
+			if _, hasServer := typed["server"]; hasServer {
+				if _, hasPort := typed["server_port"]; hasPort {
+					wrapped, err := json.Marshal(
+						map[string]any{"outbounds": []any{typed}},
+					)
+					if err == nil {
+						return convertSingBoxSubscription(wrapped)
+					}
+				}
+			}
 		}
 		return nil, errors.New("YAML 片段里没找到节点：每条节点至少要有 name")
 	}
