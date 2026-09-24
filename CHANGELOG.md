@@ -1,5 +1,17 @@
 # Changelog
 
+## v01.00.04 (2026-09-24)
+
+**Bug Fixes**
+
+- **proxies** Fix the manual node form: map the trojan/hysteria2 SNI field to the correct key, always honor the selected ws/grpc transport even without a path or service name, and require the obfs password when obfuscation is enabled (c614941)
+
+## v01.00.03 (2026-09-23)
+
+**Features**
+
+- **proxies** Add a manual node form (socks5/http/shadowsocks/vmess/vless/trojan/hysteria2) with per-protocol dynamic fields that reuses the existing add-proxy-node pipeline (c614941)
+
 ## v01.00.02 (2026-09-23)
 
 **Features**
