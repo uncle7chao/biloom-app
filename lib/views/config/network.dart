@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/models/models.dart';
@@ -333,7 +335,27 @@ List<Widget> networkOptionsItems({
       const InterfaceNameItem(),
     ],
     if (!isDesktop) ...[const RouteModeItem(), const RouteAddressItem()],
+    const SmartAntidetectionItem(),
   ];
+}
+
+/// 「智能抗检测」开关：系统自动补齐/轮换 uTLS 指纹，用户零操作。
+/// 状态与持久化见 common/smart_params.dart（SP 直存，默认开）。
+class SmartAntidetectionItem extends ConsumerWidget {
+  const SmartAntidetectionItem({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return ConfigToggleItem(
+      title: (l) => l.smartAntidetection,
+      subtitle: (l) => l.smartAntidetectionDesc,
+      selector: smartAntidetectionStateProvider,
+      onChanged: (ref, value) {
+        ref.read(smartAntidetectionStateProvider.notifier).set(value);
+        unawaited(saveSmartAntidetectionEnabled(value));
+      },
+    );
+  }
 }
 
 class NetworkListView extends StatelessWidget {

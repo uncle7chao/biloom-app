@@ -725,5 +725,10 @@
   "proxyFieldObfsPassword": "混淆パスワード",
   "proxyFieldUp": "上り帯域",
   "proxyFieldDown": "下り帯域",
-  "addNodeTargetProfile": "対象プロファイル"
+  "addNodeTargetProfile": "対象プロファイル",
+  "smartAntidetection": "スマート耐検知",
+  "smartAntidetectionDesc": "ノードに TLS フィンガープリントなどの耐検知パラメータを自動補完し、接続できない場合は別のフィンガープリントで自動再試行します。手動設定は不要です。",
+  "proxyFieldAlpn": "ALPN（カンマ区切り）",
+  "proxyFieldPorts": "ポート範囲（例: 20000-30000）",
+  "proxyFieldHopInterval": "ホップ間隔（秒）"
 }

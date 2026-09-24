@@ -116,6 +116,9 @@ class Bootstrap {
     );
     globalState.container = container;
     container
+        .read(smartAntidetectionStateProvider.notifier)
+        .set(await loadSmartAntidetectionEnabled());
+    container
         .read(dynamicColorProvider.notifier)
         .seed(
           lightSeed: dynamicColor.lightSeed,

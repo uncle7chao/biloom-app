@@ -725,5 +725,10 @@
   "proxyFieldObfsPassword": "Obfuscation password",
   "proxyFieldUp": "Upload bandwidth",
   "proxyFieldDown": "Download bandwidth",
-  "addNodeTargetProfile": "Target profile"
+  "addNodeTargetProfile": "Target profile",
+  "smartAntidetection": "Smart anti-detection",
+  "smartAntidetectionDesc": "Automatically fills in TLS fingerprints and other anti-detection parameters, and retries with a different fingerprint when a node fails to connect. No manual setup.",
+  "proxyFieldAlpn": "ALPN (comma separated)",
+  "proxyFieldPorts": "Port range (e.g. 20000-30000)",
+  "proxyFieldHopInterval": "Hop interval (s)"
 }

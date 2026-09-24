@@ -725,5 +725,10 @@
   "proxyFieldObfsPassword": "混淆密码",
   "proxyFieldUp": "上行带宽",
   "proxyFieldDown": "下行带宽",
-  "addNodeTargetProfile": "目标配置"
+  "addNodeTargetProfile": "目标配置",
+  "smartAntidetection": "智能抗检测",
+  "smartAntidetectionDesc": "自动为节点补齐 TLS 指纹等抗检测参数；节点连不上时自动换一组指纹重试，无需手动配置。",
+  "proxyFieldAlpn": "ALPN（逗号分隔）",
+  "proxyFieldPorts": "端口范围（如 20000-30000）",
+  "proxyFieldHopInterval": "跳端口间隔（秒）"
 }

@@ -1,8 +1,24 @@
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/models/models.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'generated/config.g.dart';
+
+/// 「智能抗检测」开关。故意不走 freezed props：加字段要跑 build_runner，
+/// 改用手写 NotifierProvider + shared_preferences 直存，默认开。启动时由
+/// bootstrap._initData 从 SP 播种，见 common/smart_params.dart。
+class SmartAntidetectionController extends Notifier<bool> {
+  @override
+  bool build() => true;
+
+  void set(bool value) => state = value;
+}
+
+final smartAntidetectionStateProvider =
+    NotifierProvider<SmartAntidetectionController, bool>(
+      SmartAntidetectionController.new,
+    );
 
 @riverpod
 class AppSetting extends _$AppSetting with AutoDisposeNotifierMixin {

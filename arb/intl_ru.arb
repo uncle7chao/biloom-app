@@ -725,5 +725,10 @@
   "proxyFieldObfsPassword": "Пароль обфускации",
   "proxyFieldUp": "Исходящая полоса",
   "proxyFieldDown": "Входящая полоса",
-  "addNodeTargetProfile": "Целевой профиль"
+  "addNodeTargetProfile": "Целевой профиль",
+  "smartAntidetection": "Умная анти-детекция",
+  "smartAntidetectionDesc": "Автоматически добавляет узлам TLS-отпечатки и другие параметры анти-детекции; если узел недоступен, автоматически пробует другой отпечаток. Настройка вручную не требуется.",
+  "proxyFieldAlpn": "ALPN (через запятую)",
+  "proxyFieldPorts": "Диапазон портов (напр. 20000-30000)",
+  "proxyFieldHopInterval": "Интервал прыжка портов (с)"
 }

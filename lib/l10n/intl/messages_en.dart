@@ -1356,5 +1356,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "proxyFieldUp": MessageLookupByLibrary.simpleMessage("Upload bandwidth"),
     "proxyFieldDown": MessageLookupByLibrary.simpleMessage("Download bandwidth"),
     "addNodeTargetProfile": MessageLookupByLibrary.simpleMessage("Target profile"),
+    "smartAntidetection": MessageLookupByLibrary.simpleMessage("Smart anti-detection"),
+    "smartAntidetectionDesc": MessageLookupByLibrary.simpleMessage("Automatically fills in TLS fingerprints and other anti-detection parameters, and retries with a different fingerprint when a node fails to connect. No manual setup."),
+    "proxyFieldAlpn": MessageLookupByLibrary.simpleMessage("ALPN (comma separated)"),
+    "proxyFieldPorts": MessageLookupByLibrary.simpleMessage("Port range (e.g. 20000-30000)"),
+    "proxyFieldHopInterval": MessageLookupByLibrary.simpleMessage("Hop interval (s)"),
   };
 }

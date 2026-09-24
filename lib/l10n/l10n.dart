@@ -5854,6 +5854,31 @@ class AppLocalizations {
   String get addNodeTargetProfile {
     return Intl.message('Target profile', name: 'addNodeTargetProfile', desc: '', args: []);
   }
+
+  /// `Smart anti-detection`
+  String get smartAntidetection {
+    return Intl.message('Smart anti-detection', name: 'smartAntidetection', desc: '', args: []);
+  }
+
+  /// `Automatically fills in TLS fingerprints and other anti-detection parameters, and retries with a different fingerprint when a node fails to connect. No manual setup.`
+  String get smartAntidetectionDesc {
+    return Intl.message('Automatically fills in TLS fingerprints and other anti-detection parameters, and retries with a different fingerprint when a node fails to connect. No manual setup.', name: 'smartAntidetectionDesc', desc: '', args: []);
+  }
+
+  /// `ALPN (comma separated)`
+  String get proxyFieldAlpn {
+    return Intl.message('ALPN (comma separated)', name: 'proxyFieldAlpn', desc: '', args: []);
+  }
+
+  /// `Port range (e.g. 20000-30000)`
+  String get proxyFieldPorts {
+    return Intl.message('Port range (e.g. 20000-30000)', name: 'proxyFieldPorts', desc: '', args: []);
+  }
+
+  /// `Hop interval (s)`
+  String get proxyFieldHopInterval {
+    return Intl.message('Hop interval (s)', name: 'proxyFieldHopInterval', desc: '', args: []);
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<AppLocalizations> {

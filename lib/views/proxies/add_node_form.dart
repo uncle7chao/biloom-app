@@ -234,6 +234,13 @@ class ProxyNodeFormState extends State<ProxyNodeForm> {
           advanced: true,
           visible: (v) => v.boolOf('tls'),
         ),
+        _Field(
+          'alpn',
+          l('proxyFieldAlpn'),
+          pseudo: true,
+          advanced: true,
+          visible: (v) => v.boolOf('tls'),
+        ),
       ]),
       _Protocol('vless', [
         ...common,
@@ -279,7 +286,7 @@ class ProxyNodeFormState extends State<ProxyNodeForm> {
           options: _fingerprints,
           initial: 'chrome',
           advanced: true,
-          visible: (v) => v.boolOf('reality'),
+          visible: (v) => v.boolOf('reality') || v.boolOf('tls'),
         ),
         _Field(
           'network',
@@ -312,6 +319,13 @@ class ProxyNodeFormState extends State<ProxyNodeForm> {
           type: _FieldType.bool_,
           advanced: true,
           visible: (v) => v.boolOf('tls') && !v.boolOf('reality'),
+        ),
+        _Field(
+          'alpn',
+          l('proxyFieldAlpn'),
+          pseudo: true,
+          advanced: true,
+          visible: (v) => v.boolOf('tls') || v.boolOf('reality'),
         ),
       ]),
       _Protocol('trojan', [
@@ -357,6 +371,44 @@ class ProxyNodeFormState extends State<ProxyNodeForm> {
           type: _FieldType.bool_,
           advanced: true,
         ),
+        // 内核 TrojanOption 里有 RealityOpts：trojan+reality 是当前主流的
+        // 抗封锁组合，表单此前没暴露。Reality 是服务端约定，公钥必填。
+        _Field(
+          'alpn',
+          l('proxyFieldAlpn'),
+          pseudo: true,
+          advanced: true,
+        ),
+        _Field(
+          'reality',
+          l('proxyFieldReality'),
+          type: _FieldType.bool_,
+          advanced: true,
+        ),
+        _Field(
+          'reality-public-key',
+          l('proxyFieldPublicKey'),
+          pseudo: true,
+          advanced: true,
+          requiredIf: (v) => v.boolOf('reality'),
+          visible: (v) => v.boolOf('reality'),
+        ),
+        _Field(
+          'reality-short-id',
+          l('proxyFieldShortId'),
+          pseudo: true,
+          advanced: true,
+          visible: (v) => v.boolOf('reality'),
+        ),
+        _Field(
+          'client-fingerprint',
+          l('proxyFieldFingerprint'),
+          type: _FieldType.dropdown,
+          options: _fingerprints,
+          initial: 'chrome',
+          advanced: true,
+          visible: (v) => v.boolOf('reality'),
+        ),
       ]),
       _Protocol('hysteria2', [
         ...common,
@@ -400,6 +452,16 @@ class ProxyNodeFormState extends State<ProxyNodeForm> {
           type: _FieldType.bool_,
           advanced: true,
         ),
+        // 端口跳跃是服务端约定：机场给了多端口范围才有意义，填错连不上，
+        // 所以只进高级区、不设默认值。
+        _Field('ports', l('proxyFieldPorts'), advanced: true),
+        _Field(
+          'hop-interval',
+          l('proxyFieldHopInterval'),
+          type: _FieldType.int_,
+          advanced: true,
+        ),
+        _Field('alpn', l('proxyFieldAlpn'), pseudo: true, advanced: true),
       ]),
     ];
   }
@@ -457,6 +519,12 @@ class ProxyNodeFormState extends State<ProxyNodeForm> {
         return l10n.proxyFieldUp;
       case 'proxyFieldDown':
         return l10n.proxyFieldDown;
+      case 'proxyFieldAlpn':
+        return l10n.proxyFieldAlpn;
+      case 'proxyFieldPorts':
+        return l10n.proxyFieldPorts;
+      case 'proxyFieldHopInterval':
+        return l10n.proxyFieldHopInterval;
       default:
         return key;
     }
@@ -578,6 +646,37 @@ class ProxyNodeFormState extends State<ProxyNodeForm> {
         if (text['client-fingerprint']?.isNotEmpty == true) {
           node['client-fingerprint'] = text['client-fingerprint'];
         }
+      }
+    }
+
+    if (protocol.type == 'trojan' && _bools['reality'] == true) {
+      // 公钥是 Reality 的身份凭据，没给就不写 reality-opts，让节点保持普通
+      // TLS —— 空的 reality-opts 会让内核拨号直接失败。trojan 本身隐含 TLS，
+      // 不要写 tls 键（内核 TrojanOption 没这个字段）。
+      final publicKey = text['reality-public-key'] ?? '';
+      if (publicKey.isNotEmpty) {
+        final realityOpts = <String, dynamic>{'public-key': publicKey};
+        if (text['reality-short-id']?.isNotEmpty == true) {
+          realityOpts['short-id'] = text['reality-short-id'];
+        }
+        node['reality-opts'] = realityOpts;
+        if (text['client-fingerprint']?.isNotEmpty == true) {
+          node['client-fingerprint'] = text['client-fingerprint'];
+        }
+      }
+    }
+
+    // ALPN：逗号分隔输入 → 字符串数组。内核 ALPN 是 []string，写成字符串
+    // 会让 structure decoder 拒载整份配置，所以是伪字段、在这里折叠。
+    final alpn = text['alpn'] ?? '';
+    if (alpn.isNotEmpty) {
+      final alpnList = alpn
+          .split(',')
+          .map((item) => item.trim())
+          .where((item) => item.isNotEmpty)
+          .toList();
+      if (alpnList.isNotEmpty) {
+        node['alpn'] = alpnList;
       }
     }
 

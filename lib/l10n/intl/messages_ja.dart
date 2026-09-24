@@ -1140,5 +1140,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "proxyFieldUp": MessageLookupByLibrary.simpleMessage("上り帯域"),
     "proxyFieldDown": MessageLookupByLibrary.simpleMessage("下り帯域"),
     "addNodeTargetProfile": MessageLookupByLibrary.simpleMessage("対象プロファイル"),
+    "smartAntidetection": MessageLookupByLibrary.simpleMessage("スマート耐検知"),
+    "smartAntidetectionDesc": MessageLookupByLibrary.simpleMessage("ノードに TLS フィンガープリントなどの耐検知パラメータを自動補完し、接続できない場合は別のフィンガープリントで自動再試行します。手動設定は不要です。"),
+    "proxyFieldAlpn": MessageLookupByLibrary.simpleMessage("ALPN（カンマ区切り）"),
+    "proxyFieldPorts": MessageLookupByLibrary.simpleMessage("ポート範囲（例: 20000-30000）"),
+    "proxyFieldHopInterval": MessageLookupByLibrary.simpleMessage("ホップ間隔（秒）"),
   };
 }

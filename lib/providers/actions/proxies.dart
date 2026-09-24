@@ -16,6 +16,7 @@ class _DelayTestJob {
   _DelayTestJob(Iterable<String> keys) : held = keys.toSet();
 
   final Set<String> held;
+  final Set<String> failedNames = {};
   bool cancelled = false;
 }
 
@@ -296,6 +297,22 @@ class ProxiesAction extends _$ProxiesAction {
       job.held.clear();
       pending.release(abandoned);
     }
+    // 智能抗检测（方案 B）：本轮测延迟失败的节点沿指纹池推进一组（有冷却
+    // 与池尽上限，见 SmartFingerprintStore.rotateOnFailure），成功的把已生效
+    // 的指纹钉住。有轮换就重出一次配置让新指纹生效 —— yaml md5 变了，
+    // setup 不会被 md5 去重拦下。不 await：轮换是背景任务，不该拖住调用方。
+    var rotated = false;
+    if (!job.cancelled && ref.read(smartAntidetectionStateProvider)) {
+      for (final name in job.failedNames) {
+        if (await SmartFingerprintStore.rotateOnFailure(name)) {
+          rotated = true;
+        }
+      }
+    }
+    if (rotated) {
+      // applyProfileDebounce 自带防抖与完整 setup 调度，fire-and-forget。
+      ref.read(setupActionProvider.notifier).applyProfileDebounce();
+    }
     // 方案 A：测完延迟顺带把没测过落地的节点排队测一遍 —— 延迟探测与落地探测
     // 抢带宽没有意义，所以排在延迟全部结束之后；落地本身也顺带回答了
     // 「这个节点通不通」，延迟不通的节点这里多半也失败，不会白烧流量。
@@ -315,10 +332,14 @@ class ProxiesAction extends _$ProxiesAction {
       final delay = await _core.getDelay(target.testUrl, target.proxyName);
       if (delay != null && !job.cancelled) {
         setDelay(delay);
+        // 智能抗检测：成功的节点把当前指纹钉住（更新轮换时间戳）。
+        unawaited(SmartFingerprintStore.noteSuccess(target.proxyName));
       }
     } catch (error) {
       if (error is CoreMethodException && error.isCoreUnavailable) {
         job.cancelled = true;
+      } else {
+        job.failedNames.add(target.proxyName);
       }
       commonPrint.log(
         'Delay test failed for ${target.proxyName}: $error',

@@ -393,6 +393,12 @@ class SetupAction extends _$SetupAction {
     if (scriptContent?.isNotEmpty == true) {
       rawConfig = await handleEvaluate(scriptContent!, rawConfig);
     }
+    // 智能抗检测：给缺省指纹的节点补默认值/轮换覆盖值。放在覆写脚本之后，
+    // 脚本产出的节点同样被补齐；只补缺省，显式值不动（原则见 smart_params.dart）。
+    if (ref.read(smartAntidetectionStateProvider)) {
+      final overrides = await SmartFingerprintStore.load();
+      smartFillProxies(rawConfig, overrides: overrides);
+    }
     final directory = await appPath.profilesPath;
     final res = makeRealProfileTask(
       MakeRealProfileState(

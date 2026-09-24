@@ -998,5 +998,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "proxyFieldUp": MessageLookupByLibrary.simpleMessage("上行带宽"),
     "proxyFieldDown": MessageLookupByLibrary.simpleMessage("下行带宽"),
     "addNodeTargetProfile": MessageLookupByLibrary.simpleMessage("目标配置"),
+    "smartAntidetection": MessageLookupByLibrary.simpleMessage("智能抗检测"),
+    "smartAntidetectionDesc": MessageLookupByLibrary.simpleMessage("自动为节点补齐 TLS 指纹等抗检测参数；节点连不上时自动换一组指纹重试，无需手动配置。"),
+    "proxyFieldAlpn": MessageLookupByLibrary.simpleMessage("ALPN（逗号分隔）"),
+    "proxyFieldPorts": MessageLookupByLibrary.simpleMessage("端口范围（如 20000-30000）"),
+    "proxyFieldHopInterval": MessageLookupByLibrary.simpleMessage("跳端口间隔（秒）"),
   };
 }

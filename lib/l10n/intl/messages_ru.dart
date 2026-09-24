@@ -1424,5 +1424,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "proxyFieldUp": MessageLookupByLibrary.simpleMessage("Исходящая полоса"),
     "proxyFieldDown": MessageLookupByLibrary.simpleMessage("Входящая полоса"),
     "addNodeTargetProfile": MessageLookupByLibrary.simpleMessage("Целевой профиль"),
+    "smartAntidetection": MessageLookupByLibrary.simpleMessage("Умная анти-детекция"),
+    "smartAntidetectionDesc": MessageLookupByLibrary.simpleMessage("Автоматически добавляет узлам TLS-отпечатки и другие параметры анти-детекции; если узел недоступен, автоматически пробует другой отпечаток. Настройка вручную не требуется."),
+    "proxyFieldAlpn": MessageLookupByLibrary.simpleMessage("ALPN (через запятую)"),
+    "proxyFieldPorts": MessageLookupByLibrary.simpleMessage("Диапазон портов (напр. 20000-30000)"),
+    "proxyFieldHopInterval": MessageLookupByLibrary.simpleMessage("Интервал прыжка портов (с)"),
   };
 }
