@@ -90,7 +90,9 @@ func singBoxOutboundToProxy(
 		"udp":    true,
 	}
 	name := strings.TrimSpace(asString(outbound["tag"]))
-	if name == "" {
+	if name == "" || isGenericOutboundTag(name) {
+		// tag 是客户端默认标识（sing-box 默认恒为 proxy）时改用地址生成，
+		// 否则不同服务器导出的节点全部撞名、被重名跳过。
 		name = fmt.Sprintf("%s:%d", server, port)
 	}
 	proxy["name"] = uniqueShareName(names, name)

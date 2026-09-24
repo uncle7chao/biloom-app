@@ -46,6 +46,19 @@ func xrayStyleOutbounds(raw any) bool {
 	return false
 }
 
+// isGenericOutboundTag 判定 tag 是否为客户端导出的通用内部标识。
+// V2rayN 导出完整配置时 outbound 的 tag 恒为 proxy（freedom/blackhole 是
+// direct/block），sing-box 默认同样是 proxy —— 这些不是给人看的节点名，直接
+// 拿来当 mihomo 节点名会让不同协议/不同服务器的节点全部撞名，触发内核
+// 「重名跳过」后表现为「粘贴了但节点没出现」。有意义的自定义 tag 不受影响。
+func isGenericOutboundTag(tag string) bool {
+	switch strings.ToLower(strings.TrimSpace(tag)) {
+	case "", "proxy", "out", "outbound", "direct", "block":
+		return true
+	}
+	return false
+}
+
 // convertXrayConfig 把整份 Xray 配置（或单个 outbound）转成 mihomo 节点列表。
 func convertXrayConfig(doc map[string]any) ([]map[string]any, error) {
 	raw, ok := doc["outbounds"]
@@ -127,12 +140,16 @@ func convertXrayOutbound(outbound map[string]any, index int) (map[string]any, er
 		if node == nil {
 			continue
 		}
-		name := tag
-		if len(entries) > 1 && name != "" {
-			name = fmt.Sprintf("%s-%d", tag, i+1)
-		}
-		if name == "" {
-			name = fmt.Sprintf("%s-%d", nodeType, index)
+		name := strings.TrimSpace(tag)
+		if isGenericOutboundTag(name) {
+			// V2rayN 导出完整配置时 tag 恒为 proxy —— 不是给人看的节点名。
+			// 用 协议-地址-端口 生成有区分度的名字，否则不同协议/服务器的
+			// 配置粘贴进来全部撞名，被内核「重名跳过」表现为「粘贴没反应」。
+			server := xrayString(entry["address"])
+			port, _ := xrayInt(entry["port"])
+			name = fmt.Sprintf("%s-%s-%d", nodeType, server, port)
+		} else if len(entries) > 1 {
+			name = fmt.Sprintf("%s-%d", name, i+1)
 		}
 		node["name"] = name
 		nodes = append(nodes, node)
