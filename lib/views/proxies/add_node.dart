@@ -9,11 +9,14 @@ import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'add_node_form.dart';
+
 /// 「新增节点」面板。
 ///
-/// 三种输入（分享链接 / YAML 片段 / 二维码）共用一个粘贴框：分享链接与 YAML 片段
-/// 由内核自己判断是哪一种（`core/profile_edit.go` 的 parseProxyNodes），所以不必先
-/// 让用户选「你要加哪种」—— 那个选择本身就是负担，而内核两条路都能走。
+/// 两种模式共用一条提交管线（`addProxyNodesToProfile` → 内核 parseProxyNodes）：
+///  - 粘贴：分享链接 / YAML 片段 / 二维码，由内核自己判断是哪一种；
+///  - 手动填写：表单按协议动态出字段（`add_node_form.dart`），生成节点 JSON
+///    交给同一条管线 —— 重名跳过、自动补默认分组这些安全逻辑原样生效。
 ///
 /// 面板自己不做任何 YAML 解析：拿到文本就交给内核，回收整份新配置。这样 Dart 侧
 /// 永远不碰配置内容，也就不存在「拼错一个缩进毁掉整份配置」的可能。
@@ -28,6 +31,8 @@ class AddProxyNodeView extends ConsumerStatefulWidget {
 
 class _AddProxyNodeViewState extends ConsumerState<AddProxyNodeView> {
   final _controller = TextEditingController();
+  final _formKey = GlobalKey<ProxyNodeFormState>();
+  bool _manual = false;
 
   @override
   void dispose() {
@@ -80,10 +85,21 @@ class _AddProxyNodeViewState extends ConsumerState<AddProxyNodeView> {
   }
 
   Future<void> _handleSubmit() async {
-    final nodes = _controller.text.trim();
-    if (nodes.isEmpty) {
-      _showMessage(context.appLocalizations.emptyTip('').trim());
-      return;
+    final appLocalizations = context.appLocalizations;
+    String nodes;
+    if (_manual) {
+      final json = _formKey.currentState?.buildNodesJson();
+      if (json == null) {
+        // 表单内已经把缺的必填项标红了，这里不再弹重复的提示。
+        return;
+      }
+      nodes = json;
+    } else {
+      nodes = _controller.text.trim();
+      if (nodes.isEmpty) {
+        _showMessage(appLocalizations.emptyTip('').trim());
+        return;
+      }
     }
     final result = await ref
         .read(profilesActionProvider.notifier)
@@ -168,43 +184,65 @@ class _AddProxyNodeViewState extends ConsumerState<AddProxyNodeView> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          appLocalizations.addProxyNodeDesc,
-          style: context.textTheme.bodySmall?.copyWith(
-            color: context.colorScheme.onSurfaceVariant,
-          ),
-        ),
-        const SizedBox(height: 8),
-        TextField(
-          controller: _controller,
-          minLines: 6,
-          maxLines: 12,
-          autofocus: true,
-          keyboardType: TextInputType.multiline,
-          decoration: const InputDecoration(
-            border: OutlineInputBorder(),
-            alignLabelWithHint: true,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Wrap(
-          spacing: 8,
-          children: [
-            TextButton.icon(
-              onPressed: _handlePasteFromClipboard,
+        SegmentedButton<bool>(
+          segments: [
+            ButtonSegment(
+              value: false,
               icon: const Icon(Icons.content_paste, size: 18),
-              label: Text(appLocalizations.pasteFromClipboard),
+              label: Text(appLocalizations.addNodePasteMode),
             ),
-            // 桌面端不给扫码入口：那里没有摄像头，识别图片里的二维码走的是另一条
-            // 依赖（picker），把它混进来只会让按钮点了没反应。
-            if (!system.isDesktop)
-              TextButton.icon(
-                onPressed: _handleScan,
-                icon: const Icon(Icons.qr_code_scanner, size: 18),
-                label: Text(appLocalizations.qrcode),
-              ),
+            ButtonSegment(
+              value: true,
+              icon: const Icon(Icons.edit_note, size: 18),
+              label: Text(appLocalizations.addNodeManualMode),
+            ),
           ],
+          selected: {_manual},
+          onSelectionChanged: (selection) =>
+              setState(() => _manual = selection.first),
         ),
+        const SizedBox(height: 12),
+        if (_manual)
+          ProxyNodeForm(key: _formKey)
+        else ...[
+          Text(
+            appLocalizations.addProxyNodeDesc,
+            style: context.textTheme.bodySmall?.copyWith(
+              color: context.colorScheme.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(height: 8),
+          TextField(
+            controller: _controller,
+            minLines: 6,
+            maxLines: 12,
+            autofocus: true,
+            keyboardType: TextInputType.multiline,
+            decoration: const InputDecoration(
+              border: OutlineInputBorder(),
+              alignLabelWithHint: true,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            children: [
+              TextButton.icon(
+                onPressed: _handlePasteFromClipboard,
+                icon: const Icon(Icons.content_paste, size: 18),
+                label: Text(appLocalizations.pasteFromClipboard),
+              ),
+              // 桌面端不给扫码入口：那里没有摄像头，识别图片里的二维码走的是另一条
+              // 依赖（picker），把它混进来只会让按钮点了没反应。
+              if (!system.isDesktop)
+                TextButton.icon(
+                  onPressed: _handleScan,
+                  icon: const Icon(Icons.qr_code_scanner, size: 18),
+                  label: Text(appLocalizations.qrcode),
+                ),
+            ],
+          ),
+        ],
       ],
     );
   }
@@ -212,7 +250,7 @@ class _AddProxyNodeViewState extends ConsumerState<AddProxyNodeView> {
   @override
   Widget build(BuildContext context) {
     final appLocalizations = context.appLocalizations;
-    final height = ref.sheetHeight(context, 0.6);
+    final height = ref.sheetHeight(context, _manual ? 0.85 : 0.6);
     return AdaptiveSheetScaffold(
       sheetTransparentToolBar: true,
       actions: [

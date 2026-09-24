@@ -5694,6 +5694,161 @@ class AppLocalizations {
   String get bestPresetSystemProxyApplied {
     return Intl.message('System proxy is now enabled (the app is not running as administrator, so TUN is unavailable; restart it as administrator to use TUN)', name: 'bestPresetSystemProxyApplied', desc: '', args: []);
   }
+
+  /// `Paste`
+  String get addNodePasteMode {
+    return Intl.message('Paste', name: 'addNodePasteMode', desc: '', args: []);
+  }
+
+  /// `Manual entry`
+  String get addNodeManualMode {
+    return Intl.message('Manual entry', name: 'addNodeManualMode', desc: '', args: []);
+  }
+
+  /// `Protocol`
+  String get addNodeProtocol {
+    return Intl.message('Protocol', name: 'addNodeProtocol', desc: '', args: []);
+  }
+
+  /// `Advanced`
+  String get proxyFormAdvanced {
+    return Intl.message('Advanced', name: 'proxyFormAdvanced', desc: '', args: []);
+  }
+
+  /// `Required fields are missing`
+  String get proxyFormMissingRequired {
+    return Intl.message('Required fields are missing', name: 'proxyFormMissingRequired', desc: '', args: []);
+  }
+
+  /// `None`
+  String get proxyFormOptionNone {
+    return Intl.message('None', name: 'proxyFormOptionNone', desc: '', args: []);
+  }
+
+  /// `Node name`
+  String get proxyFieldName {
+    return Intl.message('Node name', name: 'proxyFieldName', desc: '', args: []);
+  }
+
+  /// `Server`
+  String get proxyFieldServer {
+    return Intl.message('Server', name: 'proxyFieldServer', desc: '', args: []);
+  }
+
+  /// `Port`
+  String get proxyFieldPort {
+    return Intl.message('Port', name: 'proxyFieldPort', desc: '', args: []);
+  }
+
+  /// `Username`
+  String get proxyFieldUsername {
+    return Intl.message('Username', name: 'proxyFieldUsername', desc: '', args: []);
+  }
+
+  /// `Password`
+  String get proxyFieldPassword {
+    return Intl.message('Password', name: 'proxyFieldPassword', desc: '', args: []);
+  }
+
+  /// `UUID`
+  String get proxyFieldUuid {
+    return Intl.message('UUID', name: 'proxyFieldUuid', desc: '', args: []);
+  }
+
+  /// `alterId`
+  String get proxyFieldAlterId {
+    return Intl.message('alterId', name: 'proxyFieldAlterId', desc: '', args: []);
+  }
+
+  /// `Cipher`
+  String get proxyFieldCipher {
+    return Intl.message('Cipher', name: 'proxyFieldCipher', desc: '', args: []);
+  }
+
+  /// `Enable UDP`
+  String get proxyFieldUdp {
+    return Intl.message('Enable UDP', name: 'proxyFieldUdp', desc: '', args: []);
+  }
+
+  /// `TLS`
+  String get proxyFieldTls {
+    return Intl.message('TLS', name: 'proxyFieldTls', desc: '', args: []);
+  }
+
+  /// `Skip certificate verification`
+  String get proxyFieldSkipCertVerify {
+    return Intl.message('Skip certificate verification', name: 'proxyFieldSkipCertVerify', desc: '', args: []);
+  }
+
+  /// `Transport`
+  String get proxyFieldNetwork {
+    return Intl.message('Transport', name: 'proxyFieldNetwork', desc: '', args: []);
+  }
+
+  /// `WS path`
+  String get proxyFieldWsPath {
+    return Intl.message('WS path', name: 'proxyFieldWsPath', desc: '', args: []);
+  }
+
+  /// `WS Host`
+  String get proxyFieldWsHost {
+    return Intl.message('WS Host', name: 'proxyFieldWsHost', desc: '', args: []);
+  }
+
+  /// `gRPC service name`
+  String get proxyFieldGrpcService {
+    return Intl.message('gRPC service name', name: 'proxyFieldGrpcService', desc: '', args: []);
+  }
+
+  /// `SNI`
+  String get proxyFieldSni {
+    return Intl.message('SNI', name: 'proxyFieldSni', desc: '', args: []);
+  }
+
+  /// `Flow`
+  String get proxyFieldFlow {
+    return Intl.message('Flow', name: 'proxyFieldFlow', desc: '', args: []);
+  }
+
+  /// `Enable Reality`
+  String get proxyFieldReality {
+    return Intl.message('Enable Reality', name: 'proxyFieldReality', desc: '', args: []);
+  }
+
+  /// `Reality public key`
+  String get proxyFieldPublicKey {
+    return Intl.message('Reality public key', name: 'proxyFieldPublicKey', desc: '', args: []);
+  }
+
+  /// `Reality Short ID`
+  String get proxyFieldShortId {
+    return Intl.message('Reality Short ID', name: 'proxyFieldShortId', desc: '', args: []);
+  }
+
+  /// `Client fingerprint`
+  String get proxyFieldFingerprint {
+    return Intl.message('Client fingerprint', name: 'proxyFieldFingerprint', desc: '', args: []);
+  }
+
+  /// `Obfuscation`
+  String get proxyFieldObfs {
+    return Intl.message('Obfuscation', name: 'proxyFieldObfs', desc: '', args: []);
+  }
+
+  /// `Obfuscation password`
+  String get proxyFieldObfsPassword {
+    return Intl.message('Obfuscation password', name: 'proxyFieldObfsPassword', desc: '', args: []);
+  }
+
+  /// `Upload bandwidth`
+  String get proxyFieldUp {
+    return Intl.message('Upload bandwidth', name: 'proxyFieldUp', desc: '', args: []);
+  }
+
+  /// `Download bandwidth`
+  String get proxyFieldDown {
+    return Intl.message('Download bandwidth', name: 'proxyFieldDown', desc: '', args: []);
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<AppLocalizations> {
