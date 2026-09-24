@@ -2,6 +2,38 @@
   "schemaVersion": 2,
   "versions": [
     {
+      "version": "01.00.07",
+      "tag": "v01.00.07",
+      "date": "2026-09-24",
+      "prerelease": false,
+      "groups": [
+        {
+          "type": "feat",
+          "entries": [
+            {
+              "id": "0a99f32",
+              "text": "Smart anti-detection layer: auto-fill client-side TLS fingerprint and ALPN for vmess/vless/trojan when absent (all import sources, explicit values never overridden); failed delay tests rotate the fingerprint through a pool (chrome/firefox/safari/ios/edge/qq/randomized/chrome120) with cooldown and pool-exhausted stop; toggle in Settings > Network, on by default"
+            },
+            {
+              "id": "0a99f32",
+              "scope": "ui",
+              "text": "Manual node form: add ALPN for vmess/vless/trojan/hysteria2, trojan Reality (public key / short-id / fingerprint), hysteria2 port hopping (ports / hop-interval), vless fingerprint selector for all TLS scenarios"
+            }
+          ]
+        },
+        {
+          "type": "fix",
+          "entries": [
+            {
+              "id": "c6bc710",
+              "scope": "core",
+              "text": "Pasted nodes no longer collide on the generic outbound tag: tags like \"proxy\"/\"outbound\" are replaced by protocol-address-port (Xray JSON) or address:port (sing-box JSON) names; custom tags are preserved"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "version": "01.00.06",
       "tag": "v01.00.06",
       "date": "2026-09-24",

@@ -1,5 +1,16 @@
 # Changelog
 
+## v01.00.07 (2026-09-24)
+
+**Features**
+
+- Smart anti-detection layer: auto-fill client-side TLS fingerprint and ALPN for vmess/vless/trojan when absent (all import sources, explicit values never overridden); failed delay tests rotate the fingerprint through a pool (chrome/firefox/safari/ios/edge/qq/randomized/chrome120) with cooldown and pool-exhausted stop; toggle in Settings > Network, on by default (0a99f32)
+- **ui** Manual node form: add ALPN for vmess/vless/trojan/hysteria2, trojan Reality (public key / short-id / fingerprint), hysteria2 port hopping (ports / hop-interval), vless fingerprint selector for all TLS scenarios (0a99f32)
+
+**Bug Fixes**
+
+- **core** Pasted nodes no longer collide on the generic outbound tag: tags like "proxy"/"outbound" are replaced by protocol-address-port (Xray JSON) or address:port (sing-box JSON) names; custom tags are preserved (c6bc710)
+
 ## v01.00.06 (2026-09-24)
 
 **Features**
