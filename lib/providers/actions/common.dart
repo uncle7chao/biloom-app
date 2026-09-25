@@ -29,13 +29,19 @@ class CommonAction extends _$CommonAction {
         .update((state) => state.copyWith(showTrayTitle: !state.showTrayTitle));
   }
 
+  /// 热键循环切换出站模式（规则→全局→直连→规则）。
+  ///
+  /// 刻意走 [SetupAction.changeMode] 而不是直接改 patchClashConfig：切到全局
+  /// 模式时要把当前分组切到 GLOBAL，仪表盘/托盘两个入口都有这个副作用，热键
+  /// 此前漏了 —— 用热键切全局后，代理页会还停在普通分组上。
   void updateMode() {
-    ref.read(patchClashConfigProvider.notifier).update((state) {
-      final index = Mode.values.indexWhere((item) => item == state.mode);
-      if (index == -1) return state;
-      final nextIndex = index + 1 > Mode.values.length - 1 ? 0 : index + 1;
-      return state.copyWith(mode: Mode.values[nextIndex]);
-    });
+    final current = ref.read(patchClashConfigProvider).mode;
+    final index = Mode.values.indexWhere((item) => item == current);
+    if (index == -1) return;
+    final nextIndex = index + 1 > Mode.values.length - 1 ? 0 : index + 1;
+    ref
+        .read(setupActionProvider.notifier)
+        .changeMode(Mode.values[nextIndex]);
   }
 
   Future<void> updateTraffic() async {
