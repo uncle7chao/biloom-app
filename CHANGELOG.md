@@ -1,5 +1,11 @@
 # Changelog
 
+## v01.00.15 (2026-09-25)
+
+**Features**
+
+- Proxy chains move into their own data layer: they are injected into the runtime config at connect time instead of being written into the profile, so subscription updates can never wipe them. The "Proxy Chain" tab is now permanent, sitting right after auto-select, and the exit/front picker shows the fastest 20 nodes per profile with search covering the rest (fc0c3ce)
+
 ## v01.00.14 (2026-09-25)
 
 **Features**
