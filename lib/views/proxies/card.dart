@@ -75,104 +75,181 @@ class ProxyCard extends ConsumerWidget {
     );
   }
 
+  Future<void> _handleDelete(BuildContext context, WidgetRef ref) async {
+    final profile = ref.read(currentProfileProvider);
+    if (profile == null) {
+      return;
+    }
+    final appLocalizations = context.appLocalizations;
+    // 订阅配置删了也会被下一次「更新订阅」整份盖回来 —— 确认弹窗里先说清楚，
+    // 与「管理节点」面板顶部的提示同一句话。
+    final isSubscription = profile.url.isNotEmpty;
+    final confirmed = await dialogs.showMessage(
+      message: TextSpan(
+        text: [
+          proxy.name,
+          if (isSubscription) '\n${appLocalizations.subscribeOverwriteWarning}',
+          '\n${appLocalizations.deleteNodeConfirm}',
+        ].join(),
+      ),
+    );
+    if (confirmed != true || !context.mounted) return;
+    final result = await ref
+        .read(profilesActionProvider.notifier)
+        .removeProxyNodesFromProfile(profileId: profile.id, names: [proxy.name]);
+    if (result == null || !context.mounted) return;
+    context.showNotifier(
+      result.missing.isNotEmpty
+          ? appLocalizations.deleteNodeMissing
+          : appLocalizations.deleteNodeSuccess,
+      level: result.missing.isEmpty ? MessageLevel.success : MessageLevel.warning,
+    );
+  }
+
+  /// 节点卡片的右键/长按菜单：测速、测落地、删除。
+  ///
+  /// 配置卡片一直有「⋯」菜单，节点卡片此前什么都没有 —— 删除做完之后入口却
+  /// 只有「配置卡片 → 管理节点」一条路，对着要删的卡片反而没有动作。这里补上
+  /// 与配置卡片同一套 [CommonPopupMenu]，桌面右键、移动端长按都能唤出。
+  List<CommonPopupMenuItem> _buildMenuItems(
+    BuildContext context,
+    WidgetRef ref,
+  ) {
+    final appLocalizations = context.appLocalizations;
+    return [
+      CommonPopupMenuItem(
+        icon: Icons.bolt,
+        label: appLocalizations.proxyDelayTestNow,
+        onPressed: () => _handleTestCurrentDelay(ref),
+      ),
+      CommonPopupMenuItem(
+        icon: Icons.travel_explore,
+        label: appLocalizations.proxyExitTest,
+        onPressed: () {
+          ref.read(proxyExitProvider.notifier).test(proxy.name);
+        },
+      ),
+      CommonPopupMenuItem(
+        danger: true,
+        icon: Icons.delete_outline,
+        label: appLocalizations.deleteNode,
+        onPressed: () => _handleDelete(context, ref),
+      ),
+    ];
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final proxyNameText = _buildProxyNameText(context);
     final region = ref.watch(proxyRegionProvider(proxy));
-    return Stack(
-      children: [
-        Consumer(
-          builder: (_, ref, child) {
-            final selectedProxyName = ref.watch(
-              selectedProxyNameProvider(groupName),
-            );
-            return CommonCard(
-              type: CommonCardType.filled,
-              radius: AppCorner.lg,
-              key: key,
-              onPressed: () {
-                _changeProxy(ref);
+    return CommonPopupBox(
+      popupBuilder: (_) => CommonPopupMenu(
+        items: _buildMenuItems(context, ref),
+      ),
+      targetBuilder: (open) => GestureDetector(
+        // offset 用指针落点：菜单锚定在右键位置附近，而不是整张卡片的角上。
+        onSecondaryTapUp: (details) => open(offset: details.localPosition),
+        onLongPressStart: (details) => open(offset: details.localPosition),
+        child: Stack(
+          children: [
+            Consumer(
+              builder: (_, ref, child) {
+                final selectedProxyName = ref.watch(
+                  selectedProxyNameProvider(groupName),
+                );
+                return CommonCard(
+                  type: CommonCardType.filled,
+                  radius: AppCorner.lg,
+                  key: key,
+                  onPressed: () {
+                    _changeProxy(ref);
+                  },
+                  isSelected: selectedProxyName == proxy.name,
+                  child: child!,
+                );
               },
-              isSelected: selectedProxyName == proxy.name,
-              child: child!,
-            );
-          },
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: Row(
-              children: [
-                _ProxyStatusDot(proxyName: proxy.name, testUrl: testUrl),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      proxyNameText,
-                      const SizedBox(height: 6),
-                      // 第二行统一成「地区胶囊 + 协议胶囊 … 测速按钮」一行 —— 三种
-                      // 卡片类型都用同一套语言。展开卡片原来多占一整行放描述文字
-                      // （`vless` / `Selector(香港01)`），那行现在并进胶囊里，
-                      // 信息一点没少，只是不再单占一行。
-                      SizedBox(
-                        height: proxyCardMetaHeight,
-                        child: Row(
-                          children: [
-                            // 左边这一块（地区 + 协议）共用一层 `Align`：它负责把
-                            // 整块顶到行首，同时把右侧剩余空间吃掉 —— 右下角的
-                            // 测速按钮才能贴住卡片右边（`Row` 不会自动把最后一
-                            // 个子项推到行尾）。
-                            Flexible(
-                              child: Align(
-                                alignment: AlignmentDirectional.centerStart,
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    // 地区认不出就整块跳过。这里用 collection-if
-                                    // 而不是让胶囊自己返回空盒子 —— 后者会把后面
-                                    // 那 6px 间距留在行里。
-                                    if (!region.isUnknown) ...[
-                                      Flexible(
-                                        child: _ProxyRegionChip(region: region),
-                                      ),
-                                      const SizedBox(width: 6),
-                                    ],
-                                    Flexible(
-                                      child: type == ProxyCardType.expand
-                                          ? _ProxyDescChip(proxy: proxy)
-                                          : _ProxyTypeChip(label: proxy.type),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: Row(
+                  children: [
+                    _ProxyStatusDot(proxyName: proxy.name, testUrl: testUrl),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          proxyNameText,
+                          const SizedBox(height: 6),
+                          // 第二行统一成「地区胶囊 + 协议胶囊 … 测速按钮」一行 —— 三种
+                          // 卡片类型都用同一套语言。展开卡片原来多占一整行放描述文字
+                          // （`vless` / `Selector(香港01)`），那行现在并进胶囊里，
+                          // 信息一点没少，只是不再单占一行。
+                          SizedBox(
+                            height: proxyCardMetaHeight,
+                            child: Row(
+                              children: [
+                                // 左边这一块（地区 + 协议）共用一层 `Align`：它负责把
+                                // 整块顶到行首，同时把右侧剩余空间吃掉 —— 右下角的
+                                // 测速按钮才能贴住卡片右边（`Row` 不会自动把最后一
+                                // 个子项推到行尾）。
+                                Flexible(
+                                  child: Align(
+                                    alignment: AlignmentDirectional.centerStart,
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        // 地区认不出就整块跳过。这里用 collection-if
+                                        // 而不是让胶囊自己返回空盒子 —— 后者会把后面
+                                        // 那 6px 间距留在行里。
+                                        if (!region.isUnknown) ...[
+                                          Flexible(
+                                            child: _ProxyRegionChip(
+                                              region: region,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 6),
+                                        ],
+                                        Flexible(
+                                          child: type == ProxyCardType.expand
+                                              ? _ProxyDescChip(proxy: proxy)
+                                              : _ProxyTypeChip(
+                                                  label: proxy.type,
+                                                ),
+                                        ),
+                                      ],
                                     ),
-                                  ],
+                                  ),
                                 ),
-                              ),
+                                const SizedBox(width: 8),
+                                _ProxyExitButton(
+                                  proxyName: proxy.name,
+                                ),
+                                const SizedBox(width: 6),
+                                _ProxyDelayButton(
+                                  proxyName: proxy.name,
+                                  testUrl: testUrl,
+                                  onTest: () => _handleTestCurrentDelay(ref),
+                                ),
+                              ],
                             ),
-                            const SizedBox(width: 8),
-                            _ProxyExitButton(
-                              proxyName: proxy.name,
-                            ),
-                            const SizedBox(width: 6),
-                            _ProxyDelayButton(
-                              proxyName: proxy.name,
-                              testUrl: testUrl,
-                              onTest: () => _handleTestCurrentDelay(ref),
-                            ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
-          ),
+            if (groupType.isComputedSelected)
+              Positioned(
+                top: 0,
+                right: 0,
+                child: _ProxyComputedMark(groupName: groupName, proxy: proxy),
+              ),
+          ],
         ),
-        if (groupType.isComputedSelected)
-          Positioned(
-            top: 0,
-            right: 0,
-            child: _ProxyComputedMark(groupName: groupName, proxy: proxy),
-          ),
-      ],
+      ),
     );
   }
 }

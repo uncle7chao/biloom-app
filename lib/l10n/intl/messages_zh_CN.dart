@@ -1003,5 +1003,13 @@ class MessageLookup extends MessageLookupByLibrary {
     "proxyFieldAlpn": MessageLookupByLibrary.simpleMessage("ALPN（逗号分隔）"),
     "proxyFieldPorts": MessageLookupByLibrary.simpleMessage("端口范围（如 20000-30000）"),
     "proxyFieldHopInterval": MessageLookupByLibrary.simpleMessage("跳端口间隔（秒）"),
+    "manageNodes": MessageLookupByLibrary.simpleMessage("管理节点"),
+    "deleteNode": MessageLookupByLibrary.simpleMessage("删除节点"),
+    "deleteNodeConfirm": MessageLookupByLibrary.simpleMessage("删除后该节点将从配置中移除，相关引用会一并清理，确定删除？"),
+    "deleteNodeSuccess": MessageLookupByLibrary.simpleMessage("以下节点已删除："),
+    "deleteNodeMissing": MessageLookupByLibrary.simpleMessage("以下节点在配置里没有找到（可能已被删除）："),
+    "noProxyNodes": MessageLookupByLibrary.simpleMessage("这份配置里还没有节点"),
+    "deleteSelected": MessageLookupByLibrary.simpleMessage("删除所选"),
+    "deleteNodesConfirm": MessageLookupByLibrary.simpleMessage("删除后这些节点将从配置中移除，相关引用会一并清理，确定删除？"),
   };
 }

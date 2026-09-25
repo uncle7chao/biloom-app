@@ -16,6 +16,7 @@ import 'add.dart';
 import 'edit.dart';
 import 'preview.dart';
 import '../proxies/add_node.dart';
+import '../proxies/manage_nodes.dart';
 
 class ProfilesView extends ConsumerStatefulWidget {
   const ProfilesView({super.key});
@@ -361,6 +362,19 @@ class ProfileItem extends ConsumerWidget {
             context: context,
             props: const SheetProps(isScrollControlled: true),
             builder: (_) => AddProxyNodeView(profileId: profile.id),
+          );
+        },
+      ),
+      // 「管理节点」：看这份配置里的节点、逐个删除。与「添加节点」并排成
+      // 一组节点管理入口，都从配置卡片直达。
+      CommonPopupMenuItem(
+        icon: Icons.delete_sweep_outlined,
+        label: appLocalizations.manageNodes,
+        onPressed: () {
+          showSheet(
+            context: context,
+            props: const SheetProps(isScrollControlled: true),
+            builder: (_) => ManageProxyNodesView(profileId: profile.id),
           );
         },
       ),

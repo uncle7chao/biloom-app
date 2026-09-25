@@ -730,5 +730,13 @@
   "smartAntidetectionDesc": "自动为节点补齐 TLS 指纹等抗检测参数；节点连不上时自动换一组指纹重试，无需手动配置。",
   "proxyFieldAlpn": "ALPN（逗号分隔）",
   "proxyFieldPorts": "端口范围（如 20000-30000）",
-  "proxyFieldHopInterval": "跳端口间隔（秒）"
+  "proxyFieldHopInterval": "跳端口间隔（秒）",
+  "manageNodes": "管理节点",
+  "deleteNode": "删除节点",
+  "deleteNodeConfirm": "删除后该节点将从配置中移除，相关引用会一并清理，确定删除？",
+  "deleteNodeSuccess": "以下节点已删除：",
+  "deleteNodeMissing": "以下节点在配置里没有找到（可能已被删除）：",
+  "noProxyNodes": "这份配置里还没有节点",
+  "deleteSelected": "删除所选",
+  "deleteNodesConfirm": "删除后这些节点将从配置中移除，相关引用会一并清理，确定删除？"
 }

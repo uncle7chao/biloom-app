@@ -332,6 +332,30 @@ class ProfilesAction extends _$ProfilesAction {
     }, title: currentAppLocalizations.addProxyNode);
   }
 
+  /// 从指定配置里删除节点，返回内核的处理结果（失败时返回 null）。
+  ///
+  /// 删除是内核侧的文档级编辑：策略组成员、指向该节点的规则、listeners 引用
+  /// 都由内核同步清理 —— 这些地方漏掉任何一个，整份配置加载失败。Dart 侧只管
+  /// 读文件、调内核、保存。
+  Future<RemoveProxyNodesResult?> removeProxyNodesFromProfile({
+    required int profileId,
+    required List<String> names,
+  }) async {
+    return globalState.loadingRun(tag: LoadingTag.profiles, () async {
+      final profile = ref.read(profilesProvider).getProfile(profileId);
+      if (profile == null) {
+        throw const MessageException('找不到这份配置，可能已被删除');
+      }
+      final file = await profile.file;
+      final edited = await _core.removeProxyNodes(
+        yaml: await file.readAsString(),
+        names: names,
+      );
+      await _saveEditedProfile(profile, edited.yaml);
+      return edited;
+    }, title: currentAppLocalizations.manageNodes);
+  }
+
   /// 列出这份配置里可以做链式代理的节点与策略组。
   ///
   /// 不套 [globalState.loadingRun]：界面自己有一层加载态，这里再盖一层全屏遮罩

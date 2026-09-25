@@ -124,6 +124,14 @@ class CoreController {
     return _interface.addProxyNodes(yaml: yaml, nodes: nodes);
   }
 
+  /// 从配置里删除节点。引用清理（组员/规则/listeners）在内核同步完成。
+  Future<RemoveProxyNodesResult> removeProxyNodes({
+    required String yaml,
+    required List<String> names,
+  }) async {
+    return _interface.removeProxyNodes(yaml: yaml, names: names);
+  }
+
   /// 列出这份配置里可以做链式代理的节点与策略组。
   Future<ProfileTargets> readProfileTargets({required String yaml}) async {
     return _interface.readProfileTargets(yaml: yaml);

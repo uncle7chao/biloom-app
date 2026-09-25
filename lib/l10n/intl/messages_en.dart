@@ -1361,5 +1361,13 @@ class MessageLookup extends MessageLookupByLibrary {
     "proxyFieldAlpn": MessageLookupByLibrary.simpleMessage("ALPN (comma separated)"),
     "proxyFieldPorts": MessageLookupByLibrary.simpleMessage("Port range (e.g. 20000-30000)"),
     "proxyFieldHopInterval": MessageLookupByLibrary.simpleMessage("Hop interval (s)"),
+    "manageNodes": MessageLookupByLibrary.simpleMessage("Manage nodes"),
+    "deleteNode": MessageLookupByLibrary.simpleMessage("Delete node"),
+    "deleteNodeConfirm": MessageLookupByLibrary.simpleMessage("The node will be removed from the profile and all its references cleaned up. Delete it?"),
+    "deleteNodeSuccess": MessageLookupByLibrary.simpleMessage("Deleted nodes:"),
+    "deleteNodeMissing": MessageLookupByLibrary.simpleMessage("These nodes were not found (possibly already deleted):"),
+    "noProxyNodes": MessageLookupByLibrary.simpleMessage("No nodes in this profile yet"),
+    "deleteSelected": MessageLookupByLibrary.simpleMessage("Delete selected"),
+    "deleteNodesConfirm": MessageLookupByLibrary.simpleMessage("The selected nodes will be removed from the profile and all their references cleaned up. Delete them?"),
   };
 }

@@ -32,6 +32,12 @@ mixin CoreInterface {
     required String nodes,
   });
 
+  /// 从配置里删除节点。引用清理（组员/规则/listeners）在内核同步完成。
+  Future<RemoveProxyNodesResult> removeProxyNodes({
+    required String yaml,
+    required List<String> names,
+  });
+
   /// 列出这份配置里可以做链式代理的节点与策略组。
   Future<ProfileTargets> readProfileTargets({required String yaml});
 
@@ -241,6 +247,24 @@ abstract class CoreHandlerInterface with CoreInterface {
       );
     }
     return AddProxyNodesResult.fromJson(result);
+  }
+
+  @override
+  Future<RemoveProxyNodesResult> removeProxyNodes({
+    required String yaml,
+    required List<String> names,
+  }) async {
+    final result = await _invokeMethod<Map<String, dynamic>>(
+      method: CoreMethod.removeProxyNodes,
+      arguments: {'yaml': yaml, 'names': names},
+    );
+    if (result == null) {
+      throw const CoreMethodException(
+        code: 'empty_result',
+        message: 'Core returned an empty node removal result',
+      );
+    }
+    return RemoveProxyNodesResult.fromJson(result);
   }
 
   @override

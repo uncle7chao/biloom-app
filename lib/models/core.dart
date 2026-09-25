@@ -249,6 +249,37 @@ class AddProxyNodesResult {
   }
 }
 
+/// 从配置里删除节点的结果。
+///
+/// [missing] 不是失败：多半是面板数据已过期（节点刚被别处删掉）。引用清理
+/// （策略组成员、规则出口、listeners）由内核同步完成，拿到的 [yaml] 一定加载得动。
+class RemoveProxyNodesResult {
+  const RemoveProxyNodesResult({
+    required this.yaml,
+    required this.removed,
+    required this.missing,
+  });
+
+  /// 删除之后的配置全文。
+  final String yaml;
+
+  /// 真正删掉的节点名。
+  final List<String> removed;
+
+  /// 配置里没找到的节点名。
+  final List<String> missing;
+
+  factory RemoveProxyNodesResult.fromJson(Map<String, dynamic> json) {
+    return RemoveProxyNodesResult(
+      yaml: json['yaml'] as String? ?? '',
+      removed:
+          (json['removed'] as List?)?.whereType<String>().toList() ?? const [],
+      missing:
+          (json['missing'] as List?)?.whereType<String>().toList() ?? const [],
+    );
+  }
+}
+
 /// 链式代理能引用的一项：一个节点，或者一个策略组。
 ///
 /// [dialer] 只对节点有意义 —— 链挂在**节点**上（`dialer-proxy` 是 proxy 级选项），

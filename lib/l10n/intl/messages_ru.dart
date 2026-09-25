@@ -1429,5 +1429,13 @@ class MessageLookup extends MessageLookupByLibrary {
     "proxyFieldAlpn": MessageLookupByLibrary.simpleMessage("ALPN (через запятую)"),
     "proxyFieldPorts": MessageLookupByLibrary.simpleMessage("Диапазон портов (напр. 20000-30000)"),
     "proxyFieldHopInterval": MessageLookupByLibrary.simpleMessage("Интервал прыжка портов (с)"),
+    "manageNodes": MessageLookupByLibrary.simpleMessage("Управление узлами"),
+    "deleteNode": MessageLookupByLibrary.simpleMessage("Удалить узел"),
+    "deleteNodeConfirm": MessageLookupByLibrary.simpleMessage("Узел будет удалён из профиля вместе со всеми ссылками на него. Удалить?"),
+    "deleteNodeSuccess": MessageLookupByLibrary.simpleMessage("Удалённые узлы:"),
+    "deleteNodeMissing": MessageLookupByLibrary.simpleMessage("Эти узлы не найдены (возможно, уже удалены):"),
+    "noProxyNodes": MessageLookupByLibrary.simpleMessage("В этом профиле пока нет узлов"),
+    "deleteSelected": MessageLookupByLibrary.simpleMessage("Удалить выбранные"),
+    "deleteNodesConfirm": MessageLookupByLibrary.simpleMessage("Выбранные узлы будут удалены из профиля вместе со всеми ссылками на них. Удалить?"),
   };
 }

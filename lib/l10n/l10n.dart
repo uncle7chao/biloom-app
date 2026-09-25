@@ -5879,6 +5879,46 @@ class AppLocalizations {
   String get proxyFieldHopInterval {
     return Intl.message('Hop interval (s)', name: 'proxyFieldHopInterval', desc: '', args: []);
   }
+
+  /// `Manage nodes`
+  String get manageNodes {
+    return Intl.message('Manage nodes', name: 'manageNodes', desc: '', args: []);
+  }
+
+  /// `Delete node`
+  String get deleteNode {
+    return Intl.message('Delete node', name: 'deleteNode', desc: '', args: []);
+  }
+
+  /// `The node will be removed from the profile and all its references cleaned up. Delete it?`
+  String get deleteNodeConfirm {
+    return Intl.message('The node will be removed from the profile and all its references cleaned up. Delete it?', name: 'deleteNodeConfirm', desc: '', args: []);
+  }
+
+  /// `Deleted nodes:`
+  String get deleteNodeSuccess {
+    return Intl.message('Deleted nodes:', name: 'deleteNodeSuccess', desc: '', args: []);
+  }
+
+  /// `These nodes were not found (possibly already deleted):`
+  String get deleteNodeMissing {
+    return Intl.message('These nodes were not found (possibly already deleted):', name: 'deleteNodeMissing', desc: '', args: []);
+  }
+
+  /// `No nodes in this profile yet`
+  String get noProxyNodes {
+    return Intl.message('No nodes in this profile yet', name: 'noProxyNodes', desc: '', args: []);
+  }
+
+  /// `Delete selected`
+  String get deleteSelected {
+    return Intl.message('Delete selected', name: 'deleteSelected', desc: '', args: []);
+  }
+
+  /// `The selected nodes will be removed from the profile and all their references cleaned up. Delete them?`
+  String get deleteNodesConfirm {
+    return Intl.message('The selected nodes will be removed from the profile and all their references cleaned up. Delete them?', name: 'deleteNodesConfirm', desc: '', args: []);
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<AppLocalizations> {

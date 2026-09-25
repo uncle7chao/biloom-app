@@ -730,5 +730,13 @@
   "smartAntidetectionDesc": "Automatically fills in TLS fingerprints and other anti-detection parameters, and retries with a different fingerprint when a node fails to connect. No manual setup.",
   "proxyFieldAlpn": "ALPN (comma separated)",
   "proxyFieldPorts": "Port range (e.g. 20000-30000)",
-  "proxyFieldHopInterval": "Hop interval (s)"
+  "proxyFieldHopInterval": "Hop interval (s)",
+  "manageNodes": "Manage nodes",
+  "deleteNode": "Delete node",
+  "deleteNodeConfirm": "The node will be removed from the profile and all its references cleaned up. Delete it?",
+  "deleteNodeSuccess": "Deleted nodes:",
+  "deleteNodeMissing": "These nodes were not found (possibly already deleted):",
+  "noProxyNodes": "No nodes in this profile yet",
+  "deleteSelected": "Delete selected",
+  "deleteNodesConfirm": "The selected nodes will be removed from the profile and all their references cleaned up. Delete them?"
 }

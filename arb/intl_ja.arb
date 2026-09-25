@@ -730,5 +730,13 @@
   "smartAntidetectionDesc": "ノードに TLS フィンガープリントなどの耐検知パラメータを自動補完し、接続できない場合は別のフィンガープリントで自動再試行します。手動設定は不要です。",
   "proxyFieldAlpn": "ALPN（カンマ区切り）",
   "proxyFieldPorts": "ポート範囲（例: 20000-30000）",
-  "proxyFieldHopInterval": "ホップ間隔（秒）"
+  "proxyFieldHopInterval": "ホップ間隔（秒）",
+  "manageNodes": "ノード管理",
+  "deleteNode": "ノードを削除",
+  "deleteNodeConfirm": "ノードはプロファイルから削除され、関連する参照も同時にクリーンアップされます。削除しますか？",
+  "deleteNodeSuccess": "削除されたノード：",
+  "deleteNodeMissing": "次のノードは見つかりませんでした（削除済みの可能性）：",
+  "noProxyNodes": "このプロファイルにはノードがまだありません",
+  "deleteSelected": "選択を削除",
+  "deleteNodesConfirm": "選択したノードはプロファイルから削除され、関連する参照も同時にクリーンアップされます。削除しますか？"
 }

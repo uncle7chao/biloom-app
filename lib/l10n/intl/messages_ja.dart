@@ -1145,5 +1145,13 @@ class MessageLookup extends MessageLookupByLibrary {
     "proxyFieldAlpn": MessageLookupByLibrary.simpleMessage("ALPN（カンマ区切り）"),
     "proxyFieldPorts": MessageLookupByLibrary.simpleMessage("ポート範囲（例: 20000-30000）"),
     "proxyFieldHopInterval": MessageLookupByLibrary.simpleMessage("ホップ間隔（秒）"),
+    "manageNodes": MessageLookupByLibrary.simpleMessage("ノード管理"),
+    "deleteNode": MessageLookupByLibrary.simpleMessage("ノードを削除"),
+    "deleteNodeConfirm": MessageLookupByLibrary.simpleMessage("ノードはプロファイルから削除され、関連する参照も同時にクリーンアップされます。削除しますか？"),
+    "deleteNodeSuccess": MessageLookupByLibrary.simpleMessage("削除されたノード："),
+    "deleteNodeMissing": MessageLookupByLibrary.simpleMessage("次のノードは見つかりませんでした（削除済みの可能性）："),
+    "noProxyNodes": MessageLookupByLibrary.simpleMessage("このプロファイルにはノードがまだありません"),
+    "deleteSelected": MessageLookupByLibrary.simpleMessage("選択を削除"),
+    "deleteNodesConfirm": MessageLookupByLibrary.simpleMessage("選択したノードはプロファイルから削除され、関連する参照も同時にクリーンアップされます。削除しますか？"),
   };
 }
