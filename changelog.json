@@ -2,6 +2,43 @@
   "schemaVersion": 2,
   "versions": [
     {
+      "version": "01.00.10",
+      "tag": "v01.00.10",
+      "date": "2026-09-25",
+      "prerelease": false,
+      "groups": [
+        {
+          "type": "fix",
+          "entries": [
+            {
+              "id": "822e62a",
+              "scope": "core",
+              "text": "Share links that carry no name fragment are auto-named (host:port) instead of failing with a missing-name error"
+            },
+            {
+              "id": "822e62a",
+              "scope": "core",
+              "text": "Adding the same node twice through different entry points (share link vs exported config) is now rejected by identity - type, server, port and credentials - not by name"
+            }
+          ]
+        },
+        {
+          "type": "feat",
+          "entries": [
+            {
+              "id": "822e62a",
+              "scope": "core",
+              "text": "New removeProxyNodes kernel method: deleting a node also cleans up group members, routing rules and listeners referencing it; emptied groups fall back to DIRECT and the match-all rule falls back to DIRECT"
+            },
+            {
+              "id": "3ffc14a",
+              "text": "Nodes can now be deleted from the app: a context menu on every proxy card (right click / long press: delay test, exit test, delete) and a manage-nodes sheet with per-node and batch deletion"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "version": "01.00.09",
       "tag": "v01.00.09",
       "date": "2026-09-25",

@@ -1,5 +1,17 @@
 # Changelog
 
+## v01.00.10 (2026-09-25)
+
+**Bug Fixes**
+
+- **core** Share links that carry no name fragment are auto-named (host:port) instead of failing with a missing-name error (822e62a)
+- **core** Adding the same node twice through different entry points (share link vs exported config) is now rejected by identity - type, server, port and credentials - not by name (822e62a)
+
+**Features**
+
+- **core** New removeProxyNodes kernel method: deleting a node also cleans up group members, routing rules and listeners referencing it; emptied groups fall back to DIRECT and the match-all rule falls back to DIRECT (822e62a)
+- Nodes can now be deleted from the app: a context menu on every proxy card (right click / long press: delay test, exit test, delete) and a manage-nodes sheet with per-node and batch deletion (3ffc14a)
+
 ## v01.00.09 (2026-09-25)
 
 **Bug Fixes**
