@@ -114,12 +114,51 @@ class ProfilesAction extends _$ProfilesAction {
     Profile profile, {
     bool showLoading = false,
   }) async {
+    // 自定义配置（本地文件型）没有远程订阅可拉。以前这里对 file 型是「静默跳过」，
+    // 用户点「更新」毫无反应（2026-09-25 用户报障）。现在语义改为：重新应用——
+    // 把本地文件重新过一遍转换器 + 校验，内核转换逻辑升级或外部编辑后点一下即生效。
+    if (profile.type == ProfileType.file) {
+      return reapplyProfile(profile, showLoading: showLoading);
+    }
     final operation = showLoading
         ? ref.read(updatingKeysProvider.notifier).start(profile.updatingKey)
         : null;
     try {
       ref.read(profilesProvider.notifier).put(profile);
       final newProfile = await profile.update(
+        validate: (path) => _core.validateConfig(path),
+        convert: convertSubscription,
+      );
+      ref.read(profilesProvider.notifier).put(newProfile);
+      if (profile.id == ref.read(currentProfileIdProvider)) {
+        ref
+            .read(setupActionProvider.notifier)
+            .applyProfileDebounce(silence: true);
+      }
+    } finally {
+      if (operation != null) {
+        ref
+            .read(updatingKeysProvider.notifier)
+            .stop(profile.updatingKey, operation);
+      }
+    }
+  }
+
+  /// 重新应用一份本地配置：读当前文件字节 → convert（订阅兼容层重跑）→
+  /// 校验 → 落盘 → 若是当前配置则重新 setup。失败时原文件未被触碰
+  /// （saveFile 先写临时文件、校验通过才覆盖），错误会正常抛给调用方展示。
+  Future<void> reapplyProfile(
+    Profile profile, {
+    bool showLoading = false,
+  }) async {
+    final operation = showLoading
+        ? ref.read(updatingKeysProvider.notifier).start(profile.updatingKey)
+        : null;
+    try {
+      final mFile = await profile.file;
+      final bytes = mFile.readAsBytesSync();
+      final newProfile = await profile.saveFile(
+        bytes,
         validate: (path) => _core.validateConfig(path),
         convert: convertSubscription,
       );

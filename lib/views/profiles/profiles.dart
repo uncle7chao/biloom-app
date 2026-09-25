@@ -53,7 +53,8 @@ class _ProfilesViewState extends ConsumerState<ProfilesView> {
     final profilesAction = ref.read(profilesActionProvider.notifier);
     final List<UpdatingMessage> messages = [];
     final updateProfiles = profiles.map<Future>((profile) async {
-      if (profile.type == ProfileType.file) return;
+      // file 型（自定义配置）不再跳过：updateProfile 会走「重新应用」分支
+      // （重跑转换器 + 校验 + 重新 setup），订阅型照旧拉远程。
       try {
         await profilesAction.updateProfile(profile, showLoading: true);
       } catch (e) {
@@ -262,7 +263,7 @@ class ProfileItem extends ConsumerWidget {
   }
 
   Future updateProfile(WidgetRef ref) async {
-    if (profile.type == ProfileType.file) return;
+    // file 型走「重新应用」分支（actions 层分流），不再静默返回。
     await globalState.loadingRun(() async {
       await ref
           .read(profilesActionProvider.notifier)
@@ -370,14 +371,18 @@ class ProfileItem extends ConsumerWidget {
           _handlePreview(context);
         },
       ),
-      if (isUrl)
-        CommonPopupMenuItem(
-          icon: Icons.sync_alt_sharp,
-          label: appLocalizations.updateSubscription,
-          onPressed: () {
-            updateProfile(ref);
-          },
-        ),
+      // 订阅型 = 「更新订阅」（拉远程）；file 型 = 「更新」（重新应用本地文件，
+      // 重跑转换器）。自定义配置此前在这里完全没有更新入口，点全局按钮又被
+      // 静默跳过——两头都碰不到（2026-09-25 用户报障）。
+      CommonPopupMenuItem(
+        icon: Icons.sync_alt_sharp,
+        label: isUrl
+            ? appLocalizations.updateSubscription
+            : appLocalizations.update,
+        onPressed: () {
+          updateProfile(ref);
+        },
+      ),
       CommonPopupMenuItem(
         icon: Icons.emergency_outlined,
         label: appLocalizations.more,
