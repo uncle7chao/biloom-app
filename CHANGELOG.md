@@ -1,5 +1,11 @@
 # Changelog
 
+## v01.00.13 (2026-09-25)
+
+**Bug Fixes**
+
+- The GLOBAL tab no longer shows built-in DIRECT/REJECT entries or hidden groups as member cards; only real nodes and visible groups remain selectable as the global exit (19be2c4)
+
 ## v01.00.12 (2026-09-25)
 
 **Bug Fixes**
