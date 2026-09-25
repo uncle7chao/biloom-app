@@ -346,11 +346,46 @@ class ProfilesAction extends _$ProfilesAction {
   /// 删除是内核侧的文档级编辑：策略组成员、指向该节点的规则、listeners 引用
   /// 都由内核同步清理 —— 这些地方漏掉任何一个，整份配置加载失败。Dart 侧只管
   /// 读文件、调内核、保存。
+  ///
+  /// **链式代理在这里改道**：链不在配置文件里（模型见 proxy_chains.dart），
+  /// 内核自然找不到它。名字命中链记录的先从数据层删掉再重应用，其余名字才
+  /// 走内核；两类都有的批量删除一次拆成两步，调用方拿到的还是同一个结果体。
   Future<RemoveProxyNodesResult?> removeProxyNodesFromProfile({
     required int profileId,
     required List<String> names,
   }) async {
     return globalState.loadingRun(tag: LoadingTag.profiles, () async {
+      final chainNames = await ProxyChainStore.namesOfProfile(profileId);
+      final chainHits = names.where((name) => chainNames.contains(name)).toList();
+      final configNames = names
+          .where((name) => !chainNames.contains(name))
+          .toList();
+      var removed = <String>[];
+      var missing = <String>[];
+      if (chainHits.isNotEmpty) {
+        final removedChains = await ProxyChainStore.removeNames(
+          profileId: profileId,
+          names: chainHits,
+        );
+        if (removedChains) {
+          removed = chainHits;
+          if (profileId == ref.read(currentProfileIdProvider)) {
+            ref
+                .read(setupActionProvider.notifier)
+                .applyProfileDebounce(silence: true);
+          }
+        } else {
+          missing = chainHits;
+        }
+      }
+      if (configNames.isEmpty) {
+        // 全是链：内核没出场，结果体就地合成 —— 调用方照常拿到 removed/missing。
+        return RemoveProxyNodesResult(
+          yaml: '',
+          removed: removed,
+          missing: missing,
+        );
+      }
       final profile = ref.read(profilesProvider).getProfile(profileId);
       if (profile == null) {
         throw const MessageException('找不到这份配置，可能已被删除');
@@ -358,10 +393,14 @@ class ProfilesAction extends _$ProfilesAction {
       final file = await profile.file;
       final edited = await _core.removeProxyNodes(
         yaml: await file.readAsString(),
-        names: names,
+        names: configNames,
       );
       await _saveEditedProfile(profile, edited.yaml);
-      return edited;
+      return RemoveProxyNodesResult(
+        yaml: edited.yaml,
+        removed: [...removed, ...edited.removed],
+        missing: [...missing, ...edited.missing],
+      );
     }, title: currentAppLocalizations.manageNodes);
   }
 
@@ -432,38 +471,60 @@ class ProfilesAction extends _$ProfilesAction {
     }, title: currentAppLocalizations.addProxyChain);
   }
 
-  /// 新建一条**独立的链式代理节点**并收进专属分组，返回内核的处理结果。
+  /// 新建一条链式代理，返回**最终名字**（失败时返回 null）。
   ///
-  /// 这是链式代理的新模型（区别于 [setProxyChainOnProfile] 的「把 dialer-proxy
-  /// 写到出口节点身上」）：生成一个新 proxy 条目 —— 参数复制自出口、前置由
-  /// 本次指定、名字独立（默认名自动编号），所有链统一收进 [group] 分组，
-  /// 代理页里就是一个独立页签。校验（出口存在、前置存在、不成环）全在内核，
-  /// 因为 validateConfig 拦不住 dialer 悬空引用这类错误。
-  /// 失败时返回 null（错误已由统一提示通道弹出）。
-  Future<AddProxyChainResult?> addProxyChainOnProfile({
+  /// 链不写进 profile 文件（模型见 proxy_chains.dart）：记录落 [ProxyChainStore]，
+  /// 运行时配置由 getProfile 注入。所以这里没有内核参与 —— 校验自己做：
+  /// 出口必须真实存在（配置里能按名找到，或调用方带了参数快照）、前置必须
+  /// 存在（节点/组按名找到，或带了快照），两头都落空的链会让运行时配置加载
+  /// 失败，必须当场挡下。重应用只在「这份配置就是当前生效配置」时触发 ——
+  /// 不是的话链在下一次切换到它时自然出现。
+  Future<String?> addProxyChainOnProfile({
     required int profileId,
     required String exit,
+    required Map<String, dynamic> exitNode,
     required String dialer,
+    Map<String, dynamic>? dialerNode,
     required String name,
     required bool autoNumber,
-    required String group,
   }) async {
     return globalState.loadingRun(tag: LoadingTag.profiles, () async {
-      final profile = ref.read(profilesProvider).getProfile(profileId);
-      if (profile == null) {
-        throw const MessageException('找不到这份配置，可能已被删除');
+      final targets = await readProfileTargets(profileId);
+      final configNames = [
+        for (final target in targets.proxies) target.name,
+        for (final target in targets.groups) target.name,
+      ];
+      final exitFound =
+          configNames.contains(exit) || exitNode.isNotEmpty;
+      if (!exitFound) {
+        throw MessageException(
+          currentAppLocalizations.proxyChainPickExit,
+        );
       }
-      final file = await profile.file;
-      final edited = await _core.addProxyChain(
-        yaml: await file.readAsString(),
-        exit: exit,
-        dialer: dialer,
+      final dialerFound =
+          configNames.contains(dialer) || dialerNode != null;
+      if (!dialerFound) {
+        throw MessageException(
+          currentAppLocalizations.proxyChainPickFront,
+        );
+      }
+      final finalName = await ProxyChainStore.add(
+        profileId: profileId,
         name: name,
         autoNumber: autoNumber,
-        group: group,
+        defaultName: currentAppLocalizations.proxyChainDefaultName,
+        exitName: exit,
+        exitNode: exitNode,
+        dialer: dialer,
+        dialerNode: dialerNode,
+        takenNames: configNames,
       );
-      await _saveEditedProfile(profile, edited.yaml);
-      return edited;
+      if (profileId == ref.read(currentProfileIdProvider)) {
+        ref
+            .read(setupActionProvider.notifier)
+            .applyProfileDebounce(silence: true);
+      }
+      return finalName;
     }, title: currentAppLocalizations.addProxyChain);
   }
 

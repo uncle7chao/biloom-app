@@ -42,6 +42,7 @@ export 'protocol.dart';
 export 'provider_reader.dart';
 export 'proxy.dart';
 export 'proxy_favorites.dart';
+export 'proxy_chains_store.dart';
 export 'proxy_region.dart';
 export 'render.dart';
 export 'request.dart';

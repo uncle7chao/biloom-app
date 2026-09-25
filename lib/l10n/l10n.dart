@@ -5994,6 +5994,16 @@ class AppLocalizations {
   String proxyChainCreated(Object name) {
     return Intl.message('Proxy chain "$name" created', name: 'proxyChainCreated', desc: '', args: [name]);
   }
+
+  /// `Only the 20 fastest nodes per profile are listed; use search to find more`
+  String get proxyChainPickerTopHint {
+    return Intl.message(
+      "Only the 20 fastest nodes per profile are listed; use search to find more",
+      name: 'proxyChainPickerTopHint',
+      desc: '',
+      args: [],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<AppLocalizations> {

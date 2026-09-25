@@ -751,5 +751,6 @@
   "proxyChainNodeReused": "В целевом профиле уже есть такой узел — используется «{name}»",
   "proxyChainDefaultName": "Цепочка прокси",
   "proxyChainNameLabel": "Название цепочки",
-  "proxyChainCreated": "Цепочка «{name}» создана"
+  "proxyChainCreated": "Цепочка «{name}» создана",
+  "proxyChainPickerTopHint": "Показаны только 20 самых быстрых узлов профиля; остальные ищите поиском"
 }

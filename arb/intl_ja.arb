@@ -751,5 +751,6 @@
   "proxyChainNodeReused": "対象プロファイルに同一ノードが既にあるため「{name}」を再利用します",
   "proxyChainDefaultName": "プロキシチェーン",
   "proxyChainNameLabel": "チェーン名",
-  "proxyChainCreated": "チェーン「{name}」を作成しました"
+  "proxyChainCreated": "チェーン「{name}」を作成しました",
+  "proxyChainPickerTopHint": "各プロファイルの最速20ノードのみ表示。それ以外は検索で見つけてください"
 }

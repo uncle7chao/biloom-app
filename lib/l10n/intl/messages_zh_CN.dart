@@ -1029,5 +1029,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "proxyChainDefaultName": MessageLookupByLibrary.simpleMessage("链式代理"),
     "proxyChainNameLabel": MessageLookupByLibrary.simpleMessage("链式代理名称"),
     "proxyChainCreated": m37,
+    "proxyChainPickerTopHint": MessageLookupByLibrary.simpleMessage("每份配置只显示测速最快的前 20 个节点，更多请用搜索"),
   };
 }

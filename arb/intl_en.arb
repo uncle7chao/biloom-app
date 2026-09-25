@@ -751,5 +751,6 @@
   "proxyChainNodeReused": "An identical node already exists in the target profile; reusing \"{name}\"",
   "proxyChainDefaultName": "Proxy Chain",
   "proxyChainNameLabel": "Chain name",
-  "proxyChainCreated": "Proxy chain \"{name}\" created"
+  "proxyChainCreated": "Proxy chain \"{name}\" created",
+  "proxyChainPickerTopHint": "Only the 20 fastest nodes per profile are listed; use search to find more"
 }

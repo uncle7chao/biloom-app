@@ -751,5 +751,6 @@
   "proxyChainNodeReused": "目标配置里已有相同节点，直接复用「{name}」",
   "proxyChainDefaultName": "链式代理",
   "proxyChainNameLabel": "链式代理名称",
-  "proxyChainCreated": "已创建链式代理「{name}」"
+  "proxyChainCreated": "已创建链式代理「{name}」",
+  "proxyChainPickerTopHint": "每份配置只显示测速最快的前 20 个节点，更多请用搜索"
 }

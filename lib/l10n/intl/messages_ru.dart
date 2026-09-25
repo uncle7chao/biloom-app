@@ -1455,5 +1455,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "proxyChainDefaultName": MessageLookupByLibrary.simpleMessage("Цепочка прокси"),
     "proxyChainNameLabel": MessageLookupByLibrary.simpleMessage("Название цепочки"),
     "proxyChainCreated": m37,
+    "proxyChainPickerTopHint": MessageLookupByLibrary.simpleMessage("Показаны только 20 самых быстрых узлов профиля; остальные ищите поиском"),
   };
 }

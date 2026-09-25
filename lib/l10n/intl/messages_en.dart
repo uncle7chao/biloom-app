@@ -1387,5 +1387,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "proxyChainDefaultName": MessageLookupByLibrary.simpleMessage("Proxy Chain"),
     "proxyChainNameLabel": MessageLookupByLibrary.simpleMessage("Chain name"),
     "proxyChainCreated": m37,
+    "proxyChainPickerTopHint": MessageLookupByLibrary.simpleMessage("Only the 20 fastest nodes per profile are listed; use search to find more"),
   };
 }

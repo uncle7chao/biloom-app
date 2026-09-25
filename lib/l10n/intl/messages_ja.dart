@@ -1171,5 +1171,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "proxyChainDefaultName": MessageLookupByLibrary.simpleMessage("プロキシチェーン"),
     "proxyChainNameLabel": MessageLookupByLibrary.simpleMessage("チェーン名"),
     "proxyChainCreated": m37,
+    "proxyChainPickerTopHint": MessageLookupByLibrary.simpleMessage("各プロファイルの最速20ノードのみ表示。それ以外は検索で見つけてください"),
   };
 }

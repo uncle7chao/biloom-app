@@ -393,6 +393,46 @@ class SetupAction extends _$SetupAction {
     if (scriptContent?.isNotEmpty == true) {
       rawConfig = await handleEvaluate(scriptContent!, rawConfig);
     }
+    // 链式代理：链不落在 profile 文件里（订阅更新冲不掉、原始配置保持纯净），
+    // 组装运行时配置时在这里注入 —— 链节点 + 固定「链式代理」分组（永远显性、
+    // 排在「自动选择」后面）。放在脚本覆写之后（脚本产出的节点同样可以做出口），
+    // 智能抗检测之前（链节点与快照注入的前置节点同样被补齐指纹）。
+    var chainGroupName = '';
+    var chainNames = const <String>[];
+    try {
+      final chains = (await ProxyChainStore.load())
+          .where((chain) => chain.profileId == profileId)
+          .toList();
+      // 无论有没有链都注入：分组本体在，页签才显性存在（空组由注入函数用
+      // DIRECT 兜底，不会让配置加载失败）。
+      final injected = injectProxyChains(
+        rawConfig,
+        chains: chains,
+        groupName: currentAppLocalizations.proxyChainDefaultName,
+        autoGroupName: '自动选择',
+        selectorGroupName: '节点选择',
+      );
+      chainGroupName = injected.groupName;
+      chainNames = injected.chainNames;
+    } catch (_) {
+      // 存储读挂了不能拖垮整份配置的组装 —— 没有链式代理，应用照常能跑。
+    }
+    // 自定义覆写模式会在 makeRealProfileTask 里**整体替换** proxy-groups ——
+    // 上面注入的组会被顶掉。把链组以 ProxyGroup 形态补进覆写列表末尾
+    // （用户自设计的分组里锚点组未必存在，固定追加在最后）。非 custom 模式
+    // 不会替换 proxy-groups，rawConfig 里注入的组原样生效。
+    if (chainGroupName.isNotEmpty &&
+        setupState.overwriteType == OverwriteType.custom &&
+        proxyGroups.isNotEmpty) {
+      proxyGroups.add(
+        ProxyGroup(
+          id: 0,
+          name: chainGroupName,
+          type: GroupType.Selector,
+          proxies: chainNames.isNotEmpty ? chainNames : const ['DIRECT'],
+        ),
+      );
+    }
     // 智能抗检测：给缺省指纹的节点补默认值/轮换覆盖值。放在覆写脚本之后，
     // 脚本产出的节点同样被补齐；只补缺省，显式值不动（原则见 smart_params.dart）。
     if (ref.read(smartAntidetectionStateProvider)) {
