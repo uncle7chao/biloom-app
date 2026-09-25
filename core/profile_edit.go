@@ -204,6 +204,9 @@ func parseProxyNodes(text string) ([]map[string]any, error) {
 		if len(nodes) == 0 {
 			return nil, errors.New("没有从分享链接里解析出节点")
 		}
+		// 链接没写 #名字 的条目由这里补自动名，而不是报「缺少 name」——
+		// V2rayN 等工具导出的链接经常不带片段，报错等于把锅甩给用户。
+		fillMissingShareNames(nodes)
 		return normalizeProxyMaps(nodes, "分享链接")
 	}
 	return parseProxyFragment(trimmed)
@@ -270,6 +273,86 @@ func parseProxyFragment(text string) ([]map[string]any, error) {
 		return nil, errors.New("YAML 片段里没找到节点：每条节点至少要有 name")
 	}
 	return nil, errors.New("YAML 片段里没找到节点")
+}
+
+// fillMissingShareNames 给没有 #名字 的分享链接条目补自动名。
+//
+// 分享链接的节点名来自 URL 的 #片段，V2rayN 等工具导出的链接经常不带，转换器
+// 会给出空名。按 sing-box 路线的同一套约定生成 `地址:端口`，批内重名追加
+// -2、-3（uniqueShareName 的规则）。连地址都没有的条目不硬编名字，交给后面的
+// 校验去报真实问题。
+func fillMissingShareNames(nodes []map[string]any) {
+	names := make(map[string]int, len(nodes))
+	for _, node := range nodes {
+		if name := scalarToString(node["name"]); name != "" {
+			names[name]++
+			continue
+		}
+		server := scalarToString(node["server"])
+		port := scalarToString(node["port"])
+		name := server
+		if port != "" {
+			if name == "" {
+				name = port
+			} else {
+				name = name + ":" + port
+			}
+		}
+		if name == "" {
+			continue
+		}
+		node["name"] = uniqueShareName(names, name)
+	}
+}
+
+// asString 把 YAML/JSON 解出来的标量转成TrimSpace 后的字符串 —— 端口在两条
+// 转换路线上分别是 int 和 string，判定键需要统一形态。
+func scalarToString(value any) string {
+	switch typed := value.(type) {
+	case string:
+		return strings.TrimSpace(typed)
+	case int:
+		return fmt.Sprintf("%d", typed)
+	case int64:
+		return fmt.Sprintf("%d", typed)
+	case float64:
+		return fmt.Sprintf("%d", int(typed))
+	}
+	return ""
+}
+
+// proxyIdentity 是「同一个节点」的判定键：协议|地址|端口|password|uuid。
+//
+// 名字去重拦不住「同一个节点换个名字再加一遍」—— 分享链接的名字来自 #片段、
+// 导出配置的名字是自动生成的，两者必然不同，但连的是同一台服务器。凭据参与
+// 判定：同一地址上不同账号（多用户端口）算不同节点，不误伤。
+func proxyIdentity(node map[string]any) string {
+	return strings.Join([]string{
+		strings.ToLower(scalarToString(node["type"])),
+		scalarToString(node["server"]),
+		scalarToString(node["port"]),
+		scalarToString(node["password"]),
+		scalarToString(node["uuid"]),
+	}, "|")
+}
+
+// collectProxyIdentities 收集配置里已有节点的身份键。
+func collectProxyIdentities(root *yamlv3.Node) (map[string]bool, error) {
+	identities := make(map[string]bool)
+	sequence, _ := mappingEntry(root, "proxies")
+	if sequence == nil || sequence.Kind != yamlv3.SequenceNode {
+		return identities, nil
+	}
+	var proxies []map[string]any
+	if err := sequence.Decode(&proxies); err != nil {
+		return nil, fmt.Errorf("读取节点列表失败: %w", err)
+	}
+	for _, node := range proxies {
+		if identity := proxyIdentity(node); identity != "||||" {
+			identities[identity] = true
+		}
+	}
+	return identities, nil
 }
 
 // normalizeProxyMaps 校验结构化条目 —— 分享链接转换器的输出已经是这个形状。
@@ -528,7 +611,15 @@ func handleAddProxyNodes(params *AddProxyNodesParams) (AddProxyNodesResult, erro
 	// 绝不能都留下；而自动改名会让节点列表里冒出用户没写过的名字（「HK 01 2」），
 	// 他之后再想找自己刚加的那条就找不到了。跳过并如实回报，用户自己决定要不要
 	// 先删旧的。
+	//
+	// 名字之外再做一层**身份去重**（协议+地址+端口+凭据）：同一个节点用分享链接
+	// 加过一次、又用导出配置加一次，两边的名字必然不同（片段名 vs 自动名），
+	// 光查名字拦不住，但它们连的是同一台服务器 —— 也跳过并如实回报。
 	used := existingNames(root)
+	identities, err := collectProxyIdentities(root)
+	if err != nil {
+		return AddProxyNodesResult{}, err
+	}
 	added := make([]string, 0, len(nodes))
 	skipped := make([]string, 0)
 	accepted := make([]map[string]any, 0, len(nodes))
@@ -539,6 +630,13 @@ func handleAddProxyNodes(params *AddProxyNodesParams) (AddProxyNodesResult, erro
 		if used[name] || pending[name] {
 			skipped = append(skipped, name)
 			continue
+		}
+		if identity := proxyIdentity(node); identity != "||||" {
+			if identities[identity] {
+				skipped = append(skipped, name)
+				continue
+			}
+			identities[identity] = true
 		}
 		pending[name] = true
 		added = append(added, name)
@@ -568,6 +666,163 @@ func handleAddProxyNodes(params *AddProxyNodesParams) (AddProxyNodesResult, erro
 		return AddProxyNodesResult{}, err
 	}
 	return AddProxyNodesResult{YAML: out, Added: added, Skipped: skipped}, nil
+}
+
+// handleRemoveProxyNodes 从配置里删除节点。
+//
+// 删节点不只是从 proxies 里抠掉几行：所有引用被删名字的地方都要同步清理，漏掉
+// 任何一处整份配置加载失败 ——
+//   - 策略组的 proxies 成员（成员被删空时补 DIRECT 保住组的合法性）；
+//   - 规则的出口（规则可以直接指向节点名；兜底的 MATCH 规则改写回 DIRECT，
+//     其余规则删掉）；
+//   - listeners 的 proxy 字段（删掉该字段让它回落默认行为，不整条删 listener）。
+//
+// 只动 proxies/proxy-groups/rules/listeners 四处，注释、排版与其余内容原样保留
+//（同 handleAddProxyNodes 的文档级编辑模式）。没找到的名字如实回传 missing。
+func handleRemoveProxyNodes(params *RemoveProxyNodesParams) (RemoveProxyNodesResult, error) {
+	requested := make(map[string]bool, len(params.Names))
+	for _, name := range params.Names {
+		if trimmed := strings.TrimSpace(name); trimmed != "" {
+			requested[trimmed] = true
+		}
+	}
+	if len(requested) == 0 {
+		return RemoveProxyNodesResult{}, errors.New("没有指定要删除的节点")
+	}
+
+	doc, root, err := profileDocument([]byte(params.YAML))
+	if err != nil {
+		return RemoveProxyNodesResult{}, err
+	}
+
+	// ① proxies：主体。
+	removedSet := make(map[string]bool, len(requested))
+	if proxies, _ := mappingEntry(root, "proxies"); proxies != nil &&
+		proxies.Kind == yamlv3.SequenceNode {
+		kept := make([]*yamlv3.Node, 0, len(proxies.Content))
+		for _, item := range proxies.Content {
+			name := scalarValue(item, "name")
+			if requested[name] {
+				removedSet[name] = true
+				continue
+			}
+			kept = append(kept, item)
+		}
+		proxies.Content = kept
+	}
+
+	// ② 策略组成员。
+	if groups, _ := mappingEntry(root, "proxy-groups"); groups != nil &&
+		groups.Kind == yamlv3.SequenceNode {
+		for _, group := range groups.Content {
+			members, _ := mappingEntry(group, "proxies")
+			if members == nil || members.Kind != yamlv3.SequenceNode {
+				continue
+			}
+			kept := make([]*yamlv3.Node, 0, len(members.Content))
+			changed := false
+			for _, member := range members.Content {
+				if member.Kind == yamlv3.ScalarNode && requested[member.Value] {
+					changed = true
+					continue
+				}
+				kept = append(kept, member)
+			}
+			if changed && len(kept) == 0 {
+				// Clash 要求组的 proxies 非空；删空了就补 DIRECT 兜底。
+				kept = append(kept, &yamlv3.Node{
+					Kind:  yamlv3.ScalarNode,
+					Tag:   "!!str",
+					Value: "DIRECT",
+				})
+			}
+			if changed {
+				members.Content = kept
+			}
+		}
+	}
+
+	// ③ 规则出口。规则形态：`TYPE,payload,target[,no-resolve]` 或 `MATCH,target`，
+	// 目标段总是倒数第一段（有 no-resolve 时倒数第二段）。逻辑规则（AND/OR/NOT）
+	// 的 payload 自带逗号，但目标同样是最后一段，这套判定对它们也成立。
+	if rules, _ := mappingEntry(root, "rules"); rules != nil &&
+		rules.Kind == yamlv3.SequenceNode {
+		kept := make([]*yamlv3.Node, 0, len(rules.Content))
+		for _, rule := range rules.Content {
+			if rule.Kind != yamlv3.ScalarNode {
+				kept = append(kept, rule)
+				continue
+			}
+			parts := strings.Split(rule.Value, ",")
+			target := parts[len(parts)-1]
+			if target == "no-resolve" && len(parts) >= 3 {
+				target = parts[len(parts)-2]
+			}
+			if !requested[strings.TrimSpace(target)] {
+				kept = append(kept, rule)
+				continue
+			}
+			if strings.HasPrefix(strings.TrimSpace(rule.Value), "MATCH,") {
+				// 兜底规则不能删（删了所有未命中流量交给内核默认行为），
+				// 改回 DIRECT 保住语义。
+				kept = append(kept, &yamlv3.Node{
+					Kind:  yamlv3.ScalarNode,
+					Tag:   "!!str",
+					Value: "MATCH,DIRECT",
+				})
+			}
+			// 其余指向被删节点的规则直接去掉：那条规则描述的分流对象已经不存在。
+		}
+		rules.Content = kept
+	}
+
+	// ④ listeners 的 proxy 字段。
+	if listeners, _ := mappingEntry(root, "listeners"); listeners != nil &&
+		listeners.Kind == yamlv3.SequenceNode {
+		for _, listener := range listeners.Content {
+			if proxyNode, _ := mappingEntry(listener, "proxy"); proxyNode != nil &&
+				requested[proxyNode.Value] {
+				removeMappingValue(listener, "proxy")
+			}
+		}
+	}
+
+	removed := make([]string, 0, len(requested))
+	missing := make([]string, 0)
+	for _, name := range params.Names {
+		trimmed := strings.TrimSpace(name)
+		if trimmed == "" {
+			continue
+		}
+		if removedSet[trimmed] {
+			if !containsString(removed, trimmed) {
+				removed = append(removed, trimmed)
+			}
+			continue
+		}
+		if !containsString(missing, trimmed) {
+			missing = append(missing, trimmed)
+		}
+	}
+	if len(removed) == 0 {
+		return RemoveProxyNodesResult{}, errors.New(
+			"配置里找不到要删除的节点；请先刷新面板",
+		)
+	}
+	out, err := marshalDocument(doc)
+	if err != nil {
+		return RemoveProxyNodesResult{}, err
+	}
+	return RemoveProxyNodesResult{YAML: out, Removed: removed, Missing: missing}, nil
+}
+
+func containsString(list []string, target string) bool {
+	for _, item := range list {
+		if item == target {
+			return true
+		}
+	}
+	return false
 }
 
 // scalarValue 读一个标量字段，取不到时返回空串。

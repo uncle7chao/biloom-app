@@ -388,3 +388,126 @@ func TestPatchMissingDefaultsHealsUngroupedProxies(t *testing.T) {
 		}
 	}
 }
+
+// 分享链接不带 #名字（V2rayN 导出的常态）时自动生成 `地址:端口`，而不是报
+// 「缺少 name」把用户挡在门外。
+func TestParseShareLinkWithoutFragmentGetsGeneratedName(t *testing.T) {
+	nodes, err := parseProxyNodes(
+		"hysteria2://letmein@example.com:8443/?insecure=1&sni=real.example.com",
+	)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(nodes) != 1 {
+		t.Fatalf("want 1 node, got %d", len(nodes))
+	}
+	name, _ := nodes[0]["name"].(string)
+	if name != "example.com:8443" {
+		t.Fatalf("generated name = %q, want example.com:8443", name)
+	}
+}
+
+// 同一个节点换个名字再加一遍（分享链接的名字来自 #片段、导出配置的名字是自动
+// 生成的，必然不同）要按身份（协议+地址+端口+凭据）识别为重复并跳过。
+func TestAddProxyNodesSkipsSameNodeUnderDifferentNames(t *testing.T) {
+	result, err := handleAddProxyNodes(&AddProxyNodesParams{
+		YAML: healGroupsFixture,
+		Nodes: `- name: 改个名字还是它
+  type: ss
+  server: 1.2.3.4
+  port: 8388
+  cipher: aes-256-gcm
+  password: pass
+- name: 别的机器
+  type: ss
+  server: 9.9.9.9
+  port: 8388
+  cipher: aes-256-gcm
+  password: pass
+`,
+	})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(result.Added) != 1 || result.Added[0] != "别的机器" {
+		t.Fatalf("added = %v, want only 别的机器", result.Added)
+	}
+	if len(result.Skipped) != 1 || result.Skipped[0] != "改个名字还是它" {
+		t.Fatalf("skipped = %v, want 改个名字还是它", result.Skipped)
+	}
+}
+
+// removeFixture：HK-01 同时被组员、规则引用；自动选择组只有它一个成员；
+// US-01 被 no-resolve 规则引用 —— 覆盖删除时要同步清理的所有引用形态。
+const removeFixture = `mixed-port: 7890
+proxies:
+  - name: HK-01
+    type: ss
+    server: 1.2.3.4
+    port: 8388
+    cipher: aes-256-gcm
+    password: pass
+  - name: US-01
+    type: ss
+    server: 5.6.7.8
+    port: 8388
+    cipher: aes-256-gcm
+    password: pass
+proxy-groups:
+  - name: 节点选择
+    type: select
+    proxies:
+      - HK-01
+      - US-01
+  - name: 自动选择
+    type: url-test
+    proxies:
+      - HK-01
+rules:
+  - DOMAIN-SUFFIX,example.com,HK-01
+  - IP-CIDR,1.1.1.1/32,US-01,no-resolve
+  - MATCH,节点选择
+`
+
+func TestRemoveProxyNodesCleansUpReferences(t *testing.T) {
+	result, err := handleRemoveProxyNodes(&RemoveProxyNodesParams{
+		YAML:  removeFixture,
+		Names: []string{"HK-01", "US-01", "不存在的"},
+	})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(result.Removed) != 2 {
+		t.Fatalf("removed = %v, want HK-01 + US-01", result.Removed)
+	}
+	if len(result.Missing) != 1 || result.Missing[0] != "不存在的" {
+		t.Fatalf("missing = %v, want 不存在的", result.Missing)
+	}
+	shape := decodeShape(t, result.YAML)
+	if len(shape.Proxies) != 0 {
+		t.Fatalf("proxies not emptied: %+v", shape.Proxies)
+	}
+	// 两个成员都删了，组被删空 → 补 DIRECT 兜底。
+	selectMembers := groupMembers(t, shape, "节点选择")
+	if len(selectMembers) != 1 || !selectMembers["DIRECT"] {
+		t.Fatalf("节点选择 members = %v, want only DIRECT", selectMembers)
+	}
+	autoMembers := groupMembers(t, shape, "自动选择")
+	if len(autoMembers) != 1 || !autoMembers["DIRECT"] {
+		t.Fatalf("自动选择 members = %v, want only DIRECT", autoMembers)
+	}
+	// 指向被删节点的规则删掉；MATCH 兜底原样保留。
+	if len(shape.Rules) != 1 || shape.Rules[0] != "MATCH,节点选择" {
+		t.Fatalf("rules = %v, want only MATCH,节点选择", shape.Rules)
+	}
+}
+
+// 一个都没删到时明确报错，而不是返回一份没变化还假装成功的 YAML。
+func TestRemoveProxyNodesErrorsWhenNothingRemoved(t *testing.T) {
+	if _, err := handleRemoveProxyNodes(&RemoveProxyNodesParams{
+		YAML:  removeFixture,
+		Names: []string{"不存在的"},
+	}); err == nil {
+		t.Fatal("expected an error when nothing was removed")
+	}
+}

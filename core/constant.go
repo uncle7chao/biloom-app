@@ -68,6 +68,21 @@ type AddProxyNodesResult struct {
 	Skipped []string `json:"skipped"`
 }
 
+// RemoveProxyNodesParams 是 removeProxyNodes 的入参。Names 是要删除的节点名列表。
+type RemoveProxyNodesParams struct {
+	YAML  string   `json:"yaml"`
+	Names []string `json:"names"`
+}
+
+// RemoveProxyNodesResult 回传删除结果：Removed 是真删掉的，Missing 是配置里
+// 找不到的（多半是面板数据已过期）。引用清理（组员/规则/listeners）在内核同步做，
+// 调用方拿到的 YAML 一定是加载得动的。
+type RemoveProxyNodesResult struct {
+	YAML    string   `json:"yaml"`
+	Removed []string `json:"removed"`
+	Missing []string `json:"missing"`
+}
+
 // ReadProfileTargetsParams 是 readProfileTargets 的入参。
 //
 // 链式代理的候选名单只能从**配置本身**读：节点名与策略组名共用 Clash 的命名空间，
@@ -193,6 +208,7 @@ const (
 	clearEffectMethod              CoreMethod = "clearEffect"
 	convertSubscriptionMethod      CoreMethod = "convertSubscription"
 	addProxyNodesMethod            CoreMethod = "addProxyNodes"
+	removeProxyNodesMethod         CoreMethod = "removeProxyNodes"
 	readProfileTargetsMethod       CoreMethod = "readProfileTargets"
 	setProxyChainMethod            CoreMethod = "setProxyChain"
 )

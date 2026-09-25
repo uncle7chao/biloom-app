@@ -298,6 +298,14 @@ var methodHandlers = map[CoreMethod]methodHandler{
 		}
 		response.success(result)
 	}),
+	removeProxyNodesMethod: withArguments(func(params *RemoveProxyNodesParams, response MethodResponse) {
+		result, err := handleRemoveProxyNodes(params)
+		if err != nil {
+			response.failure("remove_proxy_nodes_error", err.Error(), nil)
+			return
+		}
+		response.success(result)
+	}),
 	readProfileTargetsMethod: withArguments(func(params *ReadProfileTargetsParams, response MethodResponse) {
 		result, err := handleReadProfileTargets(params)
 		if err != nil {
