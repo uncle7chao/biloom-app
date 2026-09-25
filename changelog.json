@@ -2,6 +2,57 @@
   "schemaVersion": 2,
   "versions": [
     {
+      "version": "01.00.11",
+      "tag": "v01.00.11",
+      "date": "2026-09-25",
+      "prerelease": false,
+      "groups": [
+        {
+          "type": "fix",
+          "entries": [
+            {
+              "id": "07e18b2",
+              "text": "Subscription update failures are now visible: the profile card shows a red badge with the error detail instead of failing silently in the background"
+            },
+            {
+              "id": "07e18b2",
+              "text": "An empty proxies page after a failed group fetch now shows an error message instead of a silent blank screen"
+            }
+          ]
+        },
+        {
+          "type": "feat",
+          "entries": [
+            {
+              "id": "9d6d999",
+              "scope": "core",
+              "text": "New updateProxyNode kernel method: edit a node in place; the name is kept as the anchor for groups, rules and chains, the entry is replaced as a whole and identity collisions with other nodes are rejected"
+            },
+            {
+              "id": "1ab83bc",
+              "text": "Nodes can be edited from the manage-nodes sheet: the form is prefilled with the node parameters, protocol and name are locked while editing"
+            },
+            {
+              "id": "1ab83bc",
+              "text": "Proxy favorites: mark nodes from the card context menu and they are pinned to the top of every proxy list (per profile)"
+            },
+            {
+              "id": "1ab83bc",
+              "text": "Scheduled auto exit test: once a day the app re-tests nodes without fresh landing records; can be turned off in the proxies settings"
+            },
+            {
+              "id": "1ab83bc",
+              "text": "Tray menu now supports switching nodes per group on Windows (previously macOS only), capped at 60 entries per group with the current selection pinned"
+            },
+            {
+              "id": "1ab83bc",
+              "text": "The add-proxy-chain sheet gains a target profile picker so exit nodes can be chosen from any profile, not only the currently selected one"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "version": "01.00.10",
       "tag": "v01.00.10",
       "date": "2026-09-25",

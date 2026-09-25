@@ -1,5 +1,21 @@
 # Changelog
 
+## v01.00.11 (2026-09-25)
+
+**Bug Fixes**
+
+- Subscription update failures are now visible: the profile card shows a red badge with the error detail instead of failing silently in the background (07e18b2)
+- An empty proxies page after a failed group fetch now shows an error message instead of a silent blank screen (07e18b2)
+
+**Features**
+
+- **core** New updateProxyNode kernel method: edit a node in place; the name is kept as the anchor for groups, rules and chains, the entry is replaced as a whole and identity collisions with other nodes are rejected (9d6d999)
+- Nodes can be edited from the manage-nodes sheet: the form is prefilled with the node parameters, protocol and name are locked while editing (1ab83bc)
+- Proxy favorites: mark nodes from the card context menu and they are pinned to the top of every proxy list (per profile) (1ab83bc)
+- Scheduled auto exit test: once a day the app re-tests nodes without fresh landing records; can be turned off in the proxies settings (1ab83bc)
+- Tray menu now supports switching nodes per group on Windows (previously macOS only), capped at 60 entries per group with the current selection pinned (1ab83bc)
+- The add-proxy-chain sheet gains a target profile picker so exit nodes can be chosen from any profile, not only the currently selected one (1ab83bc)
+
 ## v01.00.10 (2026-09-25)
 
 **Bug Fixes**
