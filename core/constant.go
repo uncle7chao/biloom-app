@@ -83,6 +83,21 @@ type RemoveProxyNodesResult struct {
 	Missing []string `json:"missing"`
 }
 
+// UpdateProxyNodeParams 是 updateProxyNodes 的入参。Name 是被编辑节点的
+// 当前名字（定位锚点），Node 是编辑后的单节点片段（JSON 或 YAML）。
+type UpdateProxyNodeParams struct {
+	YAML string `json:"yaml"`
+	Name string `json:"name"`
+	Node string `json:"node"`
+}
+
+// UpdateProxyNodeResult 回传更新结果。名字是策略组成员、规则出口、链式引用的
+// 共同锚点，本方法不允许改名 —— 想改名走「删除 + 重新添加」。
+type UpdateProxyNodeResult struct {
+	YAML    string `json:"yaml"`
+	Updated string `json:"updated"`
+}
+
 // ReadProfileTargetsParams 是 readProfileTargets 的入参。
 //
 // 链式代理的候选名单只能从**配置本身**读：节点名与策略组名共用 Clash 的命名空间，
@@ -106,6 +121,9 @@ type ProfileTarget struct {
 type ProfileTargets struct {
 	Proxies []ProfileTarget `json:"proxies"`
 	Groups  []ProfileTarget `json:"groups"`
+	// Nodes 是 proxies 段的**完整参数**（与 Proxies 同序同名）。编辑节点要
+	// 预填表单，光有名字/类型不够 —— 把原样参数带回给界面。
+	Nodes []map[string]any `json:"nodes,omitempty"`
 }
 
 // SetProxyChainParams 是 setProxyChain 的入参。
@@ -209,6 +227,7 @@ const (
 	convertSubscriptionMethod      CoreMethod = "convertSubscription"
 	addProxyNodesMethod            CoreMethod = "addProxyNodes"
 	removeProxyNodesMethod         CoreMethod = "removeProxyNodes"
+	updateProxyNodeMethod          CoreMethod = "updateProxyNode"
 	readProfileTargetsMethod       CoreMethod = "readProfileTargets"
 	setProxyChainMethod            CoreMethod = "setProxyChain"
 )

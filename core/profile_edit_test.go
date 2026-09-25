@@ -511,3 +511,100 @@ func TestRemoveProxyNodesErrorsWhenNothingRemoved(t *testing.T) {
 		t.Fatal("expected an error when nothing was removed")
 	}
 }
+
+// ---- updateProxyNode ----
+
+// 正常路径：换地址/端口/密码后，名字所在条目整体被替换，组员与规则引用原样
+// 保留（名字没动），其余内容（注释、未知顶层键）不动。
+func TestUpdateProxyNodeReplacesEntry(t *testing.T) {
+	result, err := handleUpdateProxyNode(&UpdateProxyNodeParams{
+		YAML: editableProfileFixture,
+		Name: "HK-01",
+		Node: `{"name":"HK-01","type":"ss","server":"5.6.7.8","port":9999,"cipher":"aes-256-gcm","password":"newpass"}`,
+	})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if result.Updated != "HK-01" {
+		t.Fatalf("updated = %q, want HK-01", result.Updated)
+	}
+	shape := decodeShape(t, result.YAML)
+	if len(shape.Proxies) != 1 {
+		t.Fatalf("proxies = %+v, want 1 entry", shape.Proxies)
+	}
+	proxy := shape.Proxies[0]
+	if proxy["server"] != "5.6.7.8" || proxy["port"] != 9999 {
+		t.Fatalf("proxy not updated: %+v", proxy)
+	}
+	// 旧字段必须真的没了（整体替换而不是字段合并）。
+	if _, ok := proxy["cipher"]; !ok {
+		t.Fatalf("cipher should be kept from the new fragment: %+v", proxy)
+	}
+	// 引用原样。
+	selectMembers := groupMembers(t, shape, "我的选择")
+	if len(selectMembers) != 2 || !selectMembers["HK-01"] {
+		t.Fatalf("我的选择 members = %v, want HK-01 + DIRECT", selectMembers)
+	}
+	// 注释与未知顶层键仍在。
+	if !strings.Contains(result.YAML, "# 我的配置") ||
+		!strings.Contains(result.YAML, "bi-loom-custom-key") {
+		t.Fatal("comments or unknown top-level keys were dropped")
+	}
+}
+
+// 名字是组员/规则/链式引用的锚点，编辑不允许改名。
+func TestUpdateProxyNodeRejectsRename(t *testing.T) {
+	if _, err := handleUpdateProxyNode(&UpdateProxyNodeParams{
+		YAML: editableProfileFixture,
+		Name: "HK-01",
+		Node: `{"name":"HK-02","type":"ss","server":"1.2.3.4","port":8388,"cipher":"aes-256-gcm","password":"pass"}`,
+	}); err == nil {
+		t.Fatal("expected an error when renaming via update")
+	}
+}
+
+// 编辑后与另一个节点的 身份键 完全相同 → 拒绝（变相造重复节点）。
+func TestUpdateProxyNodeRejectsIdentityCollision(t *testing.T) {
+	fixture := `# 我的配置，注释要留着
+mixed-port: 7890
+proxies:
+  - name: HK-01
+    type: ss
+    server: 1.2.3.4
+    port: 8388
+    cipher: aes-256-gcm
+    password: pass
+  - name: HK-01-B
+    type: ss
+    server: 5.6.7.8
+    port: 9999
+    cipher: aes-256-gcm
+    password: newpass
+proxy-groups:
+  - name: 我的选择
+    type: select
+    proxies:
+      - HK-01
+      - DIRECT
+rules:
+  - MATCH,我的选择
+`
+	if _, err := handleUpdateProxyNode(&UpdateProxyNodeParams{
+		YAML: fixture,
+		Name: "HK-01",
+		Node: `{"name":"HK-01","type":"ss","server":"5.6.7.8","port":9999,"cipher":"aes-256-gcm","password":"newpass"}`,
+	}); err == nil {
+		t.Fatal("expected an identity collision error")
+	}
+}
+
+// 找不到目标节点时明确报错（面板数据过期场景），而不是返回没变化的 YAML。
+func TestUpdateProxyNodeErrorsWhenMissing(t *testing.T) {
+	if _, err := handleUpdateProxyNode(&UpdateProxyNodeParams{
+		YAML: editableProfileFixture,
+		Name: "不存在的",
+		Node: `{"name":"不存在的","type":"ss","server":"1.2.3.4","port":8388}`,
+	}); err == nil {
+		t.Fatal("expected an error when the node is missing")
+	}
+}

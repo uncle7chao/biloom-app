@@ -306,6 +306,14 @@ var methodHandlers = map[CoreMethod]methodHandler{
 		}
 		response.success(result)
 	}),
+	updateProxyNodeMethod: withArguments(func(params *UpdateProxyNodeParams, response MethodResponse) {
+		result, err := handleUpdateProxyNode(params)
+		if err != nil {
+			response.failure("update_proxy_node_error", err.Error(), nil)
+			return
+		}
+		response.success(result)
+	}),
 	readProfileTargetsMethod: withArguments(func(params *ReadProfileTargetsParams, response MethodResponse) {
 		result, err := handleReadProfileTargets(params)
 		if err != nil {

@@ -816,6 +816,94 @@ func handleRemoveProxyNodes(params *RemoveProxyNodesParams) (RemoveProxyNodesRes
 	return RemoveProxyNodesResult{YAML: out, Removed: removed, Missing: missing}, nil
 }
 
+// handleUpdateProxyNode 原地更新一个节点的参数。
+//
+// 编辑的语义是「参数变了、身份没变」：策略组成员、规则出口、链式引用全都
+// 用**名字**锚定这个节点，所以名字不许改（想改名 = 删除 + 重新添加，那是
+// 两个动作、两次确认，混进编辑里用户会以为引用还在）。实现上用新片段
+// **整体替换**旧条目而不是字段级合并 —— 合并救不了「用户删掉了一个字段」
+// 的场景（比如去掉 ws-opts），整体替换语义最直白：编辑器里看到什么，落盘
+// 就是什么。
+//
+// 只动 proxies 里这一个条目，注释、排版与其余内容原样保留（文档级编辑模式）。
+func handleUpdateProxyNode(params *UpdateProxyNodeParams) (UpdateProxyNodeResult, error) {
+	name := strings.TrimSpace(params.Name)
+	if name == "" {
+		return UpdateProxyNodeResult{}, errors.New("没有指定要更新的节点")
+	}
+	doc, root, err := profileDocument([]byte(params.YAML))
+	if err != nil {
+		return UpdateProxyNodeResult{}, err
+	}
+	nodes, err := parseProxyNodes(params.Node)
+	if err != nil {
+		return UpdateProxyNodeResult{}, err
+	}
+	if len(nodes) != 1 {
+		return UpdateProxyNodeResult{}, errors.New(
+			"节点片段必须恰好包含一个节点",
+		)
+	}
+	node := nodes[0]
+	newName := strings.TrimSpace(scalarToString(node["name"]))
+	if newName != name {
+		return UpdateProxyNodeResult{}, errors.New(
+			"不允许在编辑中修改节点名；改名请删除后重新添加",
+		)
+	}
+
+	// 身份去重：编辑后如果和另一个节点的 协议|地址|端口|凭据 完全相同，
+	// 等于变相造出一个重复节点 —— 同名会加载失败，不同名则列表里出现两条
+	// 分不清的记录。排除自身后再查。
+	var existing []map[string]any
+	if proxies, _ := mappingEntry(root, "proxies"); proxies != nil &&
+		proxies.Kind == yamlv3.SequenceNode {
+		if err := proxies.Decode(&existing); err != nil {
+			return UpdateProxyNodeResult{}, fmt.Errorf("读取节点列表失败: %w", err)
+		}
+	}
+	if identity := proxyIdentity(node); identity != "||||" {
+		for _, other := range existing {
+			if strings.TrimSpace(scalarToString(other["name"])) == name {
+				continue
+			}
+			if proxyIdentity(other) == identity {
+				return UpdateProxyNodeResult{}, errors.New(
+					"另一个节点已是相同的地址/端口/凭据；请直接编辑那个节点",
+				)
+			}
+		}
+	}
+
+	proxies, _ := mappingEntry(root, "proxies")
+	if proxies == nil || proxies.Kind != yamlv3.SequenceNode {
+		return UpdateProxyNodeResult{}, errors.New("配置里没有 proxies 段")
+	}
+	index := -1
+	for i, item := range proxies.Content {
+		if scalarValue(item, "name") == name {
+			index = i
+			break
+		}
+	}
+	if index == -1 {
+		return UpdateProxyNodeResult{}, errors.New(
+			"配置里找不到要更新的节点；请先刷新面板",
+		)
+	}
+	children, err := valueNodes([]map[string]any{node})
+	if err != nil {
+		return UpdateProxyNodeResult{}, err
+	}
+	proxies.Content[index] = children[0]
+
+	out, err := marshalDocument(doc)
+	if err != nil {
+		return UpdateProxyNodeResult{}, err
+	}
+	return UpdateProxyNodeResult{YAML: out, Updated: name}, nil
+}
+
 func containsString(list []string, target string) bool {
 	for _, item := range list {
 		if item == target {
@@ -872,19 +960,25 @@ func handleReadProfileTargets(params *ReadProfileTargetsParams) (ProfileTargets,
 	result := ProfileTargets{
 		Proxies: []ProfileTarget{},
 		Groups:  []ProfileTarget{},
+		Nodes:   []map[string]any{},
 	}
 	if proxies, _ := mappingEntry(root, "proxies"); proxies != nil &&
 		proxies.Kind == yamlv3.SequenceNode {
-		for _, item := range proxies.Content {
-			name := scalarValue(item, "name")
+		var nodes []map[string]any
+		if err := proxies.Decode(&nodes); err != nil {
+			return ProfileTargets{}, fmt.Errorf("读取节点列表失败: %w", err)
+		}
+		for _, node := range nodes {
+			name := strings.TrimSpace(scalarToString(node["name"]))
 			if name == "" {
 				continue
 			}
 			result.Proxies = append(result.Proxies, ProfileTarget{
 				Name:   name,
-				Type:   scalarValue(item, "type"),
-				Dialer: scalarValue(item, "dialer-proxy"),
+				Type:   scalarToString(node["type"]),
+				Dialer: scalarToString(node["dialer-proxy"]),
 			})
+			result.Nodes = append(result.Nodes, node)
 		}
 	}
 	if groups, _ := mappingEntry(root, "proxy-groups"); groups != nil &&
