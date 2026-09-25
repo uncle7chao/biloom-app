@@ -1,5 +1,46 @@
 part of '../state.dart';
 
+/// 各订阅配置最近一次**自动/手动更新失败**的记录（profileId 字符串 → 状态）。
+///
+/// 自动更新在后台静默跑，失败以前只有一行日志，订阅过期要等用户手动更新
+/// 才暴露（2026-09-25 自检定性）。持久层在 `common/profile_update_status.dart`
+/// （shared_preferences），这里只做两件事：启动时读一次、更新成败时增删。
+///
+/// 手写 `AsyncNotifierProvider` 不加 `@riverpod` 注解：生成器环境故障的老
+/// 问题（见 `state/proxies.dart` 里 ProxyExitStore 同样的处理）。
+class ProfileUpdateStatuses
+    extends AsyncNotifier<Map<String, ProfileUpdateStatus>> {
+  @override
+  Future<Map<String, ProfileUpdateStatus>> build() =>
+      ProfileUpdateStatusStore.load();
+
+  void recordFailure(int profileId, Object error) {
+    final next = Map<String, ProfileUpdateStatus>.from(state.value ?? const {});
+    next[profileId.toString()] = ProfileUpdateStatus(
+      error: compactError(error),
+      at: DateTime.now().millisecondsSinceEpoch,
+    );
+    state = AsyncData(next);
+    unawaited(ProfileUpdateStatusStore.save(next));
+  }
+
+  void clear(int profileId) {
+    final current = state.value;
+    if (current == null || !current.containsKey(profileId.toString())) {
+      return;
+    }
+    final next = Map<String, ProfileUpdateStatus>.from(current)
+      ..remove(profileId.toString());
+    state = AsyncData(next);
+    unawaited(ProfileUpdateStatusStore.save(next));
+  }
+}
+
+final profileUpdateStatusesProvider =
+    AsyncNotifierProvider<ProfileUpdateStatuses, Map<String, ProfileUpdateStatus>>(
+      ProfileUpdateStatuses.new,
+    );
+
 @riverpod
 ProfilesState profilesState(Ref ref) {
   final currentProfileId = ref.watch(currentProfileIdProvider);

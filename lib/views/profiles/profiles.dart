@@ -289,6 +289,9 @@ class ProfileItem extends ConsumerWidget {
         SubscriptionInfoView(subscriptionInfo: subscriptionInfo),
         const SizedBox(height: 6),
       ],
+      // 最近一次订阅更新失败的红标。自动更新在后台静默跑，没有这行的话，
+      // 订阅过期/被墙要等用户发现节点全挂才暴露。点开看完整错误。
+      _ProfileUpdateErrorText(profileId: profile.id),
       LastUpdateTimeText(
         lastUpdateDate: profile.lastUpdateDate,
         style: context.textTheme.bodySmall?.toLighter,
@@ -530,6 +533,90 @@ class _ProfileCardTitle extends StatelessWidget {
         const SizedBox(height: 6),
         ...info,
       ],
+    );
+  }
+}
+
+/// 订阅卡片上的「上次更新失败」红标行。
+///
+/// 数据在 `profileUpdateStatusesProvider`（shared_preferences 持久化），
+/// 成功更新即清除。点击弹窗看完整错误与时间 —— 角标只负责「有问题」，
+/// 具体哪里有问题必须一次点击就能看到，不能让用户去翻日志。
+class _ProfileUpdateErrorText extends ConsumerWidget {
+  const _ProfileUpdateErrorText({required this.profileId});
+
+  final int profileId;
+
+  Future<void> _showDetail(BuildContext context, ProfileUpdateStatus status) {
+    return dialogs.showCommonDialog<void>(
+      context: context,
+      child: Builder(
+        builder: (context) {
+          final dateTime = DateTime.fromMillisecondsSinceEpoch(status.at);
+          return CommonDialog(
+            backgroundColor: context.colorScheme.surfaceContainerLow,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            title: context.appLocalizations.updateFailedTip,
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text(context.appLocalizations.confirm),
+              ),
+            ],
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  dateTime.toString().split('.').first,
+                  style: context.textTheme.bodySmall?.toLighter,
+                ),
+                const SizedBox(height: 8),
+                Text(status.error),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final status = ref.watch(
+      profileUpdateStatusesProvider
+          .select((value) => value.value?[profileId.toString()]),
+    );
+    if (status == null) {
+      return const SizedBox.shrink();
+    }
+    final appLocalizations = context.appLocalizations;
+    return Padding(
+      padding: const EdgeInsets.only(top: 4),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(8),
+        onTap: () {
+          unawaited(_showDetail(context, status));
+        },
+        child: Row(
+          children: [
+            Icon(Icons.error_outline, size: 14, color: context.colorScheme.error),
+            const SizedBox(width: 4),
+            Flexible(
+              child: Text(
+                appLocalizations.updateFailedTip,
+                style: context.textTheme.bodySmall?.copyWith(
+                  color: context.colorScheme.error,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

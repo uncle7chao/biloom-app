@@ -51,6 +51,36 @@ class ProxiesAction extends _$ProxiesAction {
     debouncer.call(FunctionTag.updateGroups, updateGroups, duration: duration);
   }
 
+  /// 每日一次的自动测落地（application.dart 的定时器调）。
+  ///
+  /// 只对**当前配置**的节点跑；testBatch 自己会跳过库里还有新鲜记录的节点、
+  /// 跳过计费网络，所以常态下一轮只有零星几个待测。开关关闭 / 内核未连接 /
+  /// 没有当前配置时静默跳过 —— 这是后台任务，失败与跳过都不该打扰用户。
+  Future<void> scheduledExitTest() async {
+    if (!await loadAutoExitTestEnabled()) {
+      return;
+    }
+    if (ref.read(coreStatusProvider) != CoreStatus.connected) {
+      return;
+    }
+    final profileId = ref.read(currentProfileIdProvider);
+    if (profileId == null) {
+      return;
+    }
+    try {
+      final targets = await ref
+          .read(profilesActionProvider.notifier)
+          .readProfileTargets(profileId);
+      final names = targets.proxies.map((target) => target.name).toSet();
+      await ref.read(proxyExitProvider.notifier).testBatch(names);
+    } catch (e) {
+      commonPrint.log(
+        'scheduled exit test failed: $e',
+        logLevel: LogLevel.warning,
+      );
+    }
+  }
+
   void changeProxyDebounce(String groupName, String proxyName) {
     _pendingSelectedRollback.putIfAbsent(
       groupName,
@@ -75,6 +105,7 @@ class ProxiesAction extends _$ProxiesAction {
   Future<void> updateGroups() async {
     try {
       commonPrint.log('updateGroups');
+      Object? lastError;
       ref.read(groupsProvider.notifier).value = await retry(
         task: () async {
           final sortType = ref.read(
@@ -95,6 +126,7 @@ class ProxiesAction extends _$ProxiesAction {
               defaultTestUrl: testUrl,
             );
           } catch (e) {
+            lastError = e;
             commonPrint.log(
               'updateGroups error: $e',
               logLevel: coreFailureLogLevel(e),
@@ -104,6 +136,17 @@ class ProxiesAction extends _$ProxiesAction {
         },
         retryIf: (res) => res.isEmpty,
       );
+      // 重试后仍空且确有异常，不能静默 —— 那在 UI 上就是「代理页一片空白，
+      // 不知道为什么」。这里给一条用户可见的提示（自检 2026-09-25 定性）。
+      // 空列表但无异常是合法状态（配置本来就没有策略组），不提示。
+      if (lastError != null &&
+          ref.read(groupsProvider.notifier).value.isEmpty &&
+          ref.read(coreStatusProvider) == CoreStatus.connected) {
+        dialogs.showNotifier(
+          currentAppLocalizations.groupsUpdateFailedTip,
+          level: MessageLevel.error,
+        );
+      }
     } catch (e) {
       // The Core failure path already runs inside the retry task above; a
       // throw here only means ref.read hit a disposed container or the

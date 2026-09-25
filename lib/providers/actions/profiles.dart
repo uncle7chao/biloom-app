@@ -130,11 +130,20 @@ class ProfilesAction extends _$ProfilesAction {
         convert: convertSubscription,
       );
       ref.read(profilesProvider.notifier).put(newProfile);
+      // 成功即摘牌：失败角标只在「最近一次更新确实失败」时亮着。
+      ref.read(profileUpdateStatusesProvider.notifier).clear(profile.id);
       if (profile.id == ref.read(currentProfileIdProvider)) {
         ref
             .read(setupActionProvider.notifier)
             .applyProfileDebounce(silence: true);
       }
+    } catch (error) {
+      // 失败记一笔再照常抛出：自动更新路径在这里拿到持久化的失败记录
+      // （卡片红标），手动更新路径的弹窗提示不受影响。
+      ref
+          .read(profileUpdateStatusesProvider.notifier)
+          .recordFailure(profile.id, error);
+      rethrow;
     } finally {
       if (operation != null) {
         ref
@@ -354,6 +363,32 @@ class ProfilesAction extends _$ProfilesAction {
       await _saveEditedProfile(profile, edited.yaml);
       return edited;
     }, title: currentAppLocalizations.manageNodes);
+  }
+
+  /// 原地更新一个节点的参数，返回内核的处理结果（失败时返回 null）。
+  ///
+  /// 编辑同样是内核侧的文档级编辑：名字是组员/规则/链式引用的锚点，内核
+  /// 不允许改名（想改名 = 删除 + 重新添加）；实现是整体替换 proxies 里那
+  /// 一个条目，其余内容原样保留。
+  Future<UpdateProxyNodeResult?> updateProxyNodeInProfile({
+    required int profileId,
+    required String name,
+    required String node,
+  }) async {
+    return globalState.loadingRun(tag: LoadingTag.profiles, () async {
+      final profile = ref.read(profilesProvider).getProfile(profileId);
+      if (profile == null) {
+        throw const MessageException('找不到这份配置，可能已被删除');
+      }
+      final file = await profile.file;
+      final edited = await _core.updateProxyNode(
+        yaml: await file.readAsString(),
+        name: name,
+        node: node,
+      );
+      await _saveEditedProfile(profile, edited.yaml);
+      return edited;
+    }, title: currentAppLocalizations.editNode);
   }
 
   /// 列出这份配置里可以做链式代理的节点与策略组。
