@@ -463,7 +463,7 @@ class ProfileItem extends ConsumerWidget {
         padding: const EdgeInsets.only(left: 16, right: 6),
         trailing: SizedBox(
           height: 40,
-          width: 40,
+          width: 80,
           child: Consumer(
             builder: (context, ref, _) {
               final isUpdating = ref.watch(
@@ -477,23 +477,46 @@ class ProfileItem extends ConsumerWidget {
                         padding: EdgeInsets.all(8),
                         child: CommonCircleLoading(),
                       )
-                    : CommonPopupBox(
+                    : Row(
                         key: const ValueKey('menu'),
-                        popupBuilder: (_) =>
-                            CommonPopupMenu(items: _menuItems(context, ref)),
-                        targetBuilder: (open) {
-                          return IconButton(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          // 单条更新提升为卡片上的可见按钮 —— 之前只收在 ⋮
+                          // 菜单里，用户根本不知道有这个功能（2026-09-25 用户
+                          // 报障「只有集体更新」）。⋮ 菜单里的入口保留。
+                          IconButton(
                             style: IconButton.styleFrom(
                               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                               visualDensity: VisualDensity.standard,
                             ),
-                            tooltip: context.appLocalizations.more,
+                            tooltip: profile.type == ProfileType.url
+                                ? context.appLocalizations.updateSubscription
+                                : context.appLocalizations.update,
                             onPressed: () {
-                              open();
+                              updateProfile(ref);
                             },
-                            icon: const Icon(Icons.more_vert),
-                          );
-                        },
+                            icon: const Icon(Icons.sync, size: 20),
+                          ),
+                          CommonPopupBox(
+                            key: const ValueKey('menu-box'),
+                            popupBuilder: (_) =>
+                                CommonPopupMenu(items: _menuItems(context, ref)),
+                            targetBuilder: (open) {
+                              return IconButton(
+                                style: IconButton.styleFrom(
+                                  tapTargetSize:
+                                      MaterialTapTargetSize.shrinkWrap,
+                                  visualDensity: VisualDensity.standard,
+                                ),
+                                tooltip: context.appLocalizations.more,
+                                onPressed: () {
+                                  open();
+                                },
+                                icon: const Icon(Icons.more_vert),
+                              );
+                            },
+                          ),
+                        ],
                       ),
               );
             },

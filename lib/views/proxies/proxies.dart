@@ -1,7 +1,9 @@
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/enum/enum.dart';
+import 'package:fl_clash/models/profile.dart';
 import 'package:fl_clash/models/state.dart';
 import 'package:fl_clash/providers/providers.dart';
+import 'package:fl_clash/state.dart';
 import 'package:fl_clash/views/dashboard/widgets/start_button.dart';
 import 'package:fl_clash/views/profiles/overwrite/custom/groups.dart';
 import 'package:fl_clash/views/proxies/list.dart';
@@ -31,7 +33,22 @@ class _ProxiesViewState extends ConsumerState<ProxiesView> {
 
   List<Widget> _buildActions(BuildContext context) {
     final appLocalizations = context.appLocalizations;
+    // 顶栏更新按钮：直接更新**当前生效的配置**。订阅型 = 重新拉取订阅，
+    // 自定义配置 = 重新应用本地文件（updateProfile 内部分流）。之前代理页
+    // 完全没有更新入口，用户要切回「配置」页才能更新（2026-09-25 用户要求）。
+    final currentProfileId = ref.watch(currentProfileIdProvider);
+    final currentProfile = currentProfileId == null
+        ? null
+        : ref.watch(profileProvider(currentProfileId));
     return [
+      if (currentProfile != null)
+        IconButton(
+          tooltip: currentProfile.type == ProfileType.url
+              ? appLocalizations.updateSubscription
+              : appLocalizations.update,
+          onPressed: _handleUpdateCurrentProfile,
+          icon: const Icon(Icons.sync, size: 20),
+        ),
       if (_isTab)
         IconButton(
           tooltip: context.appLocalizations.scrollToSelected,
@@ -146,6 +163,25 @@ class _ProxiesViewState extends ConsumerState<ProxiesView> {
         ],
         const StartButton(),
       ],
+    );
+  }
+
+  /// 更新当前生效的配置。
+  ///
+  /// 错误走 `loadingRun` → `safeRun` 的统一提示通道（失败弹窗/红标两条路都有：
+  /// `updateProfile` 内部会记入 profileUpdateStatuses，卡片红标同步亮起）。
+  Future<void> _handleUpdateCurrentProfile() async {
+    final profileId = ref.read(currentProfileIdProvider);
+    if (profileId == null) return;
+    final profile = ref.read(profileProvider(profileId));
+    if (profile == null) return;
+    await globalState.loadingRun(
+      () {
+        return ref
+            .read(profilesActionProvider.notifier)
+            .updateProfile(profile, showLoading: true);
+      },
+      tag: LoadingTag.proxies,
     );
   }
 
