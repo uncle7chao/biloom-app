@@ -1,5 +1,12 @@
 # Changelog
 
+## v01.00.14 (2026-09-25)
+
+**Features**
+
+- Proxy chains are now standalone nodes collected in a dedicated "Proxy Chain" tab. The add-chain panel takes a name - the default auto-numbers (1, 2, 3...) while custom names are used verbatim - and exit/front proxies can be picked from any profile (6e78a1c)
+- Profile cards show a visible sync button next to the menu and the proxies page gets one in the app bar, so a single profile can be updated without hunting through menus (5d0506b)
+
 ## v01.00.13 (2026-09-25)
 
 **Bug Fixes**
