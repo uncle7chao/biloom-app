@@ -59,12 +59,38 @@ Future<List<Group>> buildGroups(ComputeGroupsState state) async {
   final defaultTestUrl = state.defaultTestUrl;
   final proxies = proxiesData.proxies;
   if (proxies.isEmpty) return [];
+  // GLOBAL 是内核兜底生成的「全量」组：mihomo 会把 DIRECT/REJECT 两个内置出站
+  // 和**所有**分组——包括订阅里标了 hidden 的——都塞进它的成员列表。这些条目在
+  // 「代理」页其它任何地方都不会出现（内置组没有页签，隐藏组被页签栏过滤），
+  // 却单独冒现在 GLOBAL 页签里，看起来就像「藏起来的标签又回来了」；而且把
+  // 广告拦截/直连这类工具组选成全局出口毫无意义。这里在展示层过滤，内核的
+  // 真实成员数据不动 —— 已有的选中状态、切换请求都照旧工作。
+  final hiddenGroupNames = <String>{};
+  for (final entry in proxies.entries) {
+    final raw = entry.value;
+    if (raw is! Map) continue;
+    if (!GroupTypeExtension.valueList.contains(raw['type'])) continue;
+    if (raw['hidden'] == true) hiddenGroupNames.add(entry.key);
+  }
   final groups = <Group>[];
   for (final groupName in all) {
     final raw = proxies[groupName];
     if (raw is! Map) continue;
     if (!GroupTypeExtension.valueList.contains(raw['type'])) continue;
-    final memberNames = raw['all'];
+    var memberNames = raw['all'];
+    if (groupName == GroupName.GLOBAL.name) {
+      memberNames = memberNames is List
+          ? memberNames
+                .where(
+                  (name) =>
+                      name != GroupName.GLOBAL.name &&
+                      name != 'DIRECT' &&
+                      name != 'REJECT' &&
+                      !hiddenGroupNames.contains(name),
+                )
+                .toList()
+          : const [];
+    }
     final group = Map<String, dynamic>.from(raw);
     group['all'] = memberNames is List
         ? memberNames.map((name) => proxies[name]).nonNulls.toList()

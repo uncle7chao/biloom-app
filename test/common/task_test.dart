@@ -150,6 +150,50 @@ void main() {
     expect(groups, isEmpty);
   });
 
+  // GLOBAL 是内核兜底的全量组，mihomo 会把 DIRECT/REJECT 和隐藏分组都塞进它的
+  // 成员列表；这些条目在页签栏都被过滤，单独冒在 GLOBAL 页签里只会造成困惑。
+  test('buildGroups filters built-ins and hidden groups out of GLOBAL', () async {
+    final proxies = <String, dynamic>{
+      'GLOBAL': {
+        'name': 'GLOBAL',
+        'type': 'Selector',
+        'all': ['HK-01', 'DIRECT', 'REJECT', '广告拦截', '节点选择'],
+      },
+      '节点选择': {
+        'name': '节点选择',
+        'type': 'Selector',
+        'all': ['HK-01'],
+      },
+      '广告拦截': {
+        'name': '广告拦截',
+        'type': 'Selector',
+        'hidden': true,
+        'all': ['REJECT'],
+      },
+      'HK-01': {'name': 'HK-01', 'type': 'Direct'},
+      'DIRECT': {'name': 'DIRECT', 'type': 'Direct'},
+      'REJECT': {'name': 'REJECT', 'type': 'Reject'},
+    };
+    final groups = await buildGroups(
+      ComputeGroupsState(
+        proxiesData: ProxiesData(
+          all: const ['GLOBAL', '节点选择'],
+          proxies: proxies,
+        ),
+        sortType: ProxiesSortType.none,
+        delayMap: const {},
+        selectedMap: const {},
+        defaultTestUrl: '',
+      ),
+    );
+
+    final global = groups.firstWhere((group) => group.name == 'GLOBAL');
+    expect(global.all.map((proxy) => proxy.name), ['HK-01', '节点选择']);
+    // 其它组不受影响。
+    final select = groups.firstWhere((group) => group.name == '节点选择');
+    expect(select.all.map((proxy) => proxy.name), ['HK-01']);
+  });
+
   test(
     'makeRealProfileTask normalizes runtime config and added rules',
     () async {
