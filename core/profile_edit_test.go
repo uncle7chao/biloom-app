@@ -222,3 +222,169 @@ rules:
 		t.Fatalf("last rule = %q, want a MATCH fallback", shape.Rules[1])
 	}
 }
+
+// healGroupsFixture 模拟「先加过一个节点、默认分组已注入」的中间态：分组里只有
+// HK-01，之后追加的节点不会进任何组 —— 这正是「新增节点不显示」的根因。US-01
+// 则模拟历史上已经游离的节点（同样不在任何组里）。
+const healGroupsFixture = `mixed-port: 7890
+proxies:
+  - name: HK-01
+    type: ss
+    server: 1.2.3.4
+    port: 8388
+    cipher: aes-256-gcm
+    password: pass
+  - name: US-01
+    type: ss
+    server: 5.6.7.8
+    port: 8388
+    cipher: aes-256-gcm
+    password: pass
+proxy-groups:
+  - name: 节点选择
+    type: select
+    proxies:
+      - 自动选择
+      - 故障转移
+      - HK-01
+      - DIRECT
+  - name: 自动选择
+    type: url-test
+    proxies:
+      - HK-01
+    tolerance: 50
+  - name: 故障转移
+    type: fallback
+    proxies:
+      - HK-01
+    hidden: true
+rules:
+  - MATCH,节点选择
+`
+
+func groupMembers(t *testing.T, shape profileShape, group string) map[string]bool {
+	t.Helper()
+	for _, g := range shape.ProxyGroups {
+		if g["name"] != group {
+			continue
+		}
+		raw, ok := g["proxies"].([]any)
+		if !ok {
+			t.Fatalf("group %s has no proxies list: %+v", group, g)
+		}
+		members := make(map[string]bool, len(raw))
+		for _, m := range raw {
+			s, _ := m.(string)
+			members[s] = true
+		}
+		return members
+	}
+	t.Fatalf("group %s not found in %+v", group, shape.ProxyGroups)
+	return nil
+}
+
+// 加节点时：新节点与历史游离节点都要被接回三个锚点组；锚点组之外的东西不动。
+func TestAddProxyNodesHealsUngroupedProxies(t *testing.T) {
+	result, err := handleAddProxyNodes(&AddProxyNodesParams{
+		YAML:  healGroupsFixture,
+		Nodes: vlessShareLinkFixture,
+	})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(result.Added) != 1 || result.Added[0] != "HK-443-WS-TLS" {
+		t.Fatalf("added = %v, want [HK-443-WS-TLS]", result.Added)
+	}
+	shape := decodeShape(t, result.YAML)
+	if len(shape.Proxies) != 3 {
+		t.Fatalf("proxies = %d, want 3", len(shape.Proxies))
+	}
+	for _, group := range []string{"节点选择", "自动选择", "故障转移"} {
+		members := groupMembers(t, shape, group)
+		for _, name := range []string{"HK-01", "US-01", "HK-443-WS-TLS"} {
+			if !members[name] {
+				t.Fatalf("group %s is missing %q after healing: %v", group, name, members)
+			}
+		}
+	}
+	// 幂等：同一份结果再走一遍，不能有任何新变化。
+	second, err := handleAddProxyNodes(&AddProxyNodesParams{
+		YAML:  result.YAML,
+		Nodes: trojanShareLinkFixture,
+	})
+	if err != nil {
+		t.Fatalf("unexpected error on second pass: %v", err)
+	}
+	if len(second.Added) != 1 || second.Added[0] != "JP-Trojan" {
+		t.Fatalf("second pass added = %v, want [JP-Trojan]", second.Added)
+	}
+	shape2 := decodeShape(t, second.YAML)
+	members := groupMembers(t, shape2, "节点选择")
+	for _, name := range []string{"HK-01", "US-01", "HK-443-WS-TLS", "JP-Trojan"} {
+		if !members[name] {
+			t.Fatalf("group 节点选择 is missing %q after second pass: %v", name, members)
+		}
+	}
+	if len(shape2.Proxies) != 4 {
+		t.Fatalf("proxies = %d, want 4", len(shape2.Proxies))
+	}
+}
+
+// 没有锚点组（分组全是自建名）时一个字节都不能动 —— 哪怕有游离节点，
+// 塞哪个组是用户的决定。
+func TestHealSkipsProfilesWithoutAnchorGroups(t *testing.T) {
+	const fixture = `mixed-port: 7890
+proxies:
+  - name: HK-01
+    type: ss
+    server: 1.2.3.4
+    port: 8388
+    cipher: aes-256-gcm
+    password: pass
+  - name: US-01
+    type: ss
+    server: 5.6.7.8
+    port: 8388
+    cipher: aes-256-gcm
+    password: pass
+proxy-groups:
+  - name: 我的选择
+    type: select
+    proxies:
+      - HK-01
+rules:
+  - MATCH,我的选择
+`
+	out, changed, _, err := patchMissingDefaults([]byte(fixture))
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if changed {
+		t.Fatalf("profile without anchor groups must be untouched, got:\n%s", out)
+	}
+	if out != nil {
+		t.Fatalf("unchanged input must return nil output, got:\n%s", out)
+	}
+}
+
+// 「更新」路径（patchMissingDefaults）：已有分组 + 游离节点时要把游离节点接回。
+func TestPatchMissingDefaultsHealsUngroupedProxies(t *testing.T) {
+	out, changed, _, err := patchMissingDefaults([]byte(healGroupsFixture))
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !changed {
+		t.Fatal("ungrouped proxies were not healed")
+	}
+	shape := decodeShape(t, string(out))
+	members := groupMembers(t, shape, "节点选择")
+	if !members["US-01"] {
+		t.Fatalf("US-01 was not healed into 节点选择: %v", members)
+	}
+	// 原有成员一个都不能丢，顺序也保持「自动选择、故障转移在前」。
+	for _, name := range []string{"自动选择", "故障转移", "HK-01", "DIRECT"} {
+		if !members[name] {
+			t.Fatalf("original member %q was dropped: %v", name, members)
+		}
+	}
+}

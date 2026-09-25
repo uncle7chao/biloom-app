@@ -379,6 +379,109 @@ func ensureUsableDefaults(root *yamlv3.Node) (bool, int, error) {
 	return true, len(proxies), nil
 }
 
+// healUngroupedProxies 把「不属于任何策略组的节点」接回默认锚点分组。
+//
+// 背景（2026-09-25 用户报障「新增节点不显示」）：默认分组只在 proxy-groups 缺失/
+// 为空的那一刻注入（ensureUsableDefaults），注入内容是**当时**的全部节点。之后
+// 用户再加节点，节点只落进 proxies——不属于任何组。而「代理」页由分组驱动、
+// 规则模式下 GLOBAL 兜底组会被隐藏、分流规则也只指向组：结果就是节点加进去了，
+// 页面上看不见，选也选不到，等于白加。
+//
+// 治法：找出游离节点（没被任何分组的成员列表引用的 proxies 条目），追加进默认
+// 锚点组（节点选择/自动选择/故障转移，见 subscription_defaults.go）里**已存在**
+// 的那些，恢复「锚点组引用全部节点」的模板不变量。三条边界：
+//   - 只动锚点组 —— 服务商或用户自建的分组的成员列表一个不碰；
+//   - 锚点组一个都不在时不碰任何东西 —— 那种配置有自己的分组设计，把节点塞进
+//     哪个组该由用户决定（「按地区生成分组」就是干这个的）；
+//   - 幂等 —— 已被组引用的节点不重复追加；没有游离节点时一个字节都不动。
+func healUngroupedProxies(root *yamlv3.Node) (bool, error) {
+	proxiesNode, _ := mappingEntry(root, "proxies")
+	if proxiesNode == nil || proxiesNode.Kind != yamlv3.SequenceNode ||
+		len(proxiesNode.Content) == 0 {
+		return false, nil
+	}
+	groupsNode, _ := mappingEntry(root, "proxy-groups")
+	if groupsNode == nil || groupsNode.Kind != yamlv3.SequenceNode ||
+		len(groupsNode.Content) == 0 {
+		return false, nil
+	}
+
+	anchorNames := map[string]bool{
+		defaultGroupProxies:  true,
+		defaultGroupAuto:     true,
+		defaultGroupFallback: true,
+	}
+	referenced := map[string]bool{}
+	var anchorGroups []*yamlv3.Node
+	for _, item := range groupsNode.Content {
+		if item.Kind != yamlv3.MappingNode {
+			continue
+		}
+		name := scalarValue(item, "name")
+		if name == "" {
+			continue
+		}
+		referenced[name] = true
+		members, _ := mappingEntry(item, "proxies")
+		if members != nil && members.Kind == yamlv3.SequenceNode {
+			for _, m := range members.Content {
+				if m.Kind == yamlv3.ScalarNode && m.Value != "" {
+					referenced[m.Value] = true
+				}
+			}
+		}
+		if anchorNames[name] {
+			anchorGroups = append(anchorGroups, item)
+		}
+	}
+	if len(anchorGroups) == 0 {
+		return false, nil
+	}
+
+	// 按配置里的顺序收集游离节点（而不是 map 遍历），追加时保持可预期的顺序。
+	ungrouped := make([]string, 0)
+	for _, item := range proxiesNode.Content {
+		if item.Kind != yamlv3.MappingNode {
+			continue
+		}
+		name := scalarValue(item, "name")
+		if name == "" || referenced[name] {
+			continue
+		}
+		ungrouped = append(ungrouped, name)
+	}
+	if len(ungrouped) == 0 {
+		return false, nil
+	}
+
+	changed := false
+	for _, group := range anchorGroups {
+		members, _ := mappingEntry(group, "proxies")
+		if members == nil || members.Kind != yamlv3.SequenceNode {
+			continue
+		}
+		inGroup := map[string]bool{}
+		for _, m := range members.Content {
+			if m.Kind == yamlv3.ScalarNode {
+				inGroup[m.Value] = true
+			}
+		}
+		for _, name := range ungrouped {
+			if inGroup[name] {
+				continue
+			}
+			members.Content = append(members.Content, &yamlv3.Node{
+				Kind:  yamlv3.ScalarNode,
+				Tag:   "!!str",
+				Value: name,
+			})
+			inGroup[name] = true
+			changed = true
+		}
+	}
+	return changed, nil
+}
+
 // patchMissingDefaults 给「有节点但没有策略组」的 Clash 配置补上默认分组与兜底规则。
 //
 // 返回的 changed 为 false 时表示**一个字节都没动**，调用方必须原样使用输入 ——
@@ -390,8 +493,18 @@ func patchMissingDefaults(buf []byte) ([]byte, bool, int, error) {
 		return nil, false, 0, err
 	}
 	changed, nodeCount, err := ensureUsableDefaults(root)
-	if err != nil || !changed {
+	if err != nil {
 		return nil, false, 0, err
+	}
+	// 游离节点治理：刚注入默认分组时它必然是 no-op（注入的组本来就引用了全部
+	// 节点）；已带分组的配置则靠它把「注入之后才加的节点」接回来 —— 用户点一次
+	// 「更新」，历史游离节点就全部回到分组里。
+	healed, err := healUngroupedProxies(root)
+	if err != nil {
+		return nil, false, 0, err
+	}
+	if !changed && !healed {
+		return nil, false, 0, nil
 	}
 	out, err := marshalDocument(doc)
 	if err != nil {
@@ -441,6 +554,11 @@ func handleAddProxyNodes(params *AddProxyNodesParams) (AddProxyNodesResult, erro
 			return AddProxyNodesResult{}, err
 		}
 		if _, _, err := ensureUsableDefaults(root); err != nil {
+			return AddProxyNodesResult{}, err
+		}
+		// 配置已有分组时上一行是 no-op，新节点就成了游离节点（页面上看不见、
+		// 分流也用不上）。把新节点接回锚点组；顺带治好历史上同根因的游离节点。
+		if _, err := healUngroupedProxies(root); err != nil {
 			return AddProxyNodesResult{}, err
 		}
 	}
