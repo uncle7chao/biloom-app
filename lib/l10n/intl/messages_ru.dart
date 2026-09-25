@@ -1437,5 +1437,13 @@ class MessageLookup extends MessageLookupByLibrary {
     "noProxyNodes": MessageLookupByLibrary.simpleMessage("В этом профиле пока нет узлов"),
     "deleteSelected": MessageLookupByLibrary.simpleMessage("Удалить выбранные"),
     "deleteNodesConfirm": MessageLookupByLibrary.simpleMessage("Выбранные узлы будут удалены из профиля вместе со всеми ссылками на них. Удалить?"),
+    "updateFailedTip": MessageLookupByLibrary.simpleMessage("Последнее обновление не удалось"),
+    "groupsUpdateFailedTip": MessageLookupByLibrary.simpleMessage("Не удалось загрузить группы прокси. Проверьте конфигурацию или перезапустите ядро"),
+    "editNode": MessageLookupByLibrary.simpleMessage("Изменить узел"),
+    "editNodeSuccess": MessageLookupByLibrary.simpleMessage("Узел обновлён"),
+    "favoriteNode": MessageLookupByLibrary.simpleMessage("В избранное"),
+    "unfavoriteNode": MessageLookupByLibrary.simpleMessage("Убрать из избранного"),
+    "autoExitTest": MessageLookupByLibrary.simpleMessage("Автопроверка выхода"),
+    "autoExitTestDesc": MessageLookupByLibrary.simpleMessage("Раз в день перепроверяет узлы без свежих записей, чтобы метки регионов оставались точными; недавние результаты пропускаются"),
   };
 }

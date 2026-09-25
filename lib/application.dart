@@ -58,6 +58,7 @@ class Application extends ConsumerStatefulWidget {
 
 class ApplicationState extends ConsumerState<Application> {
   Timer? _autoUpdateProfilesTaskTimer;
+  Timer? _autoExitTestTaskTimer;
   bool _preHasVpn = false;
 
   final _pageTransitionsTheme = const PageTransitionsTheme(
@@ -84,6 +85,7 @@ class ApplicationState extends ConsumerState<Application> {
         exit(0);
       }
       _autoUpdateProfilesTask();
+      _autoExitTestTask(delay: const Duration(minutes: 30));
       _initLink();
       unawaited(app?.initShortcuts());
     });
@@ -125,6 +127,19 @@ class ApplicationState extends ConsumerState<Application> {
         return;
       }
       _autoUpdateProfilesTask();
+    });
+  }
+
+  /// 定时自动测落地：启动后 30 分钟先跑一轮（启动时往往刚好是用户开始用
+  /// 的时候，早跑早有数据），之后每 24 小时一轮。开关/新鲜度/计费网络的
+  /// 门控都在 [ProxiesAction.scheduledExitTest] 与 testBatch 里。
+  void _autoExitTestTask({Duration delay = const Duration(hours: 24)}) {
+    _autoExitTestTaskTimer = Timer(delay, () async {
+      await ref.read(proxiesActionProvider.notifier).scheduledExitTest();
+      if (!mounted) {
+        return;
+      }
+      _autoExitTestTask();
     });
   }
 
@@ -200,6 +215,7 @@ class ApplicationState extends ConsumerState<Application> {
   void dispose() {
     linkManager.destroy();
     _autoUpdateProfilesTaskTimer?.cancel();
+    _autoExitTestTaskTimer?.cancel();
     super.dispose();
   }
 }

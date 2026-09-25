@@ -28,6 +28,13 @@ class _AddProxyChainViewState extends ConsumerState<AddProxyChainView> {
   ProfileTargets? _targets;
   Object? _loadError;
 
+  /// 目标配置：入口传进来的那份只是**默认值**，面板里可以随时换。
+  ///
+  /// 链写在配置正文里，候选名单也从这份配置读 —— 但「哪份配置」不该被
+  /// 当前选中态绑死：出口在前一份配置、前置在另一份是正常诉求。
+  /// 与「新增节点」面板的「目标配置」下拉同一套做法。
+  late int _profileId = widget.profileId;
+
   /// 出口节点名 —— 链挂在它身上。
   String? _target;
 
@@ -46,13 +53,13 @@ class _AddProxyChainViewState extends ConsumerState<AddProxyChainView> {
   /// 与「转为本地配置」的出口要一并给到 —— 链式代理通常是一次设好长期不动的，
   /// 转为本地配置对它比新增节点更自然。
   bool get _isSubscription =>
-      (ref.read(profileProvider(widget.profileId))?.url ?? '').isNotEmpty;
+      (ref.read(profileProvider(_profileId))?.url ?? '').isNotEmpty;
 
   Future<void> _load() async {
     try {
       final targets = await ref
           .read(profilesActionProvider.notifier)
-          .readProfileTargets(widget.profileId);
+          .readProfileTargets(_profileId);
       if (!mounted) return;
       setState(() {
         _targets = targets;
@@ -62,6 +69,47 @@ class _AddProxyChainViewState extends ConsumerState<AddProxyChainView> {
       if (!mounted) return;
       setState(() => _loadError = error);
     }
+  }
+
+  /// 目标配置选择器：入口默认选中传进来的那份，可手动换成任何一份配置。
+  ///
+  /// 换配置必须把**已选的出口/前置一并清掉** —— 名字只在自己那份配置里有意义，
+  /// 带着旧配置里挑的名字去新配置提交，要么找不到、要么撞上同名但完全不同的节点。
+  Widget _buildProfileSelector() {
+    final appLocalizations = context.appLocalizations;
+    final profiles = ref.watch(profilesProvider);
+    // 选中值失效（配置刚被删）时回退到列表第一份，避免下拉出现悬空选中。
+    final validIds = profiles.map((profile) => profile.id).toSet();
+    if (!validIds.contains(_profileId) && profiles.isNotEmpty) {
+      _profileId = profiles.first.id;
+    }
+    return DropdownButtonFormField<int>(
+      initialValue: _profileId,
+      decoration: InputDecoration(
+        labelText: appLocalizations.addNodeTargetProfile,
+        border: const OutlineInputBorder(),
+        prefixIcon: const Icon(Icons.layers_outlined, size: 20),
+      ),
+      items: profiles
+          .map(
+            (profile) => DropdownMenuItem(
+              value: profile.id,
+              child: Text(profile.label, overflow: TextOverflow.ellipsis),
+            ),
+          )
+          .toList(),
+      onChanged: (value) {
+        if (value == null || value == _profileId) return;
+        setState(() {
+          _profileId = value;
+          _targets = null;
+          _loadError = null;
+          _target = null;
+          _dialer = null;
+        });
+        _load();
+      },
+    );
   }
 
   /// 当前出口节点上已有的链，用来把「改」和「解除」分清楚。
@@ -170,7 +218,7 @@ class _AddProxyChainViewState extends ConsumerState<AddProxyChainView> {
     await ref
         .read(profilesActionProvider.notifier)
         .setProxyChainOnProfile(
-          profileId: widget.profileId,
+          profileId: _profileId,
           target: target,
           dialer: dialer,
         );
@@ -184,7 +232,7 @@ class _AddProxyChainViewState extends ConsumerState<AddProxyChainView> {
   }
 
   Future<void> _handleConvertToLocal() async {
-    final url = ref.read(profileProvider(widget.profileId))?.url ?? '';
+    final url = ref.read(profileProvider(_profileId))?.url ?? '';
     final confirmed = await dialogs.showMessage(
       // 把订阅链接原文一并显示：断开之后它就没了，让用户有机会先记下来。
       message: TextSpan(
@@ -194,7 +242,7 @@ class _AddProxyChainViewState extends ConsumerState<AddProxyChainView> {
     if (confirmed != true || !mounted) return;
     await ref
         .read(profilesActionProvider.notifier)
-        .convertProfileToLocal(widget.profileId);
+        .convertProfileToLocal(_profileId);
     if (!mounted) return;
     _showMessage(context.appLocalizations.profileConvertedToLocal);
     setState(() {});
@@ -392,6 +440,8 @@ class _AddProxyChainViewState extends ConsumerState<AddProxyChainView> {
             horizontal: 16,
           ).copyWith(top: context.sheetTopPadding, bottom: 20),
           children: [
+            _buildProfileSelector(),
+            const SizedBox(height: 12),
             if (_isSubscription) _buildSubscriptionNotice(),
             _buildBody(),
           ],

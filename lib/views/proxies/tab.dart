@@ -409,11 +409,24 @@ class _ProxyGroupViewState extends ConsumerState<ProxyGroupView> {
   @override
   Widget build(BuildContext context) {
     final group = widget.group;
-    final proxies = _applyRegionFilter(
-      group.all,
-      // 用 `read` 拿不到变化 —— 必须先 `watch` 起来，筛选一改这一页才会重建。
-      ref.watch(proxyRegionFilterProvider.select((state) => state[group.name])),
-      ref.watch(proxyLandingCodesProvider),
+    // 收藏置顶：与列表布局同一套稳定分区（common.dart 的 orderFavoritesFirst），
+    // 页签布局与列表布局看到的顺序必须一致。
+    final profileId = ref.watch(currentProfileIdProvider);
+    final favorites = ref.watch(
+      proxyFavoritesProvider.select(
+        (value) => profileId == null
+            ? null
+            : value.value?[profileId.toString()]?.toSet(),
+      ),
+    );
+    final proxies = orderFavoritesFirst(
+      _applyRegionFilter(
+        group.all,
+        // 用 `read` 拿不到变化 —— 必须先 `watch` 起来，筛选一改这一页才会重建。
+        ref.watch(proxyRegionFilterProvider.select((state) => state[group.name])),
+        ref.watch(proxyLandingCodesProvider),
+      ),
+      favorites,
     );
     return CommonScrollBar(
       controller: _controller,

@@ -5919,6 +5919,46 @@ class AppLocalizations {
   String get deleteNodesConfirm {
     return Intl.message('The selected nodes will be removed from the profile and all their references cleaned up. Delete them?', name: 'deleteNodesConfirm', desc: '', args: []);
   }
+
+  /// `Last update failed`
+  String get updateFailedTip {
+    return Intl.message('Last update failed', name: 'updateFailedTip', desc: '', args: []);
+  }
+
+  /// `Failed to load proxy groups. Check the config or restart the core`
+  String get groupsUpdateFailedTip {
+    return Intl.message('Failed to load proxy groups. Check the config or restart the core', name: 'groupsUpdateFailedTip', desc: '', args: []);
+  }
+
+  /// `Edit node`
+  String get editNode {
+    return Intl.message('Edit node', name: 'editNode', desc: '', args: []);
+  }
+
+  /// `Node updated`
+  String get editNodeSuccess {
+    return Intl.message('Node updated', name: 'editNodeSuccess', desc: '', args: []);
+  }
+
+  /// `Favorite node`
+  String get favoriteNode {
+    return Intl.message('Favorite node', name: 'favoriteNode', desc: '', args: []);
+  }
+
+  /// `Unfavorite node`
+  String get unfavoriteNode {
+    return Intl.message('Unfavorite node', name: 'unfavoriteNode', desc: '', args: []);
+  }
+
+  /// `Auto exit test`
+  String get autoExitTest {
+    return Intl.message('Auto exit test', name: 'autoExitTest', desc: '', args: []);
+  }
+
+  /// `Re-tests nodes without fresh records once a day to keep region labels accurate; recent results are skipped`
+  String get autoExitTestDesc {
+    return Intl.message('Re-tests nodes without fresh records once a day to keep region labels accurate; recent results are skipped', name: 'autoExitTestDesc', desc: '', args: []);
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<AppLocalizations> {

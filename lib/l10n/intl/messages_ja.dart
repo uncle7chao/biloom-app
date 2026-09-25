@@ -1153,5 +1153,13 @@ class MessageLookup extends MessageLookupByLibrary {
     "noProxyNodes": MessageLookupByLibrary.simpleMessage("このプロファイルにはノードがまだありません"),
     "deleteSelected": MessageLookupByLibrary.simpleMessage("選択を削除"),
     "deleteNodesConfirm": MessageLookupByLibrary.simpleMessage("選択したノードはプロファイルから削除され、関連する参照も同時にクリーンアップされます。削除しますか？"),
+    "updateFailedTip": MessageLookupByLibrary.simpleMessage("前回の更新に失敗しました"),
+    "groupsUpdateFailedTip": MessageLookupByLibrary.simpleMessage("プロキシグループの取得に失敗しました。設定を確認するかカーネルを再起動してください"),
+    "editNode": MessageLookupByLibrary.simpleMessage("ノードを編集"),
+    "editNodeSuccess": MessageLookupByLibrary.simpleMessage("ノードを更新しました"),
+    "favoriteNode": MessageLookupByLibrary.simpleMessage("ノードをお気に入りに"),
+    "unfavoriteNode": MessageLookupByLibrary.simpleMessage("お気に入り解除"),
+    "autoExitTest": MessageLookupByLibrary.simpleMessage("自動出口テスト"),
+    "autoExitTestDesc": MessageLookupByLibrary.simpleMessage("新しい記録のないノードを毎日バックグラウンドで再テストし、地域表示を正確に保ちます。最近の結果はスキップされます"),
   };
 }

@@ -280,6 +280,25 @@ class RemoveProxyNodesResult {
   }
 }
 
+/// 原地更新一个节点参数的结果。名字是组员/规则/链式引用的锚点，内核不
+/// 允许编辑改名，[updated] 恒等于请求里的名字（回传只为对称）。
+class UpdateProxyNodeResult {
+  const UpdateProxyNodeResult({required this.yaml, required this.updated});
+
+  /// 更新之后的配置全文。
+  final String yaml;
+
+  /// 被更新的节点名。
+  final String updated;
+
+  factory UpdateProxyNodeResult.fromJson(Map<String, dynamic> json) {
+    return UpdateProxyNodeResult(
+      yaml: json['yaml'] as String? ?? '',
+      updated: json['updated'] as String? ?? '',
+    );
+  }
+}
+
 /// 链式代理能引用的一项：一个节点，或者一个策略组。
 ///
 /// [dialer] 只对节点有意义 —— 链挂在**节点**上（`dialer-proxy` 是 proxy 级选项），
@@ -314,14 +333,22 @@ class ProfileTarget {
 /// 并没有完整名单，运行时那份 ClashConfig 反映的又是「当前已生效的配置」——
 /// 用户正在编辑的这一份未必是它。
 class ProfileTargets {
-  const ProfileTargets({required this.proxies, required this.groups});
+  const ProfileTargets({
+    required this.proxies,
+    required this.groups,
+    this.nodes = const [],
+  });
 
   final List<ProfileTarget> proxies;
   final List<ProfileTarget> groups;
 
+  /// proxies 段的完整参数（与 [proxies] 同序同名），编辑节点时预填表单用。
+  final List<Map<String, dynamic>> nodes;
+
   static const ProfileTargets empty = ProfileTargets(
     proxies: [],
     groups: [],
+    nodes: [],
   );
 
   factory ProfileTargets.fromJson(Map<String, dynamic> json) {
@@ -334,7 +361,19 @@ class ProfileTargets {
           .toList();
     }
 
-    return ProfileTargets(proxies: read('proxies'), groups: read('groups'));
+    final nodesRaw = json['nodes'];
+    final nodes = nodesRaw is List
+        ? nodesRaw
+              .whereType<Map>()
+              .map((item) => item.cast<String, dynamic>())
+              .toList()
+        : const <Map<String, dynamic>>[];
+
+    return ProfileTargets(
+      proxies: read('proxies'),
+      groups: read('groups'),
+      nodes: nodes,
+    );
   }
 }
 

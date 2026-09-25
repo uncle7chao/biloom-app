@@ -738,5 +738,13 @@
   "deleteNodeMissing": "These nodes were not found (possibly already deleted):",
   "noProxyNodes": "No nodes in this profile yet",
   "deleteSelected": "Delete selected",
-  "deleteNodesConfirm": "The selected nodes will be removed from the profile and all their references cleaned up. Delete them?"
+  "deleteNodesConfirm": "The selected nodes will be removed from the profile and all their references cleaned up. Delete them?",
+  "updateFailedTip": "Last update failed",
+  "groupsUpdateFailedTip": "Failed to load proxy groups. Check the config or restart the core",
+  "editNode": "Edit node",
+  "editNodeSuccess": "Node updated",
+  "favoriteNode": "Favorite node",
+  "unfavoriteNode": "Unfavorite node",
+  "autoExitTest": "Auto exit test",
+  "autoExitTestDesc": "Re-tests nodes without fresh records once a day to keep region labels accurate; recent results are skipped"
 }

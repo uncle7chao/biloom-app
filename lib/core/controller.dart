@@ -132,6 +132,16 @@ class CoreController {
     return _interface.removeProxyNodes(yaml: yaml, names: names);
   }
 
+  /// 原地更新一个节点的参数。名字是组员/规则/链式引用的锚点，内核不允许
+  /// 编辑改名；实现是整体替换 proxies 里那一个条目。
+  Future<UpdateProxyNodeResult> updateProxyNode({
+    required String yaml,
+    required String name,
+    required String node,
+  }) async {
+    return _interface.updateProxyNode(yaml: yaml, name: name, node: node);
+  }
+
   /// 列出这份配置里可以做链式代理的节点与策略组。
   Future<ProfileTargets> readProfileTargets({required String yaml}) async {
     return _interface.readProfileTargets(yaml: yaml);

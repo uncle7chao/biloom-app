@@ -738,5 +738,13 @@
   "deleteNodeMissing": "以下节点在配置里没有找到（可能已被删除）：",
   "noProxyNodes": "这份配置里还没有节点",
   "deleteSelected": "删除所选",
-  "deleteNodesConfirm": "删除后这些节点将从配置中移除，相关引用会一并清理，确定删除？"
+  "deleteNodesConfirm": "删除后这些节点将从配置中移除，相关引用会一并清理，确定删除？",
+  "updateFailedTip": "上次更新失败",
+  "groupsUpdateFailedTip": "获取节点列表失败，请检查配置或重启内核",
+  "editNode": "编辑节点",
+  "editNodeSuccess": "节点已更新",
+  "favoriteNode": "收藏节点",
+  "unfavoriteNode": "取消收藏",
+  "autoExitTest": "自动测落地",
+  "autoExitTestDesc": "每天在后台补测没有最新记录的节点，保持地区标注准确；已测过的不会重复测"
 }

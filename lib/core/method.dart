@@ -39,6 +39,7 @@ enum CoreMethod {
   convertSubscription,
   addProxyNodes,
   removeProxyNodes,
+  updateProxyNode,
   readProfileTargets,
   setProxyChain,
 }

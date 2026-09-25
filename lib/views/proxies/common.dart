@@ -25,6 +25,21 @@ double get proxyCardMetaHeight => globalState.measure.labelSmallHeight + 6;
 /// 比它多 50。不补这一截，滚到底时最后一排节点会被按钮压住。
 const double proxiesExtraFabInset = 52;
 
+/// 把收藏的节点稳定地排到列表前面。
+///
+/// 「代理」页的排序（延迟/按名）在内核做，这里在展示层再做一次**稳定分区**：
+/// 收藏的在前、其余保持原序。稳定的意义：没收藏时列表与原来完全一致，收藏时
+/// 收藏块内部也保持内核排好的顺序（比如延迟升序），只是整体前移。
+/// `_applyRegionFilter` 之后的筛选列表同样适用 —— 筛选与置顶正交。
+List<Proxy> orderFavoritesFirst(List<Proxy> proxies, Set<String>? favorites) {
+  if (favorites == null || favorites.isEmpty) {
+    return proxies;
+  }
+  final head = proxies.where((proxy) => favorites.contains(proxy.name)).toList();
+  final tail = proxies.where((proxy) => !favorites.contains(proxy.name)).toList();
+  return [...head, ...tail];
+}
+
 double getItemHeight(ProxyCardType proxyCardType) {
   final measure = globalState.measure;
   // 卡片内部从上到下：8 上边距 + 名称 + 6 + 第二行 + 8 下边距（+ 1 余量）。

@@ -1011,5 +1011,13 @@ class MessageLookup extends MessageLookupByLibrary {
     "noProxyNodes": MessageLookupByLibrary.simpleMessage("这份配置里还没有节点"),
     "deleteSelected": MessageLookupByLibrary.simpleMessage("删除所选"),
     "deleteNodesConfirm": MessageLookupByLibrary.simpleMessage("删除后这些节点将从配置中移除，相关引用会一并清理，确定删除？"),
+    "updateFailedTip": MessageLookupByLibrary.simpleMessage("上次更新失败"),
+    "groupsUpdateFailedTip": MessageLookupByLibrary.simpleMessage("获取节点列表失败，请检查配置或重启内核"),
+    "editNode": MessageLookupByLibrary.simpleMessage("编辑节点"),
+    "editNodeSuccess": MessageLookupByLibrary.simpleMessage("节点已更新"),
+    "favoriteNode": MessageLookupByLibrary.simpleMessage("收藏节点"),
+    "unfavoriteNode": MessageLookupByLibrary.simpleMessage("取消收藏"),
+    "autoExitTest": MessageLookupByLibrary.simpleMessage("自动测落地"),
+    "autoExitTestDesc": MessageLookupByLibrary.simpleMessage("每天在后台补测没有最新记录的节点，保持地区标注准确；已测过的不会重复测"),
   };
 }

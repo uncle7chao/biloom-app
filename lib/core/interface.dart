@@ -38,6 +38,14 @@ mixin CoreInterface {
     required List<String> names,
   });
 
+  /// 原地更新一个节点的参数。名字是组员/规则/链式引用的锚点，内核不允许
+  /// 编辑改名；实现是整体替换 proxies 里那一个条目。
+  Future<UpdateProxyNodeResult> updateProxyNode({
+    required String yaml,
+    required String name,
+    required String node,
+  });
+
   /// 列出这份配置里可以做链式代理的节点与策略组。
   Future<ProfileTargets> readProfileTargets({required String yaml});
 
@@ -265,6 +273,25 @@ abstract class CoreHandlerInterface with CoreInterface {
       );
     }
     return RemoveProxyNodesResult.fromJson(result);
+  }
+
+  @override
+  Future<UpdateProxyNodeResult> updateProxyNode({
+    required String yaml,
+    required String name,
+    required String node,
+  }) async {
+    final result = await _invokeMethod<Map<String, dynamic>>(
+      method: CoreMethod.updateProxyNode,
+      arguments: {'yaml': yaml, 'name': name, 'node': node},
+    );
+    if (result == null) {
+      throw const CoreMethodException(
+        code: 'empty_result',
+        message: 'Core returned an empty node update result',
+      );
+    }
+    return UpdateProxyNodeResult.fromJson(result);
   }
 
   @override

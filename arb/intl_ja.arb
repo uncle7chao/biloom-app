@@ -738,5 +738,13 @@
   "deleteNodeMissing": "次のノードは見つかりませんでした（削除済みの可能性）：",
   "noProxyNodes": "このプロファイルにはノードがまだありません",
   "deleteSelected": "選択を削除",
-  "deleteNodesConfirm": "選択したノードはプロファイルから削除され、関連する参照も同時にクリーンアップされます。削除しますか？"
+  "deleteNodesConfirm": "選択したノードはプロファイルから削除され、関連する参照も同時にクリーンアップされます。削除しますか？",
+  "updateFailedTip": "前回の更新に失敗しました",
+  "groupsUpdateFailedTip": "プロキシグループの取得に失敗しました。設定を確認するかカーネルを再起動してください",
+  "editNode": "ノードを編集",
+  "editNodeSuccess": "ノードを更新しました",
+  "favoriteNode": "ノードをお気に入りに",
+  "unfavoriteNode": "お気に入り解除",
+  "autoExitTest": "自動出口テスト",
+  "autoExitTestDesc": "新しい記録のないノードを毎日バックグラウンドで再テストし、地域表示を正確に保ちます。最近の結果はスキップされます"
 }

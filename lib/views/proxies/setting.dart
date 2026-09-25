@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/providers/config.dart';
@@ -7,6 +9,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class ProxiesSetting extends StatelessWidget {
   const ProxiesSetting({super.key});
+
+  /// 「自动测落地」开关行：每天后台补测没有新鲜记录的节点。
+  ///
+  /// 开关状态直读 shared_preferences（common/auto_exit_test.dart），不进
+  /// 全局设置模型 —— 它只被定时器消费，不值得为此动 freezed 模型。
+  List<Widget> _buildAutoExitTestSetting(BuildContext context) {
+    final appLocalizations = context.appLocalizations;
+    return generateSection(
+      title: appLocalizations.autoExitTest,
+      items: const [_AutoExitTestItem()],
+    );
+  }
 
   IconData _getIconWithProxiesType(ProxiesType type) {
     return switch (type) {
@@ -260,6 +274,7 @@ class ProxiesSetting extends StatelessWidget {
           ..._buildSortSetting(context),
           ..._buildLayoutSetting(context),
           ..._buildSizeSetting(context),
+          ..._buildAutoExitTestSetting(context),
           Consumer(
             builder: (_, ref, child) {
               final isList = ref.watch(
@@ -279,6 +294,59 @@ class ProxiesSetting extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// 「自动测落地」开关。加载是异步的（shared_preferences completer），所以
+/// 自己持有状态而不是交给父级的无状态 build。
+class _AutoExitTestItem extends ConsumerStatefulWidget {
+  const _AutoExitTestItem();
+
+  @override
+  ConsumerState<_AutoExitTestItem> createState() => _AutoExitTestItemState();
+}
+
+class _AutoExitTestItemState extends ConsumerState<_AutoExitTestItem> {
+  bool? _enabled;
+
+  @override
+  void initState() {
+    super.initState();
+    loadAutoExitTestEnabled().then((value) {
+      if (mounted) {
+        setState(() => _enabled = value);
+      }
+    });
+  }
+
+  Future<void> _handleChange(bool value) async {
+    await saveAutoExitTestEnabled(value);
+    if (mounted) {
+      setState(() => _enabled = value);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final appLocalizations = context.appLocalizations;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Card.filled(
+        child: SwitchListTile(
+          value: _enabled ?? true,
+          onChanged: (value) {
+            unawaited(_handleChange(value));
+          },
+          title: Text(appLocalizations.autoExitTest),
+          subtitle: Text(
+            appLocalizations.autoExitTestDesc,
+            style: context.textTheme.bodySmall?.copyWith(
+              color: context.colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ),
       ),
     );
   }

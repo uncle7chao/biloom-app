@@ -335,6 +335,45 @@ final proxyRegionFilterProvider =
       ProxyRegionFilter.new,
     );
 
+/// 节点收藏（按配置分开记：profileId 字符串 → 收藏名字列表，列表序 = 置顶序）。
+///
+/// 代理页一个组动辄两三百个节点，常用的那几个每次都要翻 —— 收藏 + 置顶
+/// 是这个体量列表的基本盘。持久层在 `common/proxy_favorites.dart`。
+///
+/// 手写 `AsyncNotifierProvider`（同 ProxyExitStore 的理由：生成器环境故障）。
+class ProxyFavorites extends AsyncNotifier<Map<String, List<String>>> {
+  @override
+  Future<Map<String, List<String>>> build() => ProxyFavoritesStore.load();
+
+  Set<String>? of(int? profileId) {
+    if (profileId == null) return null;
+    final list = state.value?[profileId.toString()];
+    return list == null ? null : Set<String>.from(list);
+  }
+
+  void toggle(int profileId, String name) {
+    final key = profileId.toString();
+    final current = Map<String, List<String>>.from(state.value ?? const {});
+    final list = List<String>.from(current[key] ?? const []);
+    // remove 返回 false 说明本来不在 → 加入；在 → 移除。
+    if (!list.remove(name)) {
+      list.add(name);
+    }
+    if (list.isEmpty) {
+      current.remove(key);
+    } else {
+      current[key] = list;
+    }
+    state = AsyncData(current);
+    unawaited(ProxyFavoritesStore.save(current));
+  }
+}
+
+final proxyFavoritesProvider =
+    AsyncNotifierProvider<ProxyFavorites, Map<String, List<String>>>(
+      ProxyFavorites.new,
+    );
+
 /// 「测落地」的结果：这个节点真实出口的国家码与 IP。
 ///
 /// 节点名的地区标注是**机场随手写的**（实测 `US-443-WS-TLS` 落在吉隆坡、

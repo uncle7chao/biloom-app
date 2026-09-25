@@ -136,7 +136,12 @@ class AppTray implements TrayPort {
           },
         ),
       const TrayMenuSeparator(),
-      if (isMacOS) ..._buildGroupMenu(trayState: trayState, read: read),
+      // 节点快速切换：Windows 与 macOS 的原生菜单都支持子菜单（windows 端
+      // tray_plugin.cpp 的 RebuildMenu 递归建 HMENU）。桌面端放开 —— 托盘
+      // 切节点是高频动作，为此开主窗口太重。Linux 端插件没有子菜单实现，
+      // 保持关闭。
+      if (isMacOS || isWindows)
+        ..._buildGroupMenu(trayState: trayState, read: read),
       if (trayState.isStart) ...[
         TrayMenuCheckbox(
           label: appLocalizations.tun,
@@ -171,6 +176,11 @@ class AppTray implements TrayPort {
     ];
   }
 
+  /// 一个组在托盘里最多展示的节点数。Win32 菜单塞几百项既卡又找不到 ——
+  /// 截断到前 [trayGroupMenuMaxItems] 个（顺序沿用内核排好的：延迟升序或
+  /// 名字序），当前选中的节点若不在前段里就钉在末尾，保证勾选状态可见。
+  static const trayGroupMenuMaxItems = 60;
+
   List<TrayMenuItem> _buildGroupMenu({
     required TrayState trayState,
     required ProviderReader read,
@@ -182,21 +192,43 @@ class AppTray implements TrayPort {
       for (final group in trayState.groups)
         TrayMenuSubmenu(
           label: group.name,
-          items: [
-            for (final proxy in group.all)
-              TrayMenuCheckbox(
-                label: proxy.name,
-                checked:
-                    read(selectedProxyNameProvider(group.name)) == proxy.name,
-                onSelected: () {
-                  read(
-                    proxiesActionProvider.notifier,
-                  ).changeProxy(groupName: group.name, proxyName: proxy.name);
-                },
-              ),
-          ],
+          items: _buildGroupProxyItems(group: group, read: read),
         ),
       const TrayMenuSeparator(),
+    ];
+  }
+
+  List<TrayMenuItem> _buildGroupProxyItems({
+    required Group group,
+    required ProviderReader read,
+  }) {
+    final selected = read(selectedProxyNameProvider(group.name));
+    var proxies = group.all;
+    if (proxies.length > trayGroupMenuMaxItems) {
+      final head = proxies.take(trayGroupMenuMaxItems).toList();
+      // 选中的不在展示段里就钉在末尾 —— 否则用户看不到当前用的是哪个。
+      if (!head.any((proxy) => proxy.name == selected)) {
+        final selectedProxy = proxies.where(
+          (proxy) => proxy.name == selected,
+        );
+        if (selectedProxy.isNotEmpty) {
+          head[head.length - 1] = selectedProxy.first;
+        }
+      }
+      proxies = head;
+    }
+    return [
+      for (final proxy in proxies)
+        TrayMenuCheckbox(
+          label: proxy.name,
+          checked: selected == proxy.name,
+          onSelected: () {
+            read(proxiesActionProvider.notifier).changeProxy(
+              groupName: group.name,
+              proxyName: proxy.name,
+            );
+          },
+        ),
     ];
   }
 

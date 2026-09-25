@@ -5,6 +5,8 @@ import 'package:fl_clash/widgets/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
+import 'edit_node.dart';
+
 /// 「管理节点」面板：列出一份配置里的全部节点，逐个删除。
 ///
 /// 入口在配置卡片菜单（「添加节点」旁边）。节点名单从内核 [readProfileTargets]
@@ -27,8 +29,23 @@ class ManageProxyNodesView extends ConsumerStatefulWidget {
 class _ManageProxyNodesViewState extends ConsumerState<ManageProxyNodesView> {
   List<ProfileTarget>? _nodes;
   String? _error;
+
+  /// 名字 → 节点完整参数（readProfileTargets 的 nodes，编辑预填用）。
+  Map<String, Map<String, dynamic>> _nodeDetails = {};
   // 批量删除的选中集。名字是节点的唯一键（内核按名字删），直接拿名字当勾选状态。
   final Set<String> _selected = {};
+
+  /// 表单支持的协议才给「编辑」入口：其它类型（wireguard/tuic/…）没有表单，
+  /// 编辑入口点不开比点了报错好。
+  static const _editableTypes = {
+    'socks5',
+    'http',
+    'ss',
+    'vmess',
+    'vless',
+    'trojan',
+    'hysteria2',
+  };
 
   @override
   void initState() {
@@ -44,6 +61,10 @@ class _ManageProxyNodesViewState extends ConsumerState<ManageProxyNodesView> {
       if (!mounted) return;
       setState(() {
         _nodes = targets.proxies;
+        _nodeDetails = {
+          for (final node in targets.nodes)
+            if (node['name'] != null) node['name'].toString(): node,
+        };
         // 重新加载后名单可能变短（刚删掉一批），把不在名单里的选中项清掉。
         _selected.removeWhere(
           (name) => !targets.proxies.any((node) => node.name == name),
@@ -83,8 +104,21 @@ class _ManageProxyNodesViewState extends ConsumerState<ManageProxyNodesView> {
     });
   }
 
-  void _showResult(RemoveProxyNodesResult result) {
-    final appLocalizations = context.appLocalizations;
+  /// 打开「编辑节点」面板。预填数据来自 readProfileTargets 的 nodes；
+  /// 万一详情缺失（不该发生，但数据过期防御）就不给开，避免一张半空表单。
+  void _handleEdit(ProfileTarget node) {
+    final detail = _nodeDetails[node.name];
+    if (detail == null) {
+      return;
+    }
+    showSheet(
+      context: context,
+      props: const SheetProps(isScrollControlled: true),
+      builder: (_) => EditProxyNodeView(profileId: widget.profileId, node: detail),
+    );
+  }
+
+  void _showResult(RemoveProxyNodesResult result) {    final appLocalizations = context.appLocalizations;
     final lines = <String>[];
     if (result.removed.isNotEmpty) {
       lines.add(appLocalizations.deleteNodeSuccess);
@@ -249,10 +283,22 @@ class _ManageProxyNodesViewState extends ConsumerState<ManageProxyNodesView> {
               color: context.colorScheme.onSurfaceVariant,
             ),
           ),
-          trailing: IconButton(
-            icon: const Icon(Icons.delete_outline),
-            tooltip: appLocalizations.deleteNode,
-            onPressed: () => _handleDelete(node),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (_editableTypes.contains(node.type) &&
+                  _nodeDetails.containsKey(node.name))
+                IconButton(
+                  icon: const Icon(Icons.edit_outlined),
+                  tooltip: appLocalizations.editNode,
+                  onPressed: () => _handleEdit(node),
+                ),
+              IconButton(
+                icon: const Icon(Icons.delete_outline),
+                tooltip: appLocalizations.deleteNode,
+                onPressed: () => _handleDelete(node),
+              ),
+            ],
           ),
         );
       },

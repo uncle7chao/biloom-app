@@ -143,9 +143,18 @@ class _ProxiesListViewState extends ConsumerState<ProxiesListView> {
   }) {
     final groupName = group.name;
     final isExpand = currentUnfoldSet.contains(groupName);
-    final rows = isExpand
-        ? group.all.chunks(columns).toList()
-        : const <List<Proxy>>[];
+    // 收藏置顶：内核排好的顺序里做一次稳定分区，收藏的排前面。
+    // watch 而不是 read —— 收藏一变，整组行立刻重排。
+    final profileId = ref.watch(currentProfileIdProvider);
+    final favorites = ref.watch(
+      proxyFavoritesProvider.select(
+        (value) => profileId == null
+            ? null
+            : value.value?[profileId.toString()]?.toSet(),
+      ),
+    );
+    final all = orderFavoritesFirst(group.all, favorites);
+    final rows = isExpand ? all.chunks(columns).toList() : const <List<Proxy>>[];
     return SliverMainAxisGroup(
       slivers: [
         PinnedHeaderSliver(

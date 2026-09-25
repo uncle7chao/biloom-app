@@ -1369,5 +1369,13 @@ class MessageLookup extends MessageLookupByLibrary {
     "noProxyNodes": MessageLookupByLibrary.simpleMessage("No nodes in this profile yet"),
     "deleteSelected": MessageLookupByLibrary.simpleMessage("Delete selected"),
     "deleteNodesConfirm": MessageLookupByLibrary.simpleMessage("The selected nodes will be removed from the profile and all their references cleaned up. Delete them?"),
+    "updateFailedTip": MessageLookupByLibrary.simpleMessage("Last update failed"),
+    "groupsUpdateFailedTip": MessageLookupByLibrary.simpleMessage("Failed to load proxy groups. Check the config or restart the core"),
+    "editNode": MessageLookupByLibrary.simpleMessage("Edit node"),
+    "editNodeSuccess": MessageLookupByLibrary.simpleMessage("Node updated"),
+    "favoriteNode": MessageLookupByLibrary.simpleMessage("Favorite node"),
+    "unfavoriteNode": MessageLookupByLibrary.simpleMessage("Unfavorite node"),
+    "autoExitTest": MessageLookupByLibrary.simpleMessage("Auto exit test"),
+    "autoExitTestDesc": MessageLookupByLibrary.simpleMessage("Re-tests nodes without fresh records once a day to keep region labels accurate; recent results are skipped"),
   };
 }

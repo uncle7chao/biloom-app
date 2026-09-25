@@ -16,7 +16,12 @@ import 'package:material_ui/material_ui.dart';
 /// 实际读取的字段，传输层相关字段（ws/grpc）只在选了对应传输层时出现，Reality
 /// 三件套只在勾了 Reality 时出现 —— 否则表单会长到让用户找不到重点。
 class ProxyNodeForm extends StatefulWidget {
-  const ProxyNodeForm({super.key});
+  const ProxyNodeForm({super.key, this.initialNode});
+
+  /// 编辑模式：传入要编辑节点的完整参数（来自 readProfileTargets 的 nodes）。
+  /// 非空时表单进入编辑形态 —— 协议锁定、节点名只读（名字是组员/规则/链式
+  /// 引用的锚点，内核的 updateProxyNode 不允许改名），其余字段全部预填。
+  final Map<String, dynamic>? initialNode;
 
   @override
   State<ProxyNodeForm> createState() => ProxyNodeFormState();
@@ -83,8 +88,105 @@ class ProxyNodeFormState extends State<ProxyNodeForm> {
   final _formKey = GlobalKey<FormState>();
   final Map<String, TextEditingController> _controllers = {};
   final Map<String, bool> _bools = {};
+
+  /// 编辑模式的预填值：key → 字符串。控制器惰性创建，这里先把节点参数
+  /// 解码进来，创建时取用（嵌套结构 ws-opts/grpc-opts/reality-opts/alpn
+  /// 在这里摊平成表单的伪字段）。
+  final Map<String, String> _prefill = {};
+
   String _type = 'socks5';
   bool _advancedOpen = false;
+
+  @override
+  void initState() {
+    super.initState();
+    final node = widget.initialNode;
+    if (node == null) {
+      return;
+    }
+    const supported = [
+      'socks5',
+      'http',
+      'ss',
+      'vmess',
+      'vless',
+      'trojan',
+      'hysteria2',
+    ];
+    final type = node['type']?.toString();
+    if (type != null && supported.contains(type)) {
+      _type = type;
+    }
+    for (final key in [
+      'name',
+      'server',
+      'port',
+      'username',
+      'password',
+      'uuid',
+      'alterId',
+      'cipher',
+      'network',
+      'obfs',
+      'flow',
+      'sni',
+      'servername',
+      'client-fingerprint',
+      'up',
+      'down',
+      'ports',
+      'hop-interval',
+    ]) {
+      final value = node[key];
+      if (value != null) {
+        _prefill[key] = value.toString();
+      }
+    }
+    for (final key in ['udp', 'tls', 'reality', 'skip-cert-verify']) {
+      final value = node[key];
+      if (value is bool) {
+        _bools[key] = value;
+      }
+    }
+    final wsOpts = node['ws-opts'];
+    if (wsOpts is Map) {
+      final path = wsOpts['path'];
+      if (path != null) {
+        _prefill['ws-path'] = path.toString();
+      }
+      final headers = wsOpts['headers'];
+      if (headers is Map) {
+        final host = headers['Host'] ?? headers['host'];
+        if (host != null) {
+          _prefill['ws-host'] = host.toString();
+        }
+      }
+    }
+    final grpcOpts = node['grpc-opts'];
+    if (grpcOpts is Map) {
+      final service = grpcOpts['grpc-service-name'];
+      if (service != null) {
+        _prefill['grpc-service'] = service.toString();
+      }
+    }
+    final realityOpts = node['reality-opts'];
+    if (realityOpts is Map) {
+      final publicKey = realityOpts['public-key'];
+      if (publicKey != null) {
+        _prefill['reality-public-key'] = publicKey.toString();
+      }
+      final shortId = realityOpts['short-id'];
+      if (shortId != null) {
+        _prefill['reality-short-id'] = shortId.toString();
+      }
+    }
+    final alpn = node['alpn'];
+    if (alpn is List) {
+      _prefill['alpn'] = alpn.map((item) => item.toString()).join(',');
+    }
+  }
+
+  bool get _isEdit => widget.initialNode != null;
 
   static const _ssCiphers = [
     'aes-128-gcm',
@@ -536,7 +638,9 @@ class ProxyNodeFormState extends State<ProxyNodeForm> {
   TextEditingController _controller(String key, [_Field? field]) {
     return _controllers.putIfAbsent(
       key,
-      () => TextEditingController(text: field?.initial ?? ''),
+      () => TextEditingController(
+        text: _prefill[key] ?? field?.initial ?? '',
+      ),
     );
   }
 
@@ -724,11 +828,14 @@ class ProxyNodeFormState extends State<ProxyNodeForm> {
                   ),
                 )
                 .toList(),
-            onChanged: (value) {
-              if (value != null && value != _type) {
-                _switchProtocol(value);
-              }
-            },
+            // 编辑模式锁定协议：改协议等于换一种节点，那不是「编辑参数」。
+            onChanged: _isEdit
+                ? null
+                : (value) {
+                    if (value != null && value != _type) {
+                      _switchProtocol(value);
+                    }
+                  },
           ),
           const SizedBox(height: 12),
           ...normal.map((field) => _buildField(field, values)),
@@ -785,6 +892,8 @@ class ProxyNodeFormState extends State<ProxyNodeForm> {
           child: TextFormField(
             controller: _controller(field.key, field),
             obscureText: field.type == _FieldType.password,
+            // 名字是组员/规则/链式引用的锚点：编辑模式只读。
+            readOnly: _isEdit && field.key == 'name',
             keyboardType: field.type == _FieldType.int_
                 ? TextInputType.number
                 : TextInputType.text,

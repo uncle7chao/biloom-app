@@ -106,17 +106,29 @@ class ProxyCard extends ConsumerWidget {
     );
   }
 
-  /// 节点卡片的右键/长按菜单：测速、测落地、删除。
+  /// 节点卡片的右键/长按菜单：收藏、测速、测落地、删除。
   ///
   /// 配置卡片一直有「⋯」菜单，节点卡片此前什么都没有 —— 删除做完之后入口却
   /// 只有「配置卡片 → 管理节点」一条路，对着要删的卡片反而没有动作。这里补上
   /// 与配置卡片同一套 [CommonPopupMenu]，桌面右键、移动端长按都能唤出。
   List<CommonPopupMenuItem> _buildMenuItems(
     BuildContext context,
-    WidgetRef ref,
-  ) {
+    WidgetRef ref, {
+    required bool isFavorite,
+  }) {
     final appLocalizations = context.appLocalizations;
     return [
+      CommonPopupMenuItem(
+        icon: isFavorite ? Icons.star : Icons.star_border,
+        label: isFavorite
+            ? appLocalizations.unfavoriteNode
+            : appLocalizations.favoriteNode,
+        onPressed: () {
+          final profile = ref.read(currentProfileProvider);
+          if (profile == null) return;
+          ref.read(proxyFavoritesProvider.notifier).toggle(profile.id, proxy.name);
+        },
+      ),
       CommonPopupMenuItem(
         icon: Icons.bolt,
         label: appLocalizations.proxyDelayTestNow,
@@ -142,9 +154,18 @@ class ProxyCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final proxyNameText = _buildProxyNameText(context);
     final region = ref.watch(proxyRegionProvider(proxy));
+    final profileId = ref.watch(currentProfileIdProvider);
+    final isFavorite =
+        profileId != null &&
+        (ref.watch(
+              proxyFavoritesProvider.select(
+                (value) => value.value?[profileId.toString()]?.contains(proxy.name),
+              ),
+            ) ??
+            false);
     return CommonPopupBox(
       popupBuilder: (_) => CommonPopupMenu(
-        items: _buildMenuItems(context, ref),
+        items: _buildMenuItems(context, ref, isFavorite: isFavorite),
       ),
       targetBuilder: (open) => GestureDetector(
         // offset 用指针落点：菜单锚定在右键位置附近，而不是整张卡片的角上。
@@ -152,6 +173,18 @@ class ProxyCard extends ConsumerWidget {
         onLongPressStart: (details) => open(offset: details.localPosition),
         child: Stack(
           children: [
+            // 收藏角标：小星标钉在左上角（右上角是「计算选中」标记的位置）。
+            // 只是叠一层图标，不占行高 —— 高度由 getItemHeight 统一管。
+            if (isFavorite)
+              Positioned(
+                top: 1,
+                left: 2,
+                child: Icon(
+                  Icons.star,
+                  size: 14,
+                  color: context.colorScheme.onSurfaceVariant,
+                ),
+              ),
             Consumer(
               builder: (_, ref, child) {
                 final selectedProxyName = ref.watch(
