@@ -1,5 +1,12 @@
 # Changelog
 
+## v01.00.08 (2026-09-25)
+
+**Bug Fixes**
+
+- **core** Pasting a full V2rayN/Xray config containing Hysteria2 now works: the converter maps protocol "hysteria" (version 2) to mihomo hysteria2 (auth -> password, serverName -> sni, tls) and drops mihomo-incompatible keys (network/mux/finalmask); share links were never affected (df94124)
+- The update button now works for custom (file-based) profiles: it re-applies the local file through the converter and validator instead of doing nothing; subscription profiles keep pulling from the remote, and the menu entry is visible for every profile (69bbc8b)
+
 ## v01.00.07 (2026-09-24)
 
 **Features**

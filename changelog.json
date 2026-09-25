@@ -2,6 +2,28 @@
   "schemaVersion": 2,
   "versions": [
     {
+      "version": "01.00.08",
+      "tag": "v01.00.08",
+      "date": "2026-09-25",
+      "prerelease": false,
+      "groups": [
+        {
+          "type": "fix",
+          "entries": [
+            {
+              "id": "df94124",
+              "scope": "core",
+              "text": "Pasting a full V2rayN/Xray config containing Hysteria2 now works: the converter maps protocol \"hysteria\" (version 2) to mihomo hysteria2 (auth -> password, serverName -> sni, tls) and drops mihomo-incompatible keys (network/mux/finalmask); share links were never affected"
+            },
+            {
+              "id": "69bbc8b",
+              "text": "The update button now works for custom (file-based) profiles: it re-applies the local file through the converter and validator instead of doing nothing; subscription profiles keep pulling from the remote, and the menu entry is visible for every profile"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "version": "01.00.07",
       "tag": "v01.00.07",
       "date": "2026-09-24",
