@@ -15,7 +15,7 @@ package main
 // outbound 原样塞进 proxies，节点也只会以「全是空字段」的形态存在，用户根本
 // 看不出哪里错了。所以这里显式做一层映射，转不动的字段宁可丢掉也不乱猜。
 //
-// 覆盖协议：vless / vmess / trojan / shadowsocks / socks / http。
+// 覆盖协议：vless / vmess / trojan / hysteria（hysteria2）/ shadowsocks / socks / http。
 // freedom（直连）、blackhole（阻断）、dns、wireguard 等 outbound 不是「节点」，
 // 一律跳过；一个可导入的都没有时给出明确报错，而不是静默成功。
 
@@ -113,6 +113,11 @@ func convertXrayOutbound(outbound map[string]any, index int) (map[string]any, er
 		// mihomo 的类型名是 socks5，Xray 叫 socks。
 		nodeType = "socks5"
 	}
+	if protocol == "hysteria" {
+		// Xray/V2rayN 的 hysteria（settings.version:2）即 mihomo 的 hysteria2。
+		// 服务器地址在 settings.address/port，不在 vnext/servers 列表里。
+		nodeType = "hysteria2"
+	}
 	switch protocol {
 	case "vless":
 		entries = xrayServerEntries(settings, "vnext")
@@ -126,6 +131,15 @@ func convertXrayOutbound(outbound map[string]any, index int) (map[string]any, er
 		entries = xrayServerEntries(settings, "servers")
 	case "http":
 		entries = xrayServerEntries(settings, "servers")
+	case "hysteria":
+		// Xray/V2rayN 的 hysteria 服务器地址在 settings 顶层，不在
+		// vnext/servers 子列表；拼一条合成条目交给通用拼装逻辑。
+		addr := xrayString(settings["address"])
+		port, ok := xrayInt(settings["port"])
+		if addr == "" || !ok {
+			return nil, fmt.Errorf("hysteria 缺少地址或端口")
+		}
+		entries = []map[string]any{{"address": addr, "port": port}}
 	default:
 		return nil, fmt.Errorf("%s 不支持", protocol)
 	}
@@ -231,6 +245,16 @@ func buildNodeFromXrayEntry(nodeType string, entry map[string]any, stream map[st
 	case "trojan":
 		if password := xrayString(entry["password"]); password != "" {
 			node["password"] = password
+		}
+	case "hysteria2":
+		// Xray/V2rayN 的 hysteriaSettings.auth 即 mihomo 的 password；
+		// 它不在服务器条目里，而在 streamSettings.hysteriaSettings。
+		if stream != nil {
+			if hs, ok := stream["hysteriaSettings"].(map[string]any); ok {
+				if auth := xrayString(hs["auth"]); auth != "" {
+					node["password"] = auth
+				}
+			}
 		}
 	case "ss", "shadowsocks":
 		if method := xrayString(entry["method"]); method != "" {
@@ -353,7 +377,7 @@ func applyXrayStream(node map[string]any, nodeType string, stream map[string]any
 	security := xrayString(stream["security"])
 	sniKey := ""
 	switch nodeType {
-	case "trojan", "http":
+	case "trojan", "http", "hysteria2":
 		sniKey = "sni"
 	case "vless", "vmess":
 		sniKey = "servername"
