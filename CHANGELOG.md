@@ -1,5 +1,11 @@
 # Changelog
 
+## v01.00.09 (2026-09-25)
+
+**Bug Fixes**
+
+- **core** Newly added nodes now show up and are selectable: nodes added to a profile that already had the default groups were stored but orphaned (in no proxy group, invisible on the proxies page, unreachable by rules). They are now attached to the default groups on every addition, and clicking update re-attaches any previously orphaned nodes; custom-named groups are never touched (3f15cdf)
+
 ## v01.00.08 (2026-09-25)
 
 **Bug Fixes**

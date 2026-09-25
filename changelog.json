@@ -2,6 +2,24 @@
   "schemaVersion": 2,
   "versions": [
     {
+      "version": "01.00.09",
+      "tag": "v01.00.09",
+      "date": "2026-09-25",
+      "prerelease": false,
+      "groups": [
+        {
+          "type": "fix",
+          "entries": [
+            {
+              "id": "3f15cdf",
+              "scope": "core",
+              "text": "Newly added nodes now show up and are selectable: nodes added to a profile that already had the default groups were stored but orphaned (in no proxy group, invisible on the proxies page, unreachable by rules). They are now attached to the default groups on every addition, and clicking update re-attaches any previously orphaned nodes; custom-named groups are never touched"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "version": "01.00.08",
       "tag": "v01.00.08",
       "date": "2026-09-25",
