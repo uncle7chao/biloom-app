@@ -144,6 +144,53 @@ type SetProxyChainResult struct {
 	YAML string `json:"yaml"`
 }
 
+// CopyProxyNodeParams 是 copyProxyNode 的入参：把来源配置里的一个节点**原样复制**
+// 进目标配置。链式代理的「跨配置挑选」靠它兜底 —— 链是名字引用，只在同一份配置
+// 内成立，所以从别的配置挑了出口/前置后，得先把那个节点搬进链所在的那份配置。
+type CopyProxyNodeParams struct {
+	From string `json:"from"` // 来源配置全文
+	To   string `json:"to"`   // 目标配置全文
+	Name string `json:"name"` // 要复制的节点名（必须在来源配置的 proxies 里）
+}
+
+// CopyProxyNodeResult 回传复制结果。
+//
+// Name 是节点在目标配置里的**最终名字**：目标配置已有同名时自动追加 -2、-3，
+// 链必须引用这个名字而不是请求里的原名。Reused 为 true 表示目标配置里已存在
+// 同一节点（协议|地址|端口|凭据 相同），此时一个字节都没动、直接复用那个已有
+// 名字 —— 跨配置复制同一个节点两次不该产出两条一模一样的记录。
+type CopyProxyNodeResult struct {
+	YAML   string `json:"yaml"`
+	Name   string `json:"name"`
+	Reused bool   `json:"reused"`
+}
+
+// AddProxyChainParams 是 addProxyChain 的入参：**新建一条独立的链式代理节点**。
+//
+// 与 setProxyChain（把 dialer-proxy 写到出口节点身上）不同，这条路线生成的是
+// 一个新 proxy 条目：参数复制自出口、dialer-proxy 指向前置、名字由调用方给。
+// 所有链式代理节点统一收进 Group 指定的策略组（不存在就创建 select 组），
+// 代理页里就是一个独立页签。
+//
+// AutoNumber 决定重名时的策略：true（界面用默认名「链式代理」）→ 按 名称1、
+// 名称2 递增找空位；false（用户自定义名）→ 先用原名，被占用才追加 -2、-3。
+type AddProxyChainParams struct {
+	YAML       string `json:"yaml"`
+	Exit       string `json:"exit"`   // 出口节点名（参数复制自它）
+	Dialer     string `json:"dialer"` // 前置名（节点或策略组）
+	Name       string `json:"name"`   // 期望的链式代理名（基础名）
+	AutoNumber bool   `json:"autoNumber"`
+	Group      string `json:"group"` // 收纳所有链式代理的分组名
+}
+
+// AddProxyChainResult 回传创建结果。Name 是链式代理节点的**最终名字**
+// （重名时可能带数字后缀），界面提示与后续引用都用它。
+type AddProxyChainResult struct {
+	YAML  string `json:"yaml"`
+	Name  string `json:"name"`
+	Group string `json:"group"`
+}
+
 type ChangeProxyParams struct {
 	GroupName string `json:"group-name"`
 	ProxyName string `json:"proxy-name"`
@@ -230,6 +277,8 @@ const (
 	updateProxyNodeMethod          CoreMethod = "updateProxyNode"
 	readProfileTargetsMethod       CoreMethod = "readProfileTargets"
 	setProxyChainMethod            CoreMethod = "setProxyChain"
+	copyProxyNodeMethod            CoreMethod = "copyProxyNode"
+	addProxyChainMethod            CoreMethod = "addProxyChain"
 )
 
 type CoreMethod string

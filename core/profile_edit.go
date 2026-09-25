@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/metacubex/mihomo/common/convert"
@@ -1086,6 +1087,325 @@ func handleSetProxyChain(params *SetProxyChainParams) (SetProxyChainResult, erro
 		return SetProxyChainResult{}, err
 	}
 	return SetProxyChainResult{YAML: out}, nil
+}
+
+// handleCopyProxyNode 把来源配置里的一个节点复制进目标配置。
+//
+// 这是「跨配置挑选」的底层能力：链式代理是名字引用、只在同一份配置内成立，
+// 界面让用户从任何配置挑出口/前置，挑中来源配置的节点就先调这里把它搬进
+// 目标配置，链再挂在搬过来的那份参数上。
+//
+// 三条规则：
+//   - **剥掉 dialer-proxy**：复制体在目标配置里是孤立节点，它原来挂的前置
+//     （可能是来源配置里的某个组名）在目标配置里未必存在 —— 带过来就是悬空
+//     引用，整份配置加载失败。想给复制体设链，在目标配置里重新设。
+//   - **名字冲突自动改名**（追加 -2、-3）：与 addProxyNodes 的「跳过」不同，
+//     这里跳过会让链挂不上（用户明明选了这个节点），自动改名则链引用回传的
+//     最终名即可，节点参数一字不差。
+//   - **身份相同直接复用**：目标配置里已有 协议|地址|端口|凭据 完全一致的
+//     节点时不追加 —— 同一个节点复制两次不该产出两条记录，复用已有的名字。
+func handleCopyProxyNode(params *CopyProxyNodeParams) (CopyProxyNodeResult, error) {
+	name := strings.TrimSpace(params.Name)
+	if name == "" {
+		return CopyProxyNodeResult{}, errors.New("没有指定要复制的节点")
+	}
+
+	// 来源：找到节点并把参数原样解出来。文档树本身不再使用（只读解码），
+	// 用 `_` 接住 —— 来源配置一个字节都不会被改。
+	_, srcRoot, err := profileDocument([]byte(params.From))
+	if err != nil {
+		return CopyProxyNodeResult{}, fmt.Errorf("来源配置解析失败: %w", err)
+	}
+	var node map[string]any
+	if proxies, _ := mappingEntry(srcRoot, "proxies"); proxies != nil &&
+		proxies.Kind == yamlv3.SequenceNode {
+		for _, item := range proxies.Content {
+			if scalarValue(item, "name") == name && item.Kind == yamlv3.MappingNode {
+				if err := item.Decode(&node); err != nil {
+					return CopyProxyNodeResult{}, fmt.Errorf(
+						"读取节点 %q 失败: %w", name, err,
+					)
+				}
+				break
+			}
+		}
+	}
+	if node == nil {
+		return CopyProxyNodeResult{}, fmt.Errorf(
+			"来源配置里找不到名为 %q 的节点；请刷新面板后重试",
+			name,
+		)
+	}
+	// 复制体不许带链：dialer-proxy 指向的名字只在来源配置里有意义。
+	delete(node, "dialer-proxy")
+
+	// 目标：追加（或复用）。
+	dstDoc, dstRoot, err := profileDocument([]byte(params.To))
+	if err != nil {
+		return CopyProxyNodeResult{}, fmt.Errorf("目标配置解析失败: %w", err)
+	}
+	used := existingNames(dstRoot)
+
+	// 身份复用先于改名：目标配置里已有同一台服务器就直接用它。
+	identities := make(map[string]string) // identity → 已有节点名
+	if proxies, _ := mappingEntry(dstRoot, "proxies"); proxies != nil &&
+		proxies.Kind == yamlv3.SequenceNode {
+		var existing []map[string]any
+		if err := proxies.Decode(&existing); err != nil {
+			return CopyProxyNodeResult{}, fmt.Errorf("读取节点列表失败: %w", err)
+		}
+		for _, other := range existing {
+			if identity := proxyIdentity(other); identity != "||||" {
+				if otherName, _ := other["name"].(string); otherName != "" {
+					identities[identity] = strings.TrimSpace(otherName)
+				}
+			}
+		}
+	}
+	if identity := proxyIdentity(node); identity != "||||" {
+		if existingName, ok := identities[identity]; ok {
+			return CopyProxyNodeResult{
+				YAML:   params.To,
+				Name:   existingName,
+				Reused: true,
+			}, nil
+		}
+	}
+
+	finalName := name
+	if used[finalName] {
+		for suffix := 2; ; suffix++ {
+			candidate := fmt.Sprintf("%s-%d", name, suffix)
+			if !used[candidate] {
+				finalName = candidate
+				break
+			}
+		}
+	}
+	node["name"] = finalName
+
+	children, err := valueNodes([]map[string]any{node})
+	if err != nil {
+		return CopyProxyNodeResult{}, err
+	}
+	if err := appendToSequence(dstRoot, "proxies", children); err != nil {
+		return CopyProxyNodeResult{}, err
+	}
+	// 与 addProxyNodes 同一套收尾：没分组的配置补默认分组，有分组的把新节点
+	// 接回锚点组 —— 否则复制过来的节点在代理页看不见、分流也够不着。
+	if _, _, err := ensureUsableDefaults(dstRoot); err != nil {
+		return CopyProxyNodeResult{}, err
+	}
+	if _, err := healUngroupedProxies(dstRoot); err != nil {
+		return CopyProxyNodeResult{}, err
+	}
+	out, err := marshalDocument(dstDoc)
+	if err != nil {
+		return CopyProxyNodeResult{}, err
+	}
+	return CopyProxyNodeResult{YAML: out, Name: finalName}, nil
+}
+
+// handleAddProxyChain 新建一条**独立的链式代理节点**。
+//
+// 与 handleSetProxyChain 的区别是模型：setProxyChain 把 dialer-proxy 写到出口
+// 节点身上，链「住」在出口里，代理页上看不出哪条是链；这里生成一个新 proxy
+// 条目 —— 参数复制自出口、dialer-proxy 指向前置、名字独立（默认「链式代理N」
+// 递增），并把它收进 Group 指定的策略组（不存在就创建 select 组）。所有链
+// 集中在一个组里，代理页就是一个独立页签，建了几条、各自走什么路一目了然。
+//
+// 校验与 setProxyChain 同一套标准（dialer 悬空引用会让整份配置加载失败，而
+// handleValidateConfig 拦不住这类错误，必须在这里挡）：
+//   - 出口必须是 proxies 里真实存在的节点（组不行，组没法被复制成新条目）；
+//   - 前置必须是节点名或策略组名；
+//   - 前置沿既有链走不能成环。
+//
+// 收尾顺序有意安排：先 ensureUsableDefaults（空配置先有基本分组，出口节点
+// 也能被默认组引用），再追加链节点，最后保证链分组存在 —— 链节点天生就在
+// 链分组里被引用，不需要 healUngroupedProxies 再接一遍。
+func handleAddProxyChain(params *AddProxyChainParams) (AddProxyChainResult, error) {
+	exit := strings.TrimSpace(params.Exit)
+	dialer := strings.TrimSpace(params.Dialer)
+	base := strings.TrimSpace(params.Name)
+	group := strings.TrimSpace(params.Group)
+	switch {
+	case exit == "":
+		return AddProxyChainResult{}, errors.New("没有指定链式代理的出口节点")
+	case dialer == "":
+		return AddProxyChainResult{}, errors.New("没有指定链式代理的前置")
+	case base == "":
+		return AddProxyChainResult{}, errors.New("没有指定链式代理的名称")
+	case group == "":
+		return AddProxyChainResult{}, errors.New("没有指定链式代理的分组名")
+	}
+
+	doc, root, err := profileDocument([]byte(params.YAML))
+	if err != nil {
+		return AddProxyChainResult{}, err
+	}
+	// 空配置先补基本分组：默认组引用全部节点（含出口），MATCH 兜底规则也让
+	// 流量有去处。已有分组的配置这一步是 no-op。
+	if _, _, err := ensureUsableDefaults(root); err != nil {
+		return AddProxyChainResult{}, err
+	}
+
+	// 找出口节点并复制参数。
+	var node map[string]any
+	if proxies, _ := mappingEntry(root, "proxies"); proxies != nil &&
+		proxies.Kind == yamlv3.SequenceNode {
+		for _, item := range proxies.Content {
+			if scalarValue(item, "name") == exit && item.Kind == yamlv3.MappingNode {
+				if err := item.Decode(&node); err != nil {
+					return AddProxyChainResult{}, fmt.Errorf(
+						"读取节点 %q 失败: %w", exit, err,
+					)
+				}
+				break
+			}
+		}
+	}
+	if node == nil {
+		return AddProxyChainResult{}, fmt.Errorf(
+			"配置里找不到名为 %q 的出口节点；链式代理的出口必须是节点，请刷新面板后重试",
+			exit,
+		)
+	}
+	// 复制体不许继承出口已有的链：那个 dialer-proxy 是出口自己的设置，新链
+	// 的前置由本次调用指定（覆盖写在下面），残留旧值只会造成误解。
+	delete(node, "dialer-proxy")
+
+	// 前置存在性：节点名或策略组名。名字与成环检测都在追加**之前**做，失败
+	// 时配置一个字节都没动。
+	used := existingNames(root)
+	if !used[dialer] {
+		return AddProxyChainResult{}, fmt.Errorf(
+			"配置里找不到名为 %q 的前置；它必须是一个节点名或策略组名",
+			dialer,
+		)
+	}
+
+	// 名字解析。AutoNumber（默认名路径）：不管基础名本身空不空，一律从
+	// 名称1 开始编号，取已占用最大编号 +1 —— 用户删了中间某条后新链接着
+	// 往后排，不回头填空，编号与创建顺序始终一致。自定义名路径：先用原名，
+	// 被占用才追加 -2、-3（与 copyProxyNode 同一规则）。
+	finalName := base
+	if params.AutoNumber {
+		maxN := 0
+		for usedName := range used {
+			if !strings.HasPrefix(usedName, base) {
+				continue
+			}
+			if n, err := strconv.Atoi(usedName[len(base):]); err == nil && n > maxN {
+				maxN = n
+			}
+		}
+		finalName = fmt.Sprintf("%s%d", base, maxN+1)
+		for used[finalName] {
+			maxN++
+			finalName = fmt.Sprintf("%s%d", base, maxN+1)
+		}
+	} else if used[finalName] {
+		for suffix := 2; ; suffix++ {
+			candidate := fmt.Sprintf("%s-%d", base, suffix)
+			if !used[candidate] {
+				finalName = candidate
+				break
+			}
+		}
+	}
+	node["name"] = finalName
+	node["dialer-proxy"] = dialer
+
+	// 成环检测：从 dialer 沿既有 dialer-proxy 往前走。新节点还没人引用，走不回
+	// 它自己，但前置自身的链可能本来就在环里 —— 那必须拦（内核解析会无限递归）。
+	dialers := make(map[string]string)
+	if proxies, _ := mappingEntry(root, "proxies"); proxies != nil &&
+		proxies.Kind == yamlv3.SequenceNode {
+		for _, item := range proxies.Content {
+			if name := scalarValue(item, "name"); name != "" {
+				dialers[name] = scalarValue(item, "dialer-proxy")
+			}
+		}
+	}
+	if reason := chainLoopReason(dialers, finalName, dialer); reason != "" {
+		return AddProxyChainResult{}, errors.New(reason)
+	}
+
+	children, err := valueNodes([]map[string]any{node})
+	if err != nil {
+		return AddProxyChainResult{}, err
+	}
+	if err := appendToSequence(root, "proxies", children); err != nil {
+		return AddProxyChainResult{}, err
+	}
+
+	// 链分组：已存在就追加成员（幂等），不存在就新建 select 组。分组名若被
+	// 某个**节点**占用则报错 —— 组与节点共用命名空间，硬建会让整份配置加载失败。
+	groups, _ := mappingEntry(root, "proxy-groups")
+	var chainGroup *yamlv3.Node
+	if groups != nil && groups.Kind == yamlv3.SequenceNode {
+		for _, item := range groups.Content {
+			if scalarValue(item, "name") == group && item.Kind == yamlv3.MappingNode {
+				chainGroup = item
+				break
+			}
+		}
+	}
+	if chainGroup == nil && used[group] {
+		return AddProxyChainResult{}, fmt.Errorf(
+			"配置里已有名为 %q 的节点，无法用它作为链式代理的分组名；请换一个名字",
+			group,
+		)
+	}
+	if chainGroup == nil {
+		created, err := valueNodes([]map[string]any{{
+			"name":    group,
+			"type":    "select",
+			"proxies": []any{finalName},
+		}})
+		if err != nil {
+			return AddProxyChainResult{}, err
+		}
+		if err := appendToSequence(root, "proxy-groups", created); err != nil {
+			return AddProxyChainResult{}, err
+		}
+	} else {
+		members, _ := mappingEntry(chainGroup, "proxies")
+		if members == nil {
+			members = &yamlv3.Node{Kind: yamlv3.SequenceNode, Tag: "!!seq"}
+			chainGroup.Content = append(
+				chainGroup.Content,
+				&yamlv3.Node{Kind: yamlv3.ScalarNode, Tag: "!!str", Value: "proxies"},
+				members,
+			)
+		}
+		if members.Kind != yamlv3.SequenceNode {
+			return AddProxyChainResult{}, fmt.Errorf(
+				"分组 %q 的 proxies 不是一个列表，无法追加链式代理",
+				group,
+			)
+		}
+		present := false
+		for _, m := range members.Content {
+			if m.Kind == yamlv3.ScalarNode && m.Value == finalName {
+				present = true
+				break
+			}
+		}
+		if !present {
+			members.Content = append(members.Content, &yamlv3.Node{
+				Kind:  yamlv3.ScalarNode,
+				Tag:   "!!str",
+				Value: finalName,
+			})
+		}
+	}
+
+	out, err := marshalDocument(doc)
+	if err != nil {
+		return AddProxyChainResult{}, err
+	}
+	return AddProxyChainResult{YAML: out, Name: finalName, Group: group}, nil
 }
 
 // chainLoopReason 判断把 target 的前置接到 dialer 上之后会不会成环；不会则返回空串。
