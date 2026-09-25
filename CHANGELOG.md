@@ -1,5 +1,11 @@
 # Changelog
 
+## v01.00.12 (2026-09-25)
+
+**Bug Fixes**
+
+- Hotkey mode cycling now also selects the GLOBAL group when switching to global mode, matching the dashboard and tray entries; the proxies page no longer stays on a regular group (3a149d7)
+
 ## v01.00.11 (2026-09-25)
 
 **Bug Fixes**
