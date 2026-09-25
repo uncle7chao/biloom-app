@@ -106,6 +106,11 @@ class MessageLookup extends MessageLookupByLibrary {
   static String m34(count) =>
       "${Intl.plural(count, one: '${count} год назад', few: '${count} года назад', many: '${count} лет назад', other: '${count} года назад')}";
 
+  static String m35(name) => "Узел «${name}» скопирован в целевой профиль";
+  static String m36(name) => "В целевом профиле уже есть такой узел — используется «${name}»";
+
+  static String m37(name) => "Цепочка «${name}» создана";
+
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
     "about": MessageLookupByLibrary.simpleMessage("О программе"),
@@ -139,7 +144,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Добавить цепочку прокси",
     ),
     "addProxyChainDesc": MessageLookupByLibrary.simpleMessage(
-      "Несколько узлов соединяются последовательно, трафик идёт по цепочке",
+      "Создаёт отдельный узел цепочки с параметрами выходного узла: трафик идёт через передний прокси, цепочка автоматически попадает на вкладку «Цепочка прокси»",
     ),
     "addProxyGroup": MessageLookupByLibrary.simpleMessage(
       "Добавить группу прокси",
@@ -1445,5 +1450,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "unfavoriteNode": MessageLookupByLibrary.simpleMessage("Убрать из избранного"),
     "autoExitTest": MessageLookupByLibrary.simpleMessage("Автопроверка выхода"),
     "autoExitTestDesc": MessageLookupByLibrary.simpleMessage("Раз в день перепроверяет узлы без свежих записей, чтобы метки регионов оставались точными; недавние результаты пропускаются"),
+    "proxyChainNodeCopied": m35,
+    "proxyChainNodeReused": m36,
+    "proxyChainDefaultName": MessageLookupByLibrary.simpleMessage("Цепочка прокси"),
+    "proxyChainNameLabel": MessageLookupByLibrary.simpleMessage("Название цепочки"),
+    "proxyChainCreated": m37,
   };
 }

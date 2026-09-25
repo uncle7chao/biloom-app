@@ -561,7 +561,7 @@
   "addProxyNode": "ノードを追加",
   "addProxyNodeDesc": "共有リンクまたは YAML 断片を貼り付け（vless / vmess / ss / trojan / hysteria2 など）",
   "addProxyChain": "チェーンプロキシを追加",
-  "addProxyChainDesc": "複数のノードを順に接続し、トラフィックを多段で転送します",
+  "addProxyChainDesc": "独立したチェーンノードを新規作成します：パラメータは出口ノードからコピーされ、トラフィックはまず前置を経由し、「プロキシチェーン」タブに自動的に整理されます",
   "updateSubscription": "サブスクリプションを更新",
   "proxyChainExit": "出口ノード",
   "proxyChainExitHint": "最終的に外部へ出るノード",
@@ -746,5 +746,10 @@
   "favoriteNode": "ノードをお気に入りに",
   "unfavoriteNode": "お気に入り解除",
   "autoExitTest": "自動出口テスト",
-  "autoExitTestDesc": "新しい記録のないノードを毎日バックグラウンドで再テストし、地域表示を正確に保ちます。最近の結果はスキップされます"
+  "autoExitTestDesc": "新しい記録のないノードを毎日バックグラウンドで再テストし、地域表示を正確に保ちます。最近の結果はスキップされます",
+  "proxyChainNodeCopied": "ノード「{name}」を対象プロファイルにコピーしました",
+  "proxyChainNodeReused": "対象プロファイルに同一ノードが既にあるため「{name}」を再利用します",
+  "proxyChainDefaultName": "プロキシチェーン",
+  "proxyChainNameLabel": "チェーン名",
+  "proxyChainCreated": "チェーン「{name}」を作成しました"
 }

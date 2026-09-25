@@ -561,7 +561,7 @@
   "addProxyNode": "Add node",
   "addProxyNodeDesc": "Paste a share link or YAML fragment — vless / vmess / ss / trojan / hysteria2 and more",
   "addProxyChain": "Add proxy chain",
-  "addProxyChainDesc": "Chain several nodes in order so traffic hops through each one",
+  "addProxyChainDesc": "Creates a standalone chain node copied from the exit node; traffic goes through the front proxy first, and the chain is filed under the \"Proxy Chain\" tab",
   "updateSubscription": "Update subscription",
   "proxyChainExit": "Exit node",
   "proxyChainExitHint": "The one that finally reaches the internet",
@@ -746,5 +746,10 @@
   "favoriteNode": "Favorite node",
   "unfavoriteNode": "Unfavorite node",
   "autoExitTest": "Auto exit test",
-  "autoExitTestDesc": "Re-tests nodes without fresh records once a day to keep region labels accurate; recent results are skipped"
+  "autoExitTestDesc": "Re-tests nodes without fresh records once a day to keep region labels accurate; recent results are skipped",
+  "proxyChainNodeCopied": "Node \"{name}\" copied to the target profile",
+  "proxyChainNodeReused": "An identical node already exists in the target profile; reusing \"{name}\"",
+  "proxyChainDefaultName": "Proxy Chain",
+  "proxyChainNameLabel": "Chain name",
+  "proxyChainCreated": "Proxy chain \"{name}\" created"
 }

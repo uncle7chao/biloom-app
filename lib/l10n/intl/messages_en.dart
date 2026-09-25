@@ -106,6 +106,11 @@ class MessageLookup extends MessageLookupByLibrary {
   static String m34(count) =>
       "${Intl.plural(count, one: '1 year ago', other: '${count} years ago')}";
 
+  static String m35(name) => "Node \"${name}\" copied to the target profile";
+  static String m36(name) => "An identical node already exists in the target profile; reusing \"${name}\"";
+
+  static String m37(name) => "Proxy chain \"${name}\" created";
+
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
     "about": MessageLookupByLibrary.simpleMessage("About"),
@@ -137,7 +142,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "addProxies": MessageLookupByLibrary.simpleMessage("Add proxies"),
     "addProxyChain": MessageLookupByLibrary.simpleMessage("Add proxy chain"),
     "addProxyChainDesc": MessageLookupByLibrary.simpleMessage(
-      "Chain several nodes in order so traffic hops through each one",
+      "Creates a standalone chain node copied from the exit node; traffic goes through the front proxy first, and the chain is filed under the \"Proxy Chain\" tab",
     ),
     "addProxyGroup": MessageLookupByLibrary.simpleMessage("Add proxy group"),
     "addProxyNode": MessageLookupByLibrary.simpleMessage("Add node"),
@@ -1377,5 +1382,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "unfavoriteNode": MessageLookupByLibrary.simpleMessage("Unfavorite node"),
     "autoExitTest": MessageLookupByLibrary.simpleMessage("Auto exit test"),
     "autoExitTestDesc": MessageLookupByLibrary.simpleMessage("Re-tests nodes without fresh records once a day to keep region labels accurate; recent results are skipped"),
+    "proxyChainNodeCopied": m35,
+    "proxyChainNodeReused": m36,
+    "proxyChainDefaultName": MessageLookupByLibrary.simpleMessage("Proxy Chain"),
+    "proxyChainNameLabel": MessageLookupByLibrary.simpleMessage("Chain name"),
+    "proxyChainCreated": m37,
   };
 }

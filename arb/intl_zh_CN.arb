@@ -561,7 +561,7 @@
   "addProxyNode": "新增节点",
   "addProxyNodeDesc": "粘贴分享链接或 YAML 片段，支持 vless / vmess / ss / trojan / hysteria2 等",
   "addProxyChain": "添加链式代理",
-  "addProxyChainDesc": "多个节点按顺序串联，流量逐跳转发",
+  "addProxyChainDesc": "新建一条独立的链式代理节点：参数复制自出口，流量先经过前置，自动收进「链式代理」标签",
   "updateSubscription": "更新订阅",
   "proxyChainExit": "出口节点",
   "proxyChainExitHint": "最终出网的那一个",
@@ -746,5 +746,10 @@
   "favoriteNode": "收藏节点",
   "unfavoriteNode": "取消收藏",
   "autoExitTest": "自动测落地",
-  "autoExitTestDesc": "每天在后台补测没有最新记录的节点，保持地区标注准确；已测过的不会重复测"
+  "autoExitTestDesc": "每天在后台补测没有最新记录的节点，保持地区标注准确；已测过的不会重复测",
+  "proxyChainNodeCopied": "已把节点「{name}」复制到目标配置",
+  "proxyChainNodeReused": "目标配置里已有相同节点，直接复用「{name}」",
+  "proxyChainDefaultName": "链式代理",
+  "proxyChainNameLabel": "链式代理名称",
+  "proxyChainCreated": "已创建链式代理「{name}」"
 }

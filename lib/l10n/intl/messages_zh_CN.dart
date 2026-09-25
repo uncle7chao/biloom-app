@@ -94,6 +94,11 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m34(count) => "${count} 年前";
 
+  static String m35(name) => "已把节点「${name}」复制到目标配置";
+  static String m36(name) => "目标配置里已有相同节点，直接复用「${name}」";
+
+  static String m37(name) => "已创建链式代理「${name}」";
+
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
     "about": MessageLookupByLibrary.simpleMessage("关于"),
@@ -121,7 +126,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "addProxies": MessageLookupByLibrary.simpleMessage("添加代理"),
     "addProxyChain": MessageLookupByLibrary.simpleMessage("添加链式代理"),
     "addProxyChainDesc": MessageLookupByLibrary.simpleMessage(
-      "多个节点按顺序串联，流量逐跳转发",
+      "新建一条独立的链式代理节点：参数复制自出口，流量先经过前置，自动收进「链式代理」标签",
     ),
     "addProxyGroup": MessageLookupByLibrary.simpleMessage("添加策略组"),
     "addProxyNode": MessageLookupByLibrary.simpleMessage("新增节点"),
@@ -1019,5 +1024,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "unfavoriteNode": MessageLookupByLibrary.simpleMessage("取消收藏"),
     "autoExitTest": MessageLookupByLibrary.simpleMessage("自动测落地"),
     "autoExitTestDesc": MessageLookupByLibrary.simpleMessage("每天在后台补测没有最新记录的节点，保持地区标注准确；已测过的不会重复测"),
+    "proxyChainNodeCopied": m35,
+    "proxyChainNodeReused": m36,
+    "proxyChainDefaultName": MessageLookupByLibrary.simpleMessage("链式代理"),
+    "proxyChainNameLabel": MessageLookupByLibrary.simpleMessage("链式代理名称"),
+    "proxyChainCreated": m37,
   };
 }

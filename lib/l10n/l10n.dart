@@ -4623,7 +4623,7 @@ class AppLocalizations {
   /// `Chain several nodes in order so traffic hops through each one`
   String get addProxyChainDesc {
     return Intl.message(
-      'Chain several nodes in order so traffic hops through each one',
+      'Creates a standalone chain node copied from the exit node; traffic goes through the front proxy first, and the chain is filed under the "Proxy Chain" tab',
       name: 'addProxyChainDesc',
       desc: '',
       args: [],
@@ -5958,6 +5958,41 @@ class AppLocalizations {
   /// `Re-tests nodes without fresh records once a day to keep region labels accurate; recent results are skipped`
   String get autoExitTestDesc {
     return Intl.message('Re-tests nodes without fresh records once a day to keep region labels accurate; recent results are skipped', name: 'autoExitTestDesc', desc: '', args: []);
+  }
+
+  /// `Node "{name}" copied to the target profile`
+  String proxyChainNodeCopied(Object name) {
+    return Intl.message('Node "$name" copied to the target profile', name: 'proxyChainNodeCopied', desc: '', args: [name]);
+  }
+
+  /// `An identical node already exists in the target profile; reusing "{name}"`
+  String proxyChainNodeReused(Object name) {
+    return Intl.message('An identical node already exists in the target profile; reusing "$name"', name: 'proxyChainNodeReused', desc: '', args: [name]);
+  }
+
+  /// `Proxy Chain`
+  String get proxyChainDefaultName {
+    return Intl.message(
+      'Proxy Chain',
+      name: 'proxyChainDefaultName',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Chain name`
+  String get proxyChainNameLabel {
+    return Intl.message(
+      'Chain name',
+      name: 'proxyChainNameLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Proxy chain "{name}" created`
+  String proxyChainCreated(Object name) {
+    return Intl.message('Proxy chain "$name" created', name: 'proxyChainCreated', desc: '', args: [name]);
   }
 }
 

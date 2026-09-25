@@ -56,6 +56,31 @@ mixin CoreInterface {
     required String dialer,
   });
 
+  /// 把来源配置里的一个节点原样复制进目标配置。
+  ///
+  /// 链式代理「跨配置挑选」的底层能力：链是名字引用、只在同一份配置内成立，
+  /// 从别的配置挑了出口/前置后先把节点搬进链所在的那份配置。内核负责剥掉
+  /// dialer-proxy（防悬空引用）、重名自动改名、身份相同直接复用。
+  Future<CopyProxyNodeResult> copyProxyNode({
+    required String from,
+    required String to,
+    required String name,
+  });
+
+  /// 新建一条独立的链式代理节点（参数复制自 [exit]、dialer-proxy 指向
+  /// [dialer]），并收进 [group] 指定的分组（不存在则创建 select 组）。
+  ///
+  /// [autoNumber] 为 true（界面用默认名）时，名字被占用按 名称1、名称2
+  /// 递增取空位；false（自定义名）时先用原名，被占用才追加 -2、-3。
+  Future<AddProxyChainResult> addProxyChain({
+    required String yaml,
+    required String exit,
+    required String dialer,
+    required String name,
+    required bool autoNumber,
+    required String group,
+  });
+
   Future<Delay?> asyncTestDelay(String url, String proxyName);
 
   /// 「测落地」：让一个 GET 请求真的从 [proxyName] 这个节点走出去，拿回
@@ -326,6 +351,54 @@ abstract class CoreHandlerInterface with CoreInterface {
       );
     }
     return SetProxyChainResult.fromJson(result);
+  }
+
+  @override
+  Future<CopyProxyNodeResult> copyProxyNode({
+    required String from,
+    required String to,
+    required String name,
+  }) async {
+    final result = await _invokeMethod<Map<String, dynamic>>(
+      method: CoreMethod.copyProxyNode,
+      arguments: {'from': from, 'to': to, 'name': name},
+    );
+    if (result == null) {
+      throw const CoreMethodException(
+        code: 'empty_result',
+        message: 'Core returned an empty proxy node copy result',
+      );
+    }
+    return CopyProxyNodeResult.fromJson(result);
+  }
+
+  @override
+  Future<AddProxyChainResult> addProxyChain({
+    required String yaml,
+    required String exit,
+    required String dialer,
+    required String name,
+    required bool autoNumber,
+    required String group,
+  }) async {
+    final result = await _invokeMethod<Map<String, dynamic>>(
+      method: CoreMethod.addProxyChain,
+      arguments: {
+        'yaml': yaml,
+        'exit': exit,
+        'dialer': dialer,
+        'name': name,
+        'autoNumber': autoNumber,
+        'group': group,
+      },
+    );
+    if (result == null) {
+      throw const CoreMethodException(
+        code: 'empty_result',
+        message: 'Core returned an empty proxy chain result',
+      );
+    }
+    return AddProxyChainResult.fromJson(result);
   }
 
   @override

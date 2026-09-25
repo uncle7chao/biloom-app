@@ -432,6 +432,78 @@ class ProfilesAction extends _$ProfilesAction {
     }, title: currentAppLocalizations.addProxyChain);
   }
 
+  /// 新建一条**独立的链式代理节点**并收进专属分组，返回内核的处理结果。
+  ///
+  /// 这是链式代理的新模型（区别于 [setProxyChainOnProfile] 的「把 dialer-proxy
+  /// 写到出口节点身上」）：生成一个新 proxy 条目 —— 参数复制自出口、前置由
+  /// 本次指定、名字独立（默认名自动编号），所有链统一收进 [group] 分组，
+  /// 代理页里就是一个独立页签。校验（出口存在、前置存在、不成环）全在内核，
+  /// 因为 validateConfig 拦不住 dialer 悬空引用这类错误。
+  /// 失败时返回 null（错误已由统一提示通道弹出）。
+  Future<AddProxyChainResult?> addProxyChainOnProfile({
+    required int profileId,
+    required String exit,
+    required String dialer,
+    required String name,
+    required bool autoNumber,
+    required String group,
+  }) async {
+    return globalState.loadingRun(tag: LoadingTag.profiles, () async {
+      final profile = ref.read(profilesProvider).getProfile(profileId);
+      if (profile == null) {
+        throw const MessageException('找不到这份配置，可能已被删除');
+      }
+      final file = await profile.file;
+      final edited = await _core.addProxyChain(
+        yaml: await file.readAsString(),
+        exit: exit,
+        dialer: dialer,
+        name: name,
+        autoNumber: autoNumber,
+        group: group,
+      );
+      await _saveEditedProfile(profile, edited.yaml);
+      return edited;
+    }, title: currentAppLocalizations.addProxyChain);
+  }
+
+  /// 把来源配置里的一个节点复制进目标配置（链式代理「跨配置挑选」的落盘步骤）。
+  ///
+  /// 链是名字引用、只在同一份配置内成立，所以从别的配置挑了出口/前置后，先调
+  /// 这里把节点搬进链所在的那份配置。内核负责剥 dialer-proxy（防悬空引用）、
+  /// 重名自动改名、身份相同直接复用（复用时目标配置一个字节没动，无需落盘）。
+  /// 返回节点在目标配置里的最终名字 —— 链要引用它，而不是请求里的原名。
+  Future<CopyProxyNodeResult> copyProxyNodeBetweenProfiles({
+    required int fromProfileId,
+    required int toProfileId,
+    required String name,
+  }) async {
+    final from = ref.read(profilesProvider).getProfile(fromProfileId);
+    final to = ref.read(profilesProvider).getProfile(toProfileId);
+    if (from == null || to == null) {
+      throw const MessageException('找不到来源或目标配置，可能已被删除');
+    }
+    final result = await _core.copyProxyNode(
+      from: await (await from.file).readAsString(),
+      to: await (await to.file).readAsString(),
+      name: name,
+    );
+    if (!result.reused) {
+      await to.saveFile(
+        Uint8List.fromList(utf8.encode(result.yaml)),
+        validate: (path) => _core.validateConfig(path),
+        convert: convertSubscription,
+      );
+      ref.read(profilesProvider.notifier).put(to);
+      if (to.id == ref.read(currentProfileIdProvider)) {
+        ref
+            .read(setupActionProvider.notifier)
+            .applyProfileDebounce(silence: true);
+      }
+    }
+    return result;
+  }
+
   /// 把订阅配置转为本地配置。
   ///
   /// 做法就是把 url 清空 —— 配置类型与自动更新都由「url 是否为空」推导

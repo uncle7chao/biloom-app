@@ -1,20 +1,24 @@
+import 'dart:async';
+
 import 'package:fl_clash/common/common.dart';
+import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/providers.dart';
+import 'package:fl_clash/state.dart';
 import 'package:fl_clash/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// 「添加链式代理」面板。
 ///
-/// **为什么链式代理是一张「出口 + 前置」的表单，而不是一个策略组类型**：
-/// FlClash 上游的策略组编辑器里确实有一个 `relay` 类型，但本内核已经把它删掉了
-/// （`Clash.Meta/adapter/outboundgroup/parser.go:216` 对它返回错误），存进去会让
-/// **整份配置加载失败**。现在的做法是代理级的 `dialer-proxy` 字段：写在出口节点上，
-/// 值可以是另一个节点、也可以是一个策略组名。所以这个面板只需要两件事 ——
-/// 「哪个节点做出口」和「先经过谁」，链的方向是 `前置 → 出口 → 目标`。
+/// **链式代理是一个独立节点**（2026-09-25 模型定稿）：提交后生成一个新 proxy
+/// 条目 —— 参数复制自出口、`dialer-proxy` 指向前置、名字独立（默认名
+/// 「链式代理」自动编号），并统一收进「链式代理」分组，代理页里就是一个
+/// 独立页签。原出口节点保持不动；旧模型（把 dialer-proxy 写在出口身上）
+/// 的「解除」入口保留，用于清理历史上直接挂在出口上的链。
 ///
-/// 面板自己不做任何 YAML 解析：候选名单与写入都交给内核，Dart 侧永远不碰配置内容。
+/// 面板自己不做任何 YAML 解析：候选名单、复制与写入都交给内核，Dart 侧永远
+/// 不碰配置内容。
 class AddProxyChainView extends ConsumerStatefulWidget {
   final int profileId;
 
@@ -27,6 +31,12 @@ class AddProxyChainView extends ConsumerStatefulWidget {
 class _AddProxyChainViewState extends ConsumerState<AddProxyChainView> {
   ProfileTargets? _targets;
   Object? _loadError;
+
+  /// 其他配置的候选名单（跨配置挑选用）：profileId → 该配置的节点与分组。
+  ///
+  /// 面板打开时随主候选一起加载；某份配置读不了就跳过 —— 跨配置挑选是锦上
+  /// 添花，不能因为它把整个面板拖垮。
+  final Map<int, ProfileTargets> _foreignTargets = {};
 
   /// 目标配置：入口传进来的那份只是**默认值**，面板里可以随时换。
   ///
@@ -41,10 +51,32 @@ class _AddProxyChainViewState extends ConsumerState<AddProxyChainView> {
   /// 前置名 —— 可以是节点，也可以是策略组。
   String? _dialer;
 
+  /// 链式代理名称输入框。默认值是「链式代理」（[defaultChainName]）：
+  /// 用默认名提交时按 链式代理1、链式代理2 … 自动编号；改过名就原样使用、
+  /// 不加数字。每次打开面板都回到默认值。
+  final _nameController = TextEditingController();
+
+  bool _nameInitialized = false;
+
   @override
   void initState() {
     super.initState();
     _load();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_nameInitialized) {
+      _nameInitialized = true;
+      _nameController.text = context.appLocalizations.proxyChainDefaultName;
+    }
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    super.dispose();
   }
 
   /// 这份配置是不是订阅来的。
@@ -56,18 +88,43 @@ class _AddProxyChainViewState extends ConsumerState<AddProxyChainView> {
       (ref.read(profileProvider(_profileId))?.url ?? '').isNotEmpty;
 
   Future<void> _load() async {
+    if (!await _loadTargets()) return;
+    unawaited(_loadForeign());
+  }
+
+  /// 加载当前目标配置的候选名单。失败时把错误挂到 [_loadError] 并返回 false。
+  Future<bool> _loadTargets() async {
     try {
       final targets = await ref
           .read(profilesActionProvider.notifier)
           .readProfileTargets(_profileId);
-      if (!mounted) return;
+      if (!mounted) return false;
       setState(() {
         _targets = targets;
         _loadError = null;
       });
+      return true;
     } catch (error) {
-      if (!mounted) return;
+      if (!mounted) return false;
       setState(() => _loadError = error);
+      return false;
+    }
+  }
+
+  /// 加载其他配置的候选名单 —— 跨配置挑选的池子。
+  Future<void> _loadForeign() async {
+    for (final profile in ref.read(profilesProvider)) {
+      if (profile.id == _profileId) continue;
+      if (_foreignTargets.containsKey(profile.id)) continue;
+      try {
+        final targets = await ref
+            .read(profilesActionProvider.notifier)
+            .readProfileTargets(profile.id);
+        if (!mounted) return;
+        setState(() => _foreignTargets[profile.id] = targets);
+      } catch (_) {
+        // 这份配置暂时读不了（比如正在更新），跳过即可。
+      }
     }
   }
 
@@ -100,7 +157,14 @@ class _AddProxyChainViewState extends ConsumerState<AddProxyChainView> {
           .toList(),
       onChanged: (value) {
         if (value == null || value == _profileId) return;
+        // 旧目标配置的候选还有用 —— 它现在是「其他配置」之一；新目标的缓存
+        // 清掉重新读，它的节点可能刚被别处改过。
+        final oldTargets = _targets;
         setState(() {
+          if (oldTargets != null) {
+            _foreignTargets[_profileId] = oldTargets;
+          }
+          _foreignTargets.remove(value);
           _profileId = value;
           _targets = null;
           _loadError = null;
@@ -124,69 +188,162 @@ class _AddProxyChainViewState extends ConsumerState<AddProxyChainView> {
     return '';
   }
 
+  /// 出口候选：目标配置的节点 + 其他配置的节点。出口必须是节点，没有组。
+  List<_PickerSection> _buildExitSections() {
+    final targets = _targets;
+    if (targets == null) return const [];
+    return [
+      _PickerSection(
+        label: '',
+        items: targets.proxies,
+        // 出口是「要被挂上前置」的那一个，所以这里显示它现有的链。
+        subtitleOf: (item) => item.dialer.isEmpty
+            ? item.type
+            : '${item.type} · '
+                  '${context.appLocalizations.proxyChainExisting(item.dialer)}',
+      ),
+      ..._buildForeignSections(),
+    ];
+  }
+
+  /// 前置候选：目标配置的分组与节点 + 其他配置的节点。
+  ///
+  /// 跨配置只开放**节点**：策略组的成员名单跨配置复制会把组员连锁带过去，
+  /// 组员又可能在目标配置里不存在 —— 那是递归的坑，第一版不碰。
+  List<_PickerSection> _buildDialerSections() {
+    final targets = _targets;
+    if (targets == null) return const [];
+    return [
+      if (targets.groups.isNotEmpty)
+        _PickerSection(
+          label: context.appLocalizations.proxyChainGroupsSection,
+          items: targets.groups,
+          subtitleOf: (item) => item.type,
+        ),
+      _PickerSection(
+        label: targets.groups.isEmpty
+            ? ''
+            : context.appLocalizations.proxyChainNodesSection,
+        // 出口自己不能当前置，否则第一步就绕回自己身上。
+        items: targets.proxies.where((item) => item.name != _target).toList(),
+        subtitleOf: (item) => item.type,
+      ),
+      ..._buildForeignSections(),
+    ];
+  }
+
+  /// 其他配置的节点，一份配置一节，节标题就是配置名。
+  List<_PickerSection> _buildForeignSections() {
+    final labelOf = {
+      for (final profile in ref.read(profilesProvider))
+        profile.id: profile.realLabel,
+    };
+    final sections = <_PickerSection>[];
+    for (final entry in _foreignTargets.entries) {
+      if (entry.value.proxies.isEmpty) continue;
+      sections.add(
+        _PickerSection(
+          label: labelOf[entry.key] ?? '',
+          items: entry.value.proxies,
+          profileId: entry.key,
+          subtitleOf: (item) => item.type,
+        ),
+      );
+    }
+    return sections;
+  }
+
   Future<void> _handlePickTarget() async {
-    final proxies = _targets?.proxies ?? const <ProfileTarget>[];
     final picked = await _showPicker(
       title: context.appLocalizations.proxyChainPickExit,
-      sections: [
-        _PickerSection(
-          label: '',
-          items: proxies,
-          // 出口是「要被挂上前置」的那一个，所以这里显示它现有的链。
-          subtitleOf: (item) => item.dialer.isEmpty
-              ? item.type
-              : '${item.type} · '
-                    '${context.appLocalizations.proxyChainExisting(item.dialer)}',
-        ),
-      ],
+      sections: _buildExitSections(),
       selected: _target,
       emptyLabel: context.appLocalizations.proxyChainNoNodes,
     );
     if (picked == null || !mounted) return;
-    // 把该节点**已有的链**带出来。不这么做的话，选一个已经挂过链的节点会显示
-    // 「已有前置：X」，但内部 _dialer 还是空的，用户按 ✓ 会被自己的校验拦下
-    // （「请选择前置代理」）—— 明明屏幕上写着有前置。
-    String existing = '';
-    for (final item in proxies) {
-      if (item.name == picked) {
-        existing = item.dialer;
-      }
-    }
-    setState(() {
-      _target = picked;
-      // 前置与出口不能是同一个，旧值正好撞上新出口时清掉。
-      _dialer = existing == picked ? null : existing;
-    });
+    await _adoptPicked(picked, isDialer: false);
   }
 
   Future<void> _handlePickDialer() async {
-    final targets = _targets;
-    if (targets == null) return;
     final picked = await _showPicker(
       title: context.appLocalizations.proxyChainPickFront,
-      sections: [
-        if (targets.groups.isNotEmpty)
-          _PickerSection(
-            label: context.appLocalizations.proxyChainGroupsSection,
-            items: targets.groups,
-            subtitleOf: (item) => item.type,
-          ),
-        _PickerSection(
-          label: targets.groups.isEmpty
-              ? ''
-              : context.appLocalizations.proxyChainNodesSection,
-          // 出口自己不能当前置，否则第一步就绕回自己身上。
-          items: targets.proxies
-              .where((item) => item.name != _target)
-              .toList(),
-          subtitleOf: (item) => item.type,
-        ),
-      ],
+      sections: _buildDialerSections(),
       selected: _dialer,
       emptyLabel: context.appLocalizations.proxyChainNoNodes,
     );
     if (picked == null || !mounted) return;
-    setState(() => _dialer = picked);
+    await _adoptPicked(picked, isDialer: true);
+  }
+
+  /// 选中候选后的落地。
+  ///
+  /// 目标配置自己的名字直接用；**其他配置**的名字先把节点复制进目标配置
+  /// （内核剥 dialer-proxy、重名自动改名、身份相同直接复用），再用**最终名**
+  /// 落选中值 —— 链引用的是复制体，不是来源配置里的原名。
+  Future<void> _adoptPicked(
+    _PickedItem picked, {
+    required bool isDialer,
+  }) async {
+    final targetId = _profileId;
+    if (picked.profileId == null || picked.profileId == targetId) {
+      if (isDialer) {
+        setState(() => _dialer = picked.name);
+        return;
+      }
+      // 把该节点**已有的链**带出来。不这么做的话，选一个已经挂过链的节点会
+      // 显示「已有前置：X」，但内部 _dialer 还是空的，用户按 ✓ 会被自己的
+      // 校验拦下（「请选择前置代理」）—— 明明屏幕上写着有前置。
+      final existing = _existingDialerOf(picked.name);
+      setState(() {
+        _target = picked.name;
+        // 前置与出口不能是同一个，旧值正好撞上新出口时清掉。
+        _dialer = existing == picked.name ? null : existing;
+      });
+      return;
+    }
+    final result = await globalState.loadingRun(
+      tag: LoadingTag.profiles,
+      () => ref
+          .read(profilesActionProvider.notifier)
+          .copyProxyNodeBetweenProfiles(
+            fromProfileId: picked.profileId!,
+            toProfileId: targetId,
+            name: picked.name,
+          ),
+    );
+    if (!mounted || _profileId != targetId) return;
+    if (result == null) {
+      // 失败已由统一提示通道弹过 toast，面板留在原地。
+      return;
+    }
+    context.showNotifier(
+      result.reused
+          ? context.appLocalizations.proxyChainNodeReused(result.name)
+          : context.appLocalizations.proxyChainNodeCopied(result.name),
+    );
+    // 复制体要在本配置候选里可见（后续提交、解除都靠这份名单），重载一次；
+    // 选中值在重载之后落。
+    await _loadTargets();
+    if (!mounted || _profileId != targetId) return;
+    if (isDialer) {
+      setState(() => _dialer = result.name);
+      return;
+    }
+    final existing = _existingDialerOf(result.name);
+    setState(() {
+      _target = result.name;
+      _dialer = existing == result.name ? null : existing;
+    });
+  }
+
+  /// 目标配置里某个节点当前挂的前置名；没有则空串。
+  String _existingDialerOf(String name) {
+    for (final item in _targets?.proxies ?? const <ProfileTarget>[]) {
+      if (item.name == name) {
+        return item.dialer;
+      }
+    }
+    return '';
   }
 
   Future<void> _handleSubmit() async {
@@ -201,7 +358,30 @@ class _AddProxyChainViewState extends ConsumerState<AddProxyChainView> {
       _showMessage(appLocalizations.proxyChainPickFront);
       return;
     }
-    await _writeChain(target: target, dialer: dialer);
+    // 名称规则：空着或仍是默认值 → 默认名路径（内核按 链式代理1、链式代理2 …
+    // 编号取空位）；用户改过名 → 原样使用、不加数字（被占用才 -2 兜底）。
+    // 分组名与默认名是同一个词：所有链式代理都收进「链式代理」页签。
+    final defaultName = appLocalizations.proxyChainDefaultName;
+    final rawName = _nameController.text.trim();
+    final isDefault = rawName.isEmpty || rawName == defaultName;
+    final result = await ref
+        .read(profilesActionProvider.notifier)
+        .addProxyChainOnProfile(
+          profileId: _profileId,
+          exit: target,
+          dialer: dialer,
+          name: isDefault ? defaultName : rawName,
+          autoNumber: isDefault,
+          group: defaultName,
+        );
+    if (!mounted) return;
+    if (result == null) {
+      // 失败已由统一提示通道弹出 toast（出口/前置不存在、成环等内核校验），
+      // 面板留在原地让用户改完再提交。
+      return;
+    }
+    _showMessage(appLocalizations.proxyChainCreated(result.name));
+    Navigator.of(context).pop();
   }
 
   Future<void> _handleClear() async {
@@ -259,13 +439,13 @@ class _AddProxyChainViewState extends ConsumerState<AddProxyChainView> {
   /// 推出去的整页就是空白（release 下无报错、无返回按钮，用户只会看到白屏）。
   /// 所以选择器改成再开一层自适应 sheet：桌面端是叠在侧滑上的第二层侧滑，
   /// 移动端是叠在底部弹层上的第二层弹层，都是模态路由，返回值照常拿到。
-  Future<String?> _showPicker({
+  Future<_PickedItem?> _showPicker({
     required String title,
     required List<_PickerSection> sections,
     required String? selected,
     required String emptyLabel,
   }) {
-    return showSheet<String>(
+    return showSheet<_PickedItem>(
       context: context,
       props: const SheetProps(isScrollControlled: true),
       builder: (context) => _TargetPickerView(
@@ -394,6 +574,18 @@ class _AddProxyChainViewState extends ConsumerState<AddProxyChainView> {
             ),
           ),
         ),
+        Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: TextField(
+            controller: _nameController,
+            decoration: InputDecoration(
+              labelText: appLocalizations.proxyChainNameLabel,
+              border: const OutlineInputBorder(),
+              prefixIcon: const Icon(Icons.label_outline, size: 20),
+              isDense: true,
+            ),
+          ),
+        ),
         _buildRow(
           label: appLocalizations.proxyChainExit,
           hint: appLocalizations.proxyChainExitHint,
@@ -458,11 +650,23 @@ class _PickerSection {
   final List<ProfileTarget> items;
   final String Function(ProfileTarget item) subtitleOf;
 
+  /// 候选所属的配置；null = 目标配置自己的（选中后无需复制）。
+  final int? profileId;
+
   const _PickerSection({
     required this.label,
     required this.items,
     required this.subtitleOf,
+    this.profileId,
   });
+}
+
+/// 选择器的返回值：名字 + 它来自哪份配置（null = 目标配置自己的）。
+class _PickedItem {
+  final String name;
+  final int? profileId;
+
+  const _PickedItem({required this.name, this.profileId});
 }
 
 /// 单项选择面板。
@@ -507,6 +711,7 @@ class _TargetPickerViewState extends ConsumerState<_TargetPickerView> {
                 .where((item) => item.name.toLowerCase().contains(keyword))
                 .toList(),
             subtitleOf: section.subtitleOf,
+            profileId: section.profileId,
           ),
         )
         .where((section) => section.items.isNotEmpty)
@@ -574,7 +779,12 @@ class _TargetPickerViewState extends ConsumerState<_TargetPickerView> {
                           for (final item in section.items)
                             ListTile(
                               onTap: () {
-                                Navigator.of(context).pop(item.name);
+                                Navigator.of(context).pop(
+                                  _PickedItem(
+                                    name: item.name,
+                                    profileId: section.profileId,
+                                  ),
+                                );
                               },
                               contentPadding: const EdgeInsets.only(
                                 left: 16,

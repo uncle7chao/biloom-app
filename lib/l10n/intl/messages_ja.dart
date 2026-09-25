@@ -94,6 +94,11 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m34(count) => "${count} 年前";
 
+  static String m35(name) => "ノード「${name}」を対象プロファイルにコピーしました";
+  static String m36(name) => "対象プロファイルに同一ノードが既にあるため「${name}」を再利用します";
+
+  static String m37(name) => "チェーン「${name}」を作成しました";
+
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
     "about": MessageLookupByLibrary.simpleMessage("アプリについて"),
@@ -123,7 +128,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "addProxies": MessageLookupByLibrary.simpleMessage("プロキシを追加"),
     "addProxyChain": MessageLookupByLibrary.simpleMessage("チェーンプロキシを追加"),
     "addProxyChainDesc": MessageLookupByLibrary.simpleMessage(
-      "複数のノードを順に接続し、トラフィックを多段で転送します",
+      "独立したチェーンノードを新規作成します：パラメータは出口ノードからコピーされ、トラフィックはまず前置を経由し、「プロキシチェーン」タブに自動的に整理されます",
     ),
     "addProxyGroup": MessageLookupByLibrary.simpleMessage("プロキシグループを追加"),
     "addProxyNode": MessageLookupByLibrary.simpleMessage("ノードを追加"),
@@ -1161,5 +1166,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "unfavoriteNode": MessageLookupByLibrary.simpleMessage("お気に入り解除"),
     "autoExitTest": MessageLookupByLibrary.simpleMessage("自動出口テスト"),
     "autoExitTestDesc": MessageLookupByLibrary.simpleMessage("新しい記録のないノードを毎日バックグラウンドで再テストし、地域表示を正確に保ちます。最近の結果はスキップされます"),
+    "proxyChainNodeCopied": m35,
+    "proxyChainNodeReused": m36,
+    "proxyChainDefaultName": MessageLookupByLibrary.simpleMessage("プロキシチェーン"),
+    "proxyChainNameLabel": MessageLookupByLibrary.simpleMessage("チェーン名"),
+    "proxyChainCreated": m37,
   };
 }
