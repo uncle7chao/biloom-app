@@ -83,7 +83,7 @@ func convertXrayConfig(doc map[string]any) ([]map[string]any, error) {
 			skipped = append(skipped, fmt.Sprintf("#%d(%v)", index+1, err))
 			continue
 		}
-		nodes = append(nodes, node)
+		nodes = append(nodes, node...)
 	}
 	if len(nodes) == 0 {
 		if len(skipped) == 0 {
@@ -98,7 +98,9 @@ func convertXrayConfig(doc map[string]any) ([]map[string]any, error) {
 }
 
 // convertXrayOutbound 转换单个 outbound；不支持协议返回错误（由上层跳过并汇报）。
-func convertXrayOutbound(outbound map[string]any, index int) (map[string]any, error) {
+// 一个 outbound 可以带多个服务器条目（vnext/servers 数组），全部返回 ——
+// 只取第一条会把用户的多半节点静默吞掉。
+func convertXrayOutbound(outbound map[string]any, index int) ([]map[string]any, error) {
 	protocol, _ := outbound["protocol"].(string)
 	settings, _ := outbound["settings"].(map[string]any)
 	stream, _ := outbound["streamSettings"].(map[string]any)
@@ -171,7 +173,7 @@ func convertXrayOutbound(outbound map[string]any, index int) (map[string]any, er
 	if len(nodes) == 0 {
 		return nil, fmt.Errorf("%s 条目缺少地址或端口", protocol)
 	}
-	return nodes[0], nil
+	return nodes, nil
 }
 
 // xrayServerEntries 取 settings.<key> 列表；Xray 各协议的服务器条目都挂在
