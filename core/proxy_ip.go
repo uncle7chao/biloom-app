@@ -70,12 +70,13 @@ const requestProxyIPMaxBodyBytes = 64 << 10
 
 const requestProxyIPDefaultTimeout = 10 * time.Second
 
-// 回显服务按序尝试：先 https（不受明文劫持），失败再退 http（省一次握手、
-// 个别节点对 https 握手挑剔）。两个都只回「裸 IP 文本」，故意选不同域名，
-// 免得单一服务商抽风时全体节点集体测不出。
+// 回显服务按序尝试，两个都走 https：明文 http 的响应内容能被出口路径上的
+// 任何一跳改写 —— 回显服务是「出口 IP」这个事实的唯一来源，让它可被篡改
+// 等于把落地判定交给中间人。两个故意选不同域名，免得单一服务商抽风时
+// 全体节点集体测不出；https 多一次握手对极轻回显可忽略。
 var requestProxyIPEchoUrls = []string{
 	"https://api.ipify.org",
-	"http://ifconfig.me/ip",
+	"https://ifconfig.me/ip",
 }
 
 // fetchExitIP 经指定节点把 GET 发出去，拿回出口 IP。

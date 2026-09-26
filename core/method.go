@@ -330,22 +330,6 @@ var methodHandlers = map[CoreMethod]methodHandler{
 		}
 		response.success(result)
 	}),
-	copyProxyNodeMethod: withArguments(func(params *CopyProxyNodeParams, response MethodResponse) {
-		result, err := handleCopyProxyNode(params)
-		if err != nil {
-			response.failure("copy_proxy_node_error", err.Error(), nil)
-			return
-		}
-		response.success(result)
-	}),
-	addProxyChainMethod: withArguments(func(params *AddProxyChainParams, response MethodResponse) {
-		result, err := handleAddProxyChain(params)
-		if err != nil {
-			response.failure("add_proxy_chain_error", err.Error(), nil)
-			return
-		}
-		response.success(result)
-	}),
 }
 
 func registerMethod(method CoreMethod, handler methodHandler) {

@@ -541,15 +541,24 @@ func parseSSDPluginOpts(plugin, options string) map[string]any {
 
 // uniqueShareName 复刻内核 convert 包的去重命名规则(重名追加 -2、-3…)，
 // 让同一次导入里的节点名稳定且唯一 —— Clash 的节点名必须唯一。
+//
+// 撞名递增时要跳过批内**真实存在**的名字：批里若真有一个叫 `X-2` 的节点，
+// 第二个 `X` 就不能也生成 `X-2`（两个节点同名 = 配置加载失败），继续往
+// `X-3` 找空位。生成的名字也登记回表，防后续同名条目再撞上它。
 func uniqueShareName(names map[string]int, name string) string {
-	count, exists := names[name]
-	if !exists {
+	if _, exists := names[name]; !exists {
 		names[name] = 1
 		return name
 	}
-	count++
-	names[name] = count
-	return fmt.Sprintf("%s-%d", name, count)
+	for i := names[name] + 1; ; i++ {
+		candidate := fmt.Sprintf("%s-%d", name, i)
+		if _, taken := names[candidate]; taken {
+			continue
+		}
+		names[name] = i
+		names[candidate] = 1
+		return candidate
+	}
 }
 
 // ConvertSubscriptionResult 是 convertSubscription 方法的返回体。
