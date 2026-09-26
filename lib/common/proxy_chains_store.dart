@@ -41,7 +41,9 @@ class ProxyChainStore {
     Map<String, dynamic>? dialerNode,
     Iterable<String> takenNames = const [],
   }) async {
-    final chains = await load();
+    // 防御性拷贝：load() 理应返回可变列表（decodeProxyChains 有注释钉着），
+    // 但这里要 add，多一层拷贝让 store 不再依赖上游的可变性承诺。
+    final chains = [...await load()];
     var finalName = name;
     if (autoNumber) {
       final number = nextChainNumber(

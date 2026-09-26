@@ -107,15 +107,18 @@ ProxyChain? _chainFromJson(Object? value) {
 
 /// SP 存储的 JSON 文本 → 记录列表。坏的条目跳过，坏的整体当空表 ——
 /// 链丢了顶多要重建，不能让它把配置组装拖垮。
+/// ⛔ 返回值必须是**可变列表**（不能用 const []）：ProxyChainStore.add 拿到
+/// 后直接追加，const 列表会抛「Cannot add to an unmodifiable list」——
+/// 首次建链（还没有任何记录）必崩，2026-09-26 用户实测踩过。
 List<ProxyChain> decodeProxyChains(String raw) {
-  if (raw.isEmpty) return const [];
+  if (raw.isEmpty) return <ProxyChain>[];
   final Object? decoded;
   try {
     decoded = json.decode(raw);
   } catch (_) {
-    return const [];
+    return <ProxyChain>[];
   }
-  if (decoded is! List) return const [];
+  if (decoded is! List) return <ProxyChain>[];
   return decoded
       .map(_chainFromJson)
       .whereType<ProxyChain>()

@@ -599,6 +599,10 @@ class _TargetPickerViewState extends ConsumerState<_TargetPickerView> {
   /// 每份配置最多直接展示的节点数 —— 最快的前这些个，其余交给搜索。
   static const _maxShownPerConfig = 20;
 
+  /// 被收起的分节（按下标）。默认全部展开；点节头切换。搜索时忽略折叠
+  /// —— 搜索的目的就是把藏在下面的节点找出来，折叠态不能拦结果。
+  final Set<int> _collapsedSections = {};
+
   @override
   void dispose() {
     _controller.dispose();
@@ -676,9 +680,63 @@ class _TargetPickerViewState extends ConsumerState<_TargetPickerView> {
         .toList();
   }
 
+  /// 可折叠的分节头：配置名 + 节点数 + 展开箭头。点一下收起/展开该节。
+  ///
+  /// 节头必须「看起来能点」——箭头随折叠态旋转（收起时指向右），数量告诉
+  /// 用户收起来的是什么规模的名单。
+  Widget _buildSectionHeader(
+    _PickerSection section,
+    int index,
+    bool searching,
+  ) {
+    final collapsed = !searching && _collapsedSections.contains(index);
+    return InkWell(
+      onTap: searching
+          ? null
+          : () => setState(() {
+              collapsed
+                  ? _collapsedSections.remove(index)
+                  : _collapsedSections.add(index);
+            }),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                section.label,
+                style: context.textTheme.titleSmall?.copyWith(
+                  color: context.colorScheme.primary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            Text(
+              '${section.items.length}',
+              style: context.textTheme.labelSmall?.copyWith(
+                color: context.colorScheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(width: 4),
+            AnimatedRotation(
+              turns: collapsed ? -0.25 : 0,
+              duration: const Duration(milliseconds: 150),
+              child: Icon(
+                Icons.expand_more,
+                size: 20,
+                color: context.colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final sections = _filtered;
+    final searching = _controller.text.trim().isNotEmpty;
     return AdaptiveSheetScaffold(
       sheetTransparentToolBar: true,
       body: SizedBox(
@@ -735,20 +793,13 @@ class _TargetPickerViewState extends ConsumerState<_TargetPickerView> {
                   : ListView(
                       padding: const EdgeInsets.only(bottom: 20),
                       children: [
-                        for (final section in sections) ...[
+                        for (final (index, section) in sections.indexed) ...[
                           if (section.label.isNotEmpty)
-                            Padding(
-                              padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-                              child: Text(
-                                section.label,
-                                style: context.textTheme.titleSmall?.copyWith(
-                                  color: context.colorScheme.primary,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                          for (final item in section.items)
-                            ListTile(
+                            _buildSectionHeader(section, index, searching),
+                          // 搜索时无视折叠态：结果是找出来的，不是翻出来的。
+                          if (searching || !_collapsedSections.contains(index))
+                            for (final item in section.items)
+                              ListTile(
                               onTap: () {
                                 Navigator.of(context).pop(
                                   _PickedItem(
