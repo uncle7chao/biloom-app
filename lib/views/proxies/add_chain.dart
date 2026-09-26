@@ -140,12 +140,16 @@ class _AddProxyChainViewState extends ConsumerState<AddProxyChainView> {
   }
 
   /// 出口候选：目标配置的节点 + 其他配置的节点。出口必须是节点，没有组。
+  ///
+  /// **每一节都带配置名标题**——包括目标配置自己的那节。标题是用户理解
+  /// 「这份名单从哪来」的唯一线索：全部平铺的话，配置之间的边界完全不可见，
+  /// 看起来就是没做分节（用户实测原话：「界面并没有改？」）。
   List<_PickerSection> _buildExitSections() {
     final targets = _targets;
     if (targets == null) return const [];
     return [
       _PickerSection(
-        label: '',
+        label: _labelOf(_profileId),
         items: targets.proxies,
         // 出口是「要被挂上前置」的那一个，所以这里显示它现有的链。
         subtitleOf: (item) => item.dialer.isEmpty
@@ -164,18 +168,19 @@ class _AddProxyChainViewState extends ConsumerState<AddProxyChainView> {
   List<_PickerSection> _buildDialerSections() {
     final targets = _targets;
     if (targets == null) return const [];
+    final ownLabel = _labelOf(_profileId);
     return [
       if (targets.groups.isNotEmpty)
         _PickerSection(
-          label: context.appLocalizations.proxyChainGroupsSection,
+          label: ownLabel,
           items: targets.groups,
           subtitleOf: (item) => item.type,
           isGroups: true,
         ),
       _PickerSection(
         label: targets.groups.isEmpty
-            ? ''
-            : context.appLocalizations.proxyChainNodesSection,
+            ? ownLabel
+            : '$ownLabel · ${context.appLocalizations.proxyChainNodesSection}',
         // 出口自己不能当前置，否则第一步就绕回自己身上。
         items: targets.proxies.where((item) => item.name != _target).toList(),
         subtitleOf: (item) => item.type,
@@ -184,18 +189,22 @@ class _AddProxyChainViewState extends ConsumerState<AddProxyChainView> {
     ];
   }
 
+  /// 配置的显示名 —— id 不在列表里（刚被删）时退 id 字符串占位。
+  String _labelOf(int profileId) {
+    for (final profile in ref.read(profilesProvider)) {
+      if (profile.id == profileId) return profile.realLabel;
+    }
+    return '$profileId';
+  }
+
   /// 其他配置的节点，一份配置一节，节标题就是配置名。
   List<_PickerSection> _buildForeignSections() {
-    final labelOf = {
-      for (final profile in ref.read(profilesProvider))
-        profile.id: profile.realLabel,
-    };
     final sections = <_PickerSection>[];
     for (final entry in _foreignTargets.entries) {
       if (entry.value.proxies.isEmpty) continue;
       sections.add(
         _PickerSection(
-          label: labelOf[entry.key] ?? '',
+          label: _labelOf(entry.key),
           items: entry.value.proxies,
           profileId: entry.key,
           subtitleOf: (item) => item.type,
@@ -732,8 +741,9 @@ class _TargetPickerViewState extends ConsumerState<_TargetPickerView> {
                               padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
                               child: Text(
                                 section.label,
-                                style: context.textTheme.labelMedium?.copyWith(
+                                style: context.textTheme.titleSmall?.copyWith(
                                   color: context.colorScheme.primary,
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
                             ),

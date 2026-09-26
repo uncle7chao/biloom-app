@@ -403,8 +403,8 @@ class SetupAction extends _$SetupAction {
       final chains = (await ProxyChainStore.load())
           .where((chain) => chain.profileId == profileId)
           .toList();
-      // 无论有没有链都注入：分组本体在，页签才显性存在（空组由注入函数用
-      // DIRECT 兜底，不会让配置加载失败）。
+      // 链式代理只在至少有一条有效链时才注入分组；没链时不注入，
+      // 「链式代理」页签/卡片自然隐藏。
       final injected = injectProxyChains(
         rawConfig,
         chains: chains,

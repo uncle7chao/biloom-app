@@ -14,8 +14,8 @@ import 'dart:convert';
 /// 存一份出口参数快照，注入时优先用配置里的实时参数（订阅更新自动跟随），
 /// 实时参数拿不到（节点被删/换名）再退快照。
 ///
-/// 组成员为空时注入 `proxies: [DIRECT]` 兜底：mihomo 不接受空成员的分组，
-/// 空组会让整份配置加载失败 —— 页签必须显性存在，所以只能给它一个无害成员。
+/// 没有有效链时不注入「链式代理」分组：用户没建链时不需要一个空页签/空卡片
+/// 占位置；分组只在该配置至少有一条有效链时才出现，链删光后页签自动消失。
 
 /// 一条链式代理。
 class ProxyChain {
@@ -147,25 +147,31 @@ int nextChainNumber({
 /// 注入链式代理到运行时配置 —— [getProfile] 组装 configMap 时的最后一步之一。
 ///
 /// [chains] 必须已经是**这一份配置**的链（调用方按 profileId 过滤）。
-/// [groupName] 是「链式代理」页签名（与链名同一命名空间，被占用时自动让位）。
+/// [groupName] 是「链式代理」页签名。链式代理命名空间是**专属**的：配置里
+/// 名字落在「[groupName]」「[groupName]N」「[groupName]-N」模式内的节点与组
+/// 一律视为旧模型（把链写进配置文件的时代）残留，注入前先清掉 —— 否则残留组
+/// 会占住组名，让注入的组被迫改名，页签上就多出一个「链式代理-2」。
 /// [autoGroupName] / [selectorGroupName] 是页签插入位置的锚（自动选择 / 节点选择，
 /// 与内核 subscription_defaults.go 的常量同名）—— 都找不到就把组追加到末尾。
 ///
 /// 返回 `(groupName: 实际组名, chainNames: 成功注入的链名)` —— 自定义覆写模式
 /// 会在后面整体替换 proxy-groups，调用方要拿这份信息把组重新补进覆写列表。
 ///
-/// 四条规则：
-/// 1. 链节点参数**优先实时解析**（配置里有同名出口就用配置里的，订阅更新自动
+/// 规则：
+/// 1. **残留清理先行**：模式匹配的节点/组/组员引用/规则引用全部移除（组员被清空
+///    的组补 `[DIRECT]` 兜底，不然整份配置加载失败）。
+/// 2. 链节点参数**优先实时解析**（配置里有同名出口就用配置里的，订阅更新自动
 ///    跟随），解析不到退快照；快照里残留的 `dialer-proxy` 一律剥掉 —— 链的前置
 ///    以本条记录为准，继承出口的旧链是悬空引用。
-/// 2. 前置是外部配置的节点（有 [ProxyChain.dialerNode] 快照）且配置里没有这个名字
+/// 3. 前置是外部配置的节点（有 [ProxyChain.dialerNode] 快照）且配置里没有这个名字
 ///    时，先注入前置节点本体（同样剥掉它自己的 dialer-proxy，那在它的配置里才有
 ///    意义）。
-/// 3. 链名与配置现有节点/组撞名时**跳过该链**而不是改名 —— 改名会让分组引用、
-///    用户对选中态的记忆一起失效；撞名只可能来自配置侧后来加的同名节点，跳过
-///    是最不意外的降级。
-/// 4. 「链式代理」分组永远注入（显性页签）：成员是全部链名，一条都没有时用
-///    `[DIRECT]` 兜底；插入位置固定在「自动选择」后面。
+/// 4. 前置两头落空（比如订阅更新把前置节点删了）→ 跳过该链：引用悬空会让整份
+///    配置加载失败。链名与**非残留**的配置节点/组撞名（用户自己起的名）也跳过 ——
+///    改名会让选中态记忆失效，跳过是最不意外的降级。
+/// 5. **分组只在至少有一条有效链时注入**：没有有效链（一条都没有 / 全部被跳过）
+///    时不注入空组，「链式代理」页签与卡片自然隐藏；注入时插入位置固定在
+///    「自动选择」后面，成员是全部有效链名。
 ({String groupName, List<String> chainNames}) injectProxyChains(
   final Map<String, dynamic> rawConfig, {
   required List<ProxyChain> chains,
@@ -190,6 +196,52 @@ int nextChainNumber({
 
   String nameOf(Map<String, dynamic> node) =>
       node['name'] is String ? node['name'] as String : '';
+
+  // ---- 规则 1：旧模型残留清理先行 ----
+  //
+  // 「链式代理」「链式代理1」「链式代理-2」这些名字属于链式代理的专属命名空间：
+  // 出现在配置文件里只可能是旧模型（把链落盘的时代）留下的残留。不清掉的话，
+  // 残留组占住组名，注入组被迫让位成「链式代理-2」，页签栏就多出一个假页签。
+  final residuePattern = RegExp(
+    '^${RegExp.escape(groupName)}(?:-\\d+|\\d+)?\$',
+  );
+  final residueNames = <String>{
+    for (final node in proxyList)
+      if (residuePattern.hasMatch(nameOf(node))) nameOf(node),
+    for (final group in groupList)
+      if (residuePattern.hasMatch(
+        group['name'] is String ? group['name'] as String : '',
+      ))
+        group['name'] as String,
+  };
+  if (residueNames.isNotEmpty) {
+    proxyList.removeWhere((node) => residueNames.contains(nameOf(node)));
+    groupList.removeWhere(
+      (group) => residueNames.contains(
+        group['name'] is String ? group['name'] as String : '',
+      ),
+    );
+    // 悬空引用清理：其他组的成员列表、规则指向的被删名字 —— 两者留一个都会
+    // 让整份配置加载失败，比残留本身严重得多。
+    for (final group in groupList) {
+      final members = group['proxies'];
+      if (members is List && members.any((m) => residueNames.contains(m))) {
+        final kept = members.where((m) => !residueNames.contains(m)).toList();
+        group['proxies'] = kept.isNotEmpty ? kept : <String>['DIRECT'];
+      }
+    }
+    final rules = rawConfig['rules'];
+    if (rules is List) {
+      bool ruleTargetsResidue(Object rule) {
+        if (rule is! String) return false;
+        final index = rule.lastIndexOf(',');
+        if (index < 0) return false;
+        return residueNames.contains(rule.substring(index + 1).trim());
+      }
+
+      rawConfig['rules'] = rules.where((rule) => !ruleTargetsResidue(rule)).toList();
+    }
+  }
 
   // 节点与组共用同一个命名空间，前置可以是其中任何一种 —— 都算「存在」。
   final existingNames = <String>{
@@ -237,7 +289,17 @@ int nextChainNumber({
   }
   rawConfig['proxies'] = proxyList;
 
-  // 分组名与节点名/组名共用命名空间：重名 = 整份配置加载失败。被占用就让位。
+  // 没有有效链时不需要注入空组：用户没建链时「链式代理」页签/卡片不应显示，
+  // 也不必担心空成员导致配置加载失败（直接不注入即可）。但残留清理的结果必须
+  // 写回 rawConfig，否则旧模型残留会留在配置里。
+  if (chainNames.isEmpty) {
+    rawConfig['proxy-groups'] = groupList;
+    return (groupName: '', chainNames: const []);
+  }
+
+  // 分组名与节点名/组名共用命名空间。残留清理已把专属命名空间腾空，正常路径
+  // 下 [groupName] 必然可用；这个让位循环只是最后一道防线 —— 万一用户给普通
+  // 节点/组起了一模一样的名字（清理模式管不到的形态），让位好过写坏配置。
   var realGroupName = groupName;
   var suffix = 2;
   while (existingNames.contains(realGroupName)) {
