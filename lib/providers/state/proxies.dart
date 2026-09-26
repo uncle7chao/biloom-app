@@ -1,16 +1,42 @@
 part of '../state.dart';
 
+/// 链式代理注入进运行时配置的节点名集合：链节点本体 + 快照注入的外部前置
+/// 节点本体（见 `common/proxy_chains.dart` 的 injectProxyChains）。GLOBAL 页签
+/// 的展示层用它把这些「链的东西」从节点列表里摘掉 —— 链统一在「链式代理」
+/// 页签里出现与选择。配置组装（setup.dart）在每次应用配置时重写本集合。
+///
+/// 手写 Notifier 不走代码生成：本文件里 ProxyRegionFilter 等同款处理（生成器
+/// 在环境故障期跑不动，而这里必须在组装配置的主隔离同步写入）。
+class ChainInjectedNames extends Notifier<Set<String>> {
+  @override
+  Set<String> build() => const {};
+
+  void set(Set<String> names) => state = names;
+}
+
+final chainInjectedNamesProvider =
+    NotifierProvider<ChainInjectedNames, Set<String>>(ChainInjectedNames.new);
+
 @riverpod
 GroupsState currentGroupsState(Ref ref) {
   final mode = ref.watch(
     patchClashConfigProvider.select((state) => state.mode),
   );
+  final injectedChainNames = ref.watch(chainInjectedNamesProvider);
   final groups = ref.watch(
     groupsProvider.select(
       (state) => state.map((item) {
+        // GLOBAL 页签里不出现链式代理的东西：链节点与快照注入的前置节点
+        // 统一只在「链式代理」页签里出现与选择。内核数据不动，仅展示层过滤。
+        final all =
+            item.name == GroupName.GLOBAL.name
+            ? item.all
+                  .where((proxy) => !injectedChainNames.contains(proxy.name))
+                  .toList()
+            : item.all;
         return item.copyWith(
           now: '',
-          all: item.all.map((proxy) => proxy.copyWith(now: '')).toList(),
+          all: all.map((proxy) => proxy.copyWith(now: '')).toList(),
         );
       }),
     ),

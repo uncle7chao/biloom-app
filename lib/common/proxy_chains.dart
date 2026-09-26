@@ -157,8 +157,10 @@ int nextChainNumber({
 /// [autoGroupName] / [selectorGroupName] 是页签插入位置的锚（自动选择 / 节点选择，
 /// 与内核 subscription_defaults.go 的常量同名）—— 都找不到就把组追加到末尾。
 ///
-/// 返回 `(groupName: 实际组名, chainNames: 成功注入的链名)` —— 自定义覆写模式
-/// 会在后面整体替换 proxy-groups，调用方要拿这份信息把组重新补进覆写列表。
+/// 返回 `(groupName: 实际组名, chainNames: 成功注入的链名, injectedDialerNames:
+/// 快照注入的前置节点名)` —— 自定义覆写模式会在后面整体替换 proxy-groups，
+/// 调用方要拿这份信息把组重新补进覆写列表；GLOBAL 页签的展示层过滤（代理页
+/// 不出现链的东西）要的是 chainNames + injectedDialerNames 的并集。
 ///
 /// 规则：
 /// 1. **残留清理先行**：模式匹配的节点/组/组员引用/规则引用全部移除（组员被清空
@@ -175,7 +177,8 @@ int nextChainNumber({
 /// 5. **分组只在至少有一条有效链时注入**：没有有效链（一条都没有 / 全部被跳过）
 ///    时不注入空组，「链式代理」页签与卡片自然隐藏；注入时插入位置固定在
 ///    「自动选择」后面，成员是全部有效链名。
-({String groupName, List<String> chainNames}) injectProxyChains(
+({String groupName, List<String> chainNames, List<String> injectedDialerNames})
+injectProxyChains(
   final Map<String, dynamic> rawConfig, {
   required List<ProxyChain> chains,
   required String groupName,
@@ -265,6 +268,7 @@ int nextChainNumber({
   }
 
   final chainNames = <String>[];
+  final injectedDialerNames = <String>[];
   for (final chain in chains) {
     if (existingNames.contains(chain.name)) {
       continue; // 规则 3：撞名跳过，绝不写坏配置。
@@ -279,6 +283,7 @@ int nextChainNumber({
       }
       proxyList.add(dialerNode);
       existingNames.add(nameOf(dialerNode));
+      injectedDialerNames.add(nameOf(dialerNode));
     }
     final exitParams = resolveNode(chain.exitName, chain.exitNode);
     if (exitParams == null) {
@@ -297,7 +302,7 @@ int nextChainNumber({
   // 写回 rawConfig，否则旧模型残留会留在配置里。
   if (chainNames.isEmpty) {
     rawConfig['proxy-groups'] = groupList;
-    return (groupName: '', chainNames: const []);
+    return (groupName: '', chainNames: const [], injectedDialerNames: const []);
   }
 
   // 分组名与节点名/组名共用命名空间。残留清理已把专属命名空间腾空，正常路径
@@ -332,5 +337,9 @@ int nextChainNumber({
     groupList.insert(insertAt + 1, groupEntry);
   }
   rawConfig['proxy-groups'] = groupList;
-  return (groupName: realGroupName, chainNames: chainNames);
+  return (
+    groupName: realGroupName,
+    chainNames: chainNames,
+    injectedDialerNames: injectedDialerNames,
+  );
 }

@@ -359,7 +359,12 @@ class SetupAction extends _$SetupAction {
     required PatchClashConfig patchConfig,
   }) async {
     final profileId = setupState.profileId;
-    if (profileId == null) return (yaml: '', md5: '');
+    if (profileId == null) {
+      // 没有生效配置就没有链注入，GLOBAL 展示过滤的名单必须清空，
+      // 不然换配置后旧名单还挂着，会把新配置里的同名节点藏掉。
+      ref.read(chainInjectedNamesProvider.notifier).set(const {});
+      return (yaml: '', md5: '');
+    }
     final defaultUA = globalState.packageInfo.ua;
     final networkSetting = ref.read(
       networkSettingProvider.select(
@@ -414,8 +419,15 @@ class SetupAction extends _$SetupAction {
       );
       chainGroupName = injected.groupName;
       chainNames = injected.chainNames;
+      // GLOBAL 页签展示层过滤的名单 = 链节点 + 快照注入的前置节点。
+      // 这两类的家都在「链式代理」页签，不在配置自己的节点列表里。
+      ref.read(chainInjectedNamesProvider.notifier).set({
+        ...injected.chainNames,
+        ...injected.injectedDialerNames,
+      });
     } catch (_) {
       // 存储读挂了不能拖垮整份配置的组装 —— 没有链式代理，应用照常能跑。
+      ref.read(chainInjectedNamesProvider.notifier).set(const {});
     }
     // 自定义覆写模式会在 makeRealProfileTask 里**整体替换** proxy-groups ——
     // 上面注入的组会被顶掉。把链组以 ProxyGroup 形态补进覆写列表末尾

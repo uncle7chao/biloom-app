@@ -63,14 +63,19 @@ Future<List<Group>> buildGroups(ComputeGroupsState state) async {
   // 和**所有**分组——包括订阅里标了 hidden 的——都塞进它的成员列表。这些条目在
   // 「代理」页其它任何地方都不会出现（内置组没有页签，隐藏组被页签栏过滤），
   // 却单独冒现在 GLOBAL 页签里，看起来就像「藏起来的标签又回来了」；而且把
-  // 广告拦截/直连这类工具组选成全局出口毫无意义。这里在展示层过滤，内核的
-  // 真实成员数据不动 —— 已有的选中状态、切换请求都照旧工作。
-  final hiddenGroupNames = <String>{};
+  // 广告拦截/直连这类工具组选成全局出口毫无意义。
+  //
+  // 策略组同理（2026-09-26 用户实测）：「自动选择」「节点选择」这些组已经有
+  // 自己的页签，再以卡片形态出现在 GLOBAL 节点列表里，用户只会看成「页签
+  // 掉进了节点列表」。GLOBAL 页签的展示层只保留**节点**；组作为全局出口的
+  // 入口仍是它自己的页签。内核的真实成员数据不动 —— 已有的选中状态、切换
+  // 请求都照旧工作。
+  final groupNames = <String>{};
   for (final entry in proxies.entries) {
     final raw = entry.value;
     if (raw is! Map) continue;
     if (!GroupTypeExtension.valueList.contains(raw['type'])) continue;
-    if (raw['hidden'] == true) hiddenGroupNames.add(entry.key);
+    groupNames.add(entry.key);
   }
   final groups = <Group>[];
   for (final groupName in all) {
@@ -86,7 +91,7 @@ Future<List<Group>> buildGroups(ComputeGroupsState state) async {
                       name != GroupName.GLOBAL.name &&
                       name != 'DIRECT' &&
                       name != 'REJECT' &&
-                      !hiddenGroupNames.contains(name),
+                      !groupNames.contains(name),
                 )
                 .toList()
           : const [];

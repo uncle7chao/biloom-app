@@ -150,9 +150,11 @@ void main() {
     expect(groups, isEmpty);
   });
 
-  // GLOBAL 是内核兜底的全量组，mihomo 会把 DIRECT/REJECT 和隐藏分组都塞进它的
+  // GLOBAL 是内核兜底的全量组，mihomo 会把 DIRECT/REJECT 和全部分组都塞进它的
   // 成员列表；这些条目在页签栏都被过滤，单独冒在 GLOBAL 页签里只会造成困惑。
-  test('buildGroups filters built-ins and hidden groups out of GLOBAL', () async {
+  // 策略组也一样（2026-09-26 用户实测）：组已有自己的页签，再以卡片形态出现在
+  // GLOBAL 节点列表里就像「页签掉进了节点列表」—— GLOBAL 只保留节点。
+  test('buildGroups keeps only nodes in GLOBAL', () async {
     final proxies = <String, dynamic>{
       'GLOBAL': {
         'name': 'GLOBAL',
@@ -188,7 +190,7 @@ void main() {
     );
 
     final global = groups.firstWhere((group) => group.name == 'GLOBAL');
-    expect(global.all.map((proxy) => proxy.name), ['HK-01', '节点选择']);
+    expect(global.all.map((proxy) => proxy.name), ['HK-01']);
     // 其它组不受影响。
     final select = groups.firstWhere((group) => group.name == '节点选择');
     expect(select.all.map((proxy) => proxy.name), ['HK-01']);

@@ -169,10 +169,16 @@ class _AddProxyChainViewState extends ConsumerState<AddProxyChainView> {
     final targets = _targets;
     if (targets == null) return const [];
     final ownLabel = _labelOf(_profileId);
+    // 两类候选都在时，节标题必须各自带类型后缀 —— 只有一个「谷歌VPS」加一个
+    // 「谷歌VPS · 节点」的话，用户看到的是两个谷歌VPS（2026-09-26 实测反馈），
+    // 而不是「同一份配置的策略组与节点」。
+    final hasNodes = targets.proxies.isNotEmpty;
     return [
       if (targets.groups.isNotEmpty)
         _PickerSection(
-          label: ownLabel,
+          label: hasNodes
+              ? '$ownLabel · ${context.appLocalizations.proxyChainGroupsSection}'
+              : ownLabel,
           items: targets.groups,
           subtitleOf: (item) => item.type,
           isGroups: true,
