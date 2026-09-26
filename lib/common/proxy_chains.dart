@@ -17,6 +17,15 @@ import 'dart:convert';
 /// 没有有效链时不注入「链式代理」分组：用户没建链时不需要一个空页签/空卡片
 /// 占位置；分组只在该配置至少有一条有效链时才出现，链删光后页签自动消失。
 
+/// 链式代理的**配置层固定名**（分组名与默认链名共用）。
+///
+/// ⛔ 刻意不走 l10n：这个名字同时是「残留清理的模式锚点」与「自动编号的
+/// 基础名」。跟着界面语言走的话，用户切一次语言，上一语言下写的链名/残留
+/// 就再也匹配不上了 —— 重新编号、残留清不掉、页签名凭空变化。界面文案的
+/// 本地化交给 l10n 词条（输入框占位、按钮等），配置里永远用这个名字。
+/// 与「自动选择」「节点选择」两个硬编码锚点名同一处理。
+const kProxyChainGroupName = '链式代理';
+
 /// 一条链式代理。
 class ProxyChain {
   const ProxyChain({
@@ -263,12 +272,34 @@ injectProxyChains(
     }
   }
   if (residueNames.isNotEmpty) {
-    proxyList.removeWhere((node) => residueNames.contains(nameOf(node)));
-    groupList.removeWhere(
-      (group) => residueNames.contains(
-        group['name'] is String ? group['name'] as String : '',
-      ),
-    );
+    // 保守清理（#不误伤）：命名空间撞名不该变成数据丢失。用户完全可能给
+    // 自己的节点/组起「链式代理」这类名字 —— 清理只针对旧模型的**形态特征**：
+    // - 链节点必带 dialer-proxy（旧 addProxyChain 写的就是这种）；
+    // - 残留组必是 select 且成员全是链名/DIRECT（链组或空组兜底形态）。
+    // 不满足特征的同名条目原样保留；store 层撞名时对**链**改名（-2 兜底），
+    // 两头合起来才是完整的「不删用户数据」策略。
+    proxyList.removeWhere((node) {
+      if (!residueNames.contains(nameOf(node))) {
+        return false;
+      }
+      return node.containsKey('dialer-proxy');
+    });
+    groupList.removeWhere((group) {
+      final name = group['name'] is String ? group['name'] as String : '';
+      if (!residueNames.contains(name)) {
+        return false;
+      }
+      if (group['type'] != 'select') {
+        return false;
+      }
+      final members = group['proxies'];
+      if (members is! List || members.isEmpty) {
+        return true;
+      }
+      return members.every(
+        (m) => m == 'DIRECT' || (m is String && residuePattern.hasMatch(m)),
+      );
+    });
     // 悬空引用清理：其他组的成员列表、规则指向的被删名字 —— 两者留一个都会
     // 让整份配置加载失败，比残留本身严重得多。
     for (final group in groupList) {

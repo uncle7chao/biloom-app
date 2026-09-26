@@ -156,38 +156,6 @@ class CoreController {
     return _interface.setProxyChain(yaml: yaml, target: target, dialer: dialer);
   }
 
-  /// 把来源配置里的一个节点原样复制进目标配置。
-  ///
-  /// 链式代理「跨配置挑选」的底层能力：链是名字引用、只在同一份配置内成立，
-  /// 从别的配置挑了出口/前置后先把节点搬进链所在的那份配置。内核负责剥掉
-  /// dialer-proxy（防悬空引用）、重名自动改名、身份相同直接复用。
-  Future<CopyProxyNodeResult> copyProxyNode({
-    required String from,
-    required String to,
-    required String name,
-  }) async {
-    return _interface.copyProxyNode(from: from, to: to, name: name);
-  }
-
-  /// 新建一条独立的链式代理节点并收进专属分组（详见 interface 的说明）。
-  Future<AddProxyChainResult> addProxyChain({
-    required String yaml,
-    required String exit,
-    required String dialer,
-    required String name,
-    required bool autoNumber,
-    required String group,
-  }) async {
-    return _interface.addProxyChain(
-      yaml: yaml,
-      exit: exit,
-      dialer: dialer,
-      name: name,
-      autoNumber: autoNumber,
-      group: group,
-    );
-  }
-
   Future<String> updateConfig(UpdateParams updateParams) async {
     return _interface.updateConfig(updateParams);
   }

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/models/models.dart';
+import 'package:fl_clash/providers/providers.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart';
 import 'package:yaml/yaml.dart';
@@ -630,5 +631,21 @@ void main() {
     expect(encoded, contains('first'));
     expect(encoded, contains('\n'));
     expect(await mapListTask([1, 2, 3], _double), [2, 4, 6]);
+  });
+
+  test('filterGlobalGroupMembers removes only injected chain names', () {
+    final all = const [
+      Proxy(name: '普通节点', type: 'Shadowsocks'),
+      Proxy(name: '链式代理1', type: 'Shadowsocks'),
+      Proxy(name: '前置节点', type: 'Shadowsocks'),
+    ];
+    final injected = {'链式代理1', '前置节点'};
+
+    final filtered = filterGlobalGroupMembers(all, injected);
+    expect(filtered.map((proxy) => proxy.name), ['普通节点']);
+
+    // 空集合直通，且不改变原列表。
+    expect(filterGlobalGroupMembers(all, const {}), same(all));
+    expect(filterGlobalGroupMembers(const [], injected), isEmpty);
   });
 }

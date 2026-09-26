@@ -417,7 +417,8 @@ class SetupAction extends _$SetupAction {
       final injected = injectProxyChains(
         rawConfig,
         chains: chains,
-        groupName: currentAppLocalizations.proxyChainDefaultName,
+        // 配置层固定名（不走 l10n，理由见 kProxyChainGroupName 的文档）。
+        groupName: kProxyChainGroupName,
         autoGroupName: '自动选择',
         selectorGroupName: '节点选择',
         // 自定义覆写模式会整体替换 proxy-groups，rawConfig 里的组活不到

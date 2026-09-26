@@ -42,8 +42,6 @@ enum CoreMethod {
   updateProxyNode,
   readProfileTargets,
   setProxyChain,
-  copyProxyNode,
-  addProxyChain,
 }
 
 class CoreMethodCall {

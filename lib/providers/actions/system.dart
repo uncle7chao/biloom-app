@@ -55,7 +55,21 @@ class SystemAction extends _$SystemAction {
       bootGuard.markClosed(),
       if (systemDnsCoordinator != null) systemDnsCoordinator!.shutdown(),
       if (proxy != null) proxy!.stopProxy(),
+      // 测落地记录是去抖写盘（2 秒窗口）—— 退出前 flush，别让批测尾声的
+      // 结果随进程一起丢掉（丢了下轮批测就要重烧一遍流量）。
+      _flushProxyExitStoreSafely(),
     ]);
+  }
+
+  Future<void> _flushProxyExitStoreSafely() async {
+    try {
+      await ref.read(proxyExitStoreProvider.notifier).flushSave();
+    } catch (error) {
+      commonPrint.log(
+        'Proxy exit store flush failed: ${compactError(error)}',
+        logLevel: LogLevel.warning,
+      );
+    }
   }
 
   Future<void> _savePreferencesSafely() async {

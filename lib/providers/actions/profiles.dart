@@ -512,7 +512,8 @@ class ProfilesAction extends _$ProfilesAction {
         profileId: profileId,
         name: name,
         autoNumber: autoNumber,
-        defaultName: currentAppLocalizations.proxyChainDefaultName,
+        // 配置层固定名（不走 l10n，理由见 kProxyChainGroupName 的文档）。
+        defaultName: kProxyChainGroupName,
         exitName: exit,
         exitNode: exitNode,
         dialer: dialer,
@@ -526,43 +527,6 @@ class ProfilesAction extends _$ProfilesAction {
       }
       return finalName;
     }, title: currentAppLocalizations.addProxyChain);
-  }
-
-  /// 把来源配置里的一个节点复制进目标配置（链式代理「跨配置挑选」的落盘步骤）。
-  ///
-  /// 链是名字引用、只在同一份配置内成立，所以从别的配置挑了出口/前置后，先调
-  /// 这里把节点搬进链所在的那份配置。内核负责剥 dialer-proxy（防悬空引用）、
-  /// 重名自动改名、身份相同直接复用（复用时目标配置一个字节没动，无需落盘）。
-  /// 返回节点在目标配置里的最终名字 —— 链要引用它，而不是请求里的原名。
-  Future<CopyProxyNodeResult> copyProxyNodeBetweenProfiles({
-    required int fromProfileId,
-    required int toProfileId,
-    required String name,
-  }) async {
-    final from = ref.read(profilesProvider).getProfile(fromProfileId);
-    final to = ref.read(profilesProvider).getProfile(toProfileId);
-    if (from == null || to == null) {
-      throw const MessageException('找不到来源或目标配置，可能已被删除');
-    }
-    final result = await _core.copyProxyNode(
-      from: await (await from.file).readAsString(),
-      to: await (await to.file).readAsString(),
-      name: name,
-    );
-    if (!result.reused) {
-      await to.saveFile(
-        Uint8List.fromList(utf8.encode(result.yaml)),
-        validate: (path) => _core.validateConfig(path),
-        convert: convertSubscription,
-      );
-      ref.read(profilesProvider.notifier).put(to);
-      if (to.id == ref.read(currentProfileIdProvider)) {
-        ref
-            .read(setupActionProvider.notifier)
-            .applyProfileDebounce(silence: true);
-      }
-    }
-    return result;
   }
 
   /// 把订阅配置转为本地配置。

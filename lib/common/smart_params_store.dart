@@ -11,6 +11,19 @@ import 'smart_params.dart';
 /// SP 直存而不是 drift：批量轮换一轮只写几个条目，整键重写的写放大可以
 /// 接受（对比落地记录那批两三百条才值得迁 drift）。
 class SmartFingerprintStore {
+  /// load-modify-save 的串行链。批量测延迟的失败回调与成功回调会在同一批
+  /// 节点上交错触发 —— 两个「读整键 → 改 → 写整键」并发跑的话，后写的那份
+  /// 会把先写的条目整个冲掉（丢轮换/丢时间戳）。所有改键操作都链在这条
+  /// Future 队列后面，天然互斥且保持提交顺序。
+  static Future<void> _writeQueue = Future.value();
+
+  static Future<T> _serialized<T>(Future<T> Function() action) {
+    final operation = _writeQueue.then((_) => action());
+    // 链不能断：吞掉错误让后续操作接得上（错误本身仍转嫁给本次调用方）。
+    _writeQueue = operation.then<void>((_) {}, onError: (Object error) {});
+    return operation;
+  }
+
   static Future<Map<String, FingerprintRecord>> load() async {
     final prefs = await preferences.sharedPreferencesCompleter.future;
     final raw = prefs?.getString(kFingerprintOverridesKey);
@@ -52,7 +65,11 @@ class SmartFingerprintStore {
   ///
   /// 三重护栏：只动被本层填过的节点；冷却期内不重复推进；池子用尽就停
   /// （全池轮完还失败，节点多半是真挂了，不是指纹的事）。
-  static Future<bool> rotateOnFailure(String proxyName) async {
+  static Future<bool> rotateOnFailure(String proxyName) {
+    return _serialized(() => _rotateOnFailureLocked(proxyName));
+  }
+
+  static Future<bool> _rotateOnFailureLocked(String proxyName) async {
     if (!smartFilledProxyNames.contains(proxyName)) {
       return false;
     }
@@ -92,7 +109,11 @@ class SmartFingerprintStore {
 
   /// 测延迟成功：保留已生效的指纹（回退默认值会把修好的节点又弄坏），
   /// 只更新时间戳让后续失败可以再次轮换。
-  static Future<void> noteSuccess(String proxyName) async {
+  static Future<void> noteSuccess(String proxyName) {
+    return _serialized(() => _noteSuccessLocked(proxyName));
+  }
+
+  static Future<void> _noteSuccessLocked(String proxyName) async {
     if (!smartFilledProxyNames.contains(proxyName)) {
       return;
     }

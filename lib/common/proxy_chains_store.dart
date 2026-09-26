@@ -4,7 +4,12 @@ import 'preferences.dart';
 import 'proxy_chains.dart';
 
 export 'proxy_chains.dart'
-    show ProxyChain, decodeProxyChains, injectProxyChains, nextChainNumber;
+    show
+        ProxyChain,
+        decodeProxyChains,
+        injectProxyChains,
+        nextChainNumber,
+        kProxyChainGroupName;
 
 /// 链式代理的持久化（shared_preferences）。
 ///

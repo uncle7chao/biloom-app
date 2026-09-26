@@ -312,6 +312,8 @@ class _AddProxyChainViewState extends ConsumerState<AddProxyChainView> {
     // 名称规则：空着或仍是默认值 → 默认名路径（链式代理1、链式代理2 …
     // 编号取已占用最大编号 +1）；用户改过名 → 原样使用、不加数字（与配置或
     // 既有链撞名时数据层 -2 兜底）。页签名由运行时注入固定生成，不在这里管。
+    // isDefault 的对照用界面文案（用户看到什么比对什么），而真正落到配置层
+    // 的默认名是 kProxyChainGroupName 固定值（不走 l10n，见其文档）。
     final defaultName = appLocalizations.proxyChainDefaultName;
     final rawName = _nameController.text.trim();
     final isDefault = rawName.isEmpty || rawName == defaultName;
@@ -332,7 +334,7 @@ class _AddProxyChainViewState extends ConsumerState<AddProxyChainView> {
           exitNode: exitSnapshot,
           dialer: dialer,
           dialerNode: dialerSnapshot,
-          name: isDefault ? defaultName : rawName,
+          name: isDefault ? kProxyChainGroupName : rawName,
           autoNumber: isDefault,
         );
     if (!mounted) return;

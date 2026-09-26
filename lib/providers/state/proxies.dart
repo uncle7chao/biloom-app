@@ -17,6 +17,21 @@ class ChainInjectedNames extends Notifier<Set<String>> {
 final chainInjectedNamesProvider =
     NotifierProvider<ChainInjectedNames, Set<String>>(ChainInjectedNames.new);
 
+/// GLOBAL 组的展示层过滤：链式代理注入的节点（链节点 + 快照前置节点）
+/// 不出现在 GLOBAL 成员里 —— 它们的家在「链式代理」页签。内核数据不动，
+/// 仅展示层过滤。抽成顶层纯函数便于测试。
+List<Proxy> filterGlobalGroupMembers(
+  List<Proxy> all,
+  Set<String> injectedChainNames,
+) {
+  if (injectedChainNames.isEmpty) {
+    return all;
+  }
+  return all
+      .where((proxy) => !injectedChainNames.contains(proxy.name))
+      .toList();
+}
+
 @riverpod
 GroupsState currentGroupsState(Ref ref) {
   final mode = ref.watch(
@@ -26,13 +41,9 @@ GroupsState currentGroupsState(Ref ref) {
   final groups = ref.watch(
     groupsProvider.select(
       (state) => state.map((item) {
-        // GLOBAL 页签里不出现链式代理的东西：链节点与快照注入的前置节点
-        // 统一只在「链式代理」页签里出现与选择。内核数据不动，仅展示层过滤。
         final all =
             item.name == GroupName.GLOBAL.name
-            ? item.all
-                  .where((proxy) => !injectedChainNames.contains(proxy.name))
-                  .toList()
+            ? filterGlobalGroupMembers(item.all, injectedChainNames)
             : item.all;
         return item.copyWith(
           now: '',
@@ -523,19 +534,18 @@ class ProxyExitStore extends AsyncNotifier<Map<String, ProxyExitInfo>> {
     }
   }
 
-  /// 节点名 → 国家码，只含新鲜记录。地区识别（标签 / 筛选 / 分组）统一从这里取。
-  Map<String, String> freshCountryCodes() {
-    final value = state.value;
-    if (value == null || value.isEmpty) {
-      return const {};
-    }
-    final now = DateTime.now().millisecondsSinceEpoch;
-    return {
-      for (final entry in value.entries)
-        if (now - entry.value.testedAt <= freshness.inMilliseconds)
-          entry.key: entry.value.countryCode,
-    };
+  /// 立刻把去抖窗口里的待写记录落库（取消定时器、同步写）。退出流程的
+  /// cleanup 调用 —— 不 flush 的话，批测结束前几秒测到的结果会随进程
+  /// 退出一起丢掉，下一轮批测又得重新烧一遍流量。
+  Future<void> flushSave() async {
+    _saveDebounce?.cancel();
+    await _save();
   }
+
+  /// 节点名 → 国家码，只含新鲜记录。地区识别（标签 / 筛选 / 分组）统一从
+  /// [proxyLandingCodesProvider] 取 —— store 的状态本身已经只含新鲜记录
+  /// （build 时过滤 + 会话内新增的都是刚测的），这里不再重复一份同样语义
+  /// 的变换。
 }
 
 final proxyExitStoreProvider =
@@ -590,7 +600,17 @@ class ProxyExit extends Notifier<ProxyExitState> {
       testing: {...state.testing}..remove(proxyName),
       results: {...state.results, proxyName: info},
     );
+    // 手动单节点测与批测**同一口径**：成功的记录一并落库 —— 不然同一张卡片
+    // 在「点了按钮」和「跑过批测」两条路里得到两种持久化结果。
+    if (info != null && info.countryCode.isNotEmpty) {
+      ref.read(proxyExitStoreProvider.notifier).record(proxyName, info);
+    }
   }
+
+  /// 是否有一轮批测还在跑。批测是重活（两三百节点、几分钟），定时任务与
+  /// 「测延迟后自动批测」撞在同一个窗口时会重复探测 —— 后到的直接让路，
+  /// 等下一轮补（新鲜记录机制保证不会漏测）。
+  bool _batchRunning = false;
 
   /// 批量测落地：**跳过库里还有新鲜记录的节点**（重复测只是重复烧流量），
   /// 逐个完成后渐进刷新卡片并把结果落库。放在「测延迟」全部结束后由
@@ -602,7 +622,7 @@ class ProxyExit extends Notifier<ProxyExitState> {
   /// 判不出网络状态就放行 —— 门控宁可失效也不拦住正常功能。手动单节点
   /// 「测落地」不走这里，用户点了就是明确意图，不该被拦。
   Future<void> testBatch(Set<String> proxyNames) async {
-    if (proxyNames.isEmpty) {
+    if (proxyNames.isEmpty || _batchRunning) {
       return;
     }
     if (await _isMeteredNetwork()) {
@@ -612,15 +632,22 @@ class ProxyExit extends Notifier<ProxyExitState> {
       );
       return;
     }
-    final fresh = ref.read(proxyExitStoreProvider).value ?? const {};
+    // 等 store 的初始加载完成再取新鲜记录：刚启动时 store 还在 AsyncLoading，
+    // 直接读 .value 拿到的是空表 —— 会把库里已有新鲜记录的节点全部重测一遍。
+    final fresh = await ref.read(proxyExitStoreProvider.future);
     final queue = proxyNames
         .where((name) => !fresh.containsKey(name))
         .toList();
     if (queue.isEmpty) {
       return;
     }
-    final pool = TaskPool(_batchConcurrency);
-    await Future.wait(queue.map((name) => pool.run(() => _testAndStore(name))));
+    _batchRunning = true;
+    try {
+      final pool = TaskPool(_batchConcurrency);
+      await Future.wait(queue.map((name) => pool.run(() => test(name))));
+    } finally {
+      _batchRunning = false;
+    }
   }
 
   /// 只在「蜂窝在、且没有 Wi-Fi/以太网兜着」时算计费网络。桌面端通常是
@@ -635,14 +662,6 @@ class ProxyExit extends Notifier<ProxyExitState> {
       return results.contains(ConnectivityResult.mobile) && !unmetered;
     } catch (_) {
       return false;
-    }
-  }
-
-  Future<void> _testAndStore(String proxyName) async {
-    await test(proxyName);
-    final info = state.results[proxyName];
-    if (info != null && info.countryCode.isNotEmpty) {
-      ref.read(proxyExitStoreProvider.notifier).record(proxyName, info);
     }
   }
 
