@@ -7,6 +7,10 @@
 - **proxies** Stop injecting the chain-proxy tab when there are no valid chains, so the empty untouchable tab disappears; stale leftovers from older models (链式代理 / 链式代理N / 链式代理-N) are still cleared before injecting, so a residue never forces a duplicate "-2" tab (5bb737a)
 - **ui** The chain picker shows each section's profile name as a bold accent title, so it is clear which profile a node belongs to (5bb737a)
 
+**Bug Fixes**
+
+- **proxies** Creating the first proxy chain always failed with "Cannot add to an unmodifiable list" - the chain store appended to a const list decoded from empty storage; also the chain picker sections are now collapsible via tappable headers (item count + rotating chevron), and search ignores collapse state (87b7351)
+
 <!-- changelog:frozen -->
 <!-- Entries below predate the structured pipeline. Their wording is kept as written; only the heading and list style were normalized. -->
 

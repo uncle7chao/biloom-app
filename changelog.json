@@ -21,6 +21,16 @@
               "text": "The chain picker shows each section's profile name as a bold accent title, so it is clear which profile a node belongs to"
             }
           ]
+        },
+        {
+          "type": "fix",
+          "entries": [
+            {
+              "id": "87b7351",
+              "scope": "proxies",
+              "text": "Creating the first proxy chain always failed with \"Cannot add to an unmodifiable list\" - the chain store appended to a const list decoded from empty storage; also the chain picker sections are now collapsible via tappable headers (item count + rotating chevron), and search ignores collapse state"
+            }
+          ]
         }
       ]
     }
