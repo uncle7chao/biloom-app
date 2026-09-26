@@ -1,5 +1,15 @@
 # Changelog
 
+## v01.00.17 (2026-09-26)
+
+**Bug Fixes**
+
+- **proxies** The GLOBAL tab now lists only nodes - strategy groups no longer appear as cards in it, and chain-proxy nodes plus their injected front nodes stay in the chain tab; the chain dialer picker labels its sections with 策略组/节点 suffixes (49d2278)
+- **core** Xray outbounds with multiple server entries now import every server instead of silently keeping only the first one (edbf916)
+- **proxies** Chain injection hardening: residue rules with trailing params (no-resolve/src) and sub-rules are now cleaned too; group dialers are validated against the groups that survive custom-overwrite replacement; previewing another profile no longer pollutes the GLOBAL display filter; the node form keeps reality-opts when editing subscription Reality nodes, requires a vless public key, and no longer crashes on dropdown values outside the option list; fingerprint rotation no longer stalls permanently on stale records (7be6630)
+- **core** Kernel cleanups: both exit-IP echo urls now use https so the result cannot be rewritten in plaintext; auto-generated node names skip suffixes genuinely taken in the same batch; removing nodes also honors the src trailing rule param; the never-called copyProxyNode / addProxyChain methods are gone (8735298)
+- **proxies** P2 backlog: landing batch no longer re-probes everything after a cold start and cannot run concurrently with itself; manual landing probes persist like batch ones; pending landing writes are flushed on exit; the method timeout covers the kernel two-echo worst case; the chain-proxy name is fixed at the config layer so switching UI language no longer renumbers chains; residue cleanup no longer touches user nodes that merely share the name; fingerprint writes are serialized; the region whitelist now covers 74 more real landing codes (3118ffe)
+
 ## v01.00.16 (2026-09-26)
 
 **Features**
