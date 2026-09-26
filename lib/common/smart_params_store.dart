@@ -64,13 +64,22 @@ class SmartFingerprintStore {
         return false;
       }
       final index = kFingerprintPool.indexOf(record.fingerprint);
-      if (index < 0 || index >= kFingerprintPool.length - 1) {
+      if (index < 0) {
+        // 记录里的指纹不在当前池内（池成员调整过/旧版本数据残留）：重置回
+        // 池首重新参与轮换 —— 不然这个节点永远卡在「不轮换」的不可恢复状态
+        // （index >= length-1 才是合法的「池尽即停」）。
+        overrides[proxyName] = FingerprintRecord(
+          fingerprint: kFingerprintPool.first,
+          rotatedAt: now,
+        );
+      } else if (index >= kFingerprintPool.length - 1) {
         return false;
+      } else {
+        overrides[proxyName] = FingerprintRecord(
+          fingerprint: kFingerprintPool[index + 1],
+          rotatedAt: now,
+        );
       }
-      overrides[proxyName] = FingerprintRecord(
-        fingerprint: kFingerprintPool[index + 1],
-        rotatedAt: now,
-      );
     } else {
       overrides[proxyName] = FingerprintRecord(
         fingerprint: kFingerprintPool[1],

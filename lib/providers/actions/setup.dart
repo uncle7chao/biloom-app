@@ -404,6 +404,10 @@ class SetupAction extends _$SetupAction {
     // 智能抗检测之前（链节点与快照注入的前置节点同样被补齐指纹）。
     var chainGroupName = '';
     var chainNames = const <String>[];
+    // GLOBAL 页签展示层过滤的名单只跟**当前生效**的配置走：预览其他配置也走
+    // getProfile，但那条路径不能动名单 —— 不然预览完 A 配置的链节点会从
+    // B 配置的 GLOBAL 里消失（或 B 的链漏进 A），直到下次切换配置才恢复。
+    final isActiveProfile = profileId == ref.read(currentProfileIdProvider);
     try {
       final chains = (await ProxyChainStore.load())
           .where((chain) => chain.profileId == profileId)
@@ -416,26 +420,41 @@ class SetupAction extends _$SetupAction {
         groupName: currentAppLocalizations.proxyChainDefaultName,
         autoGroupName: '自动选择',
         selectorGroupName: '节点选择',
+        // 自定义覆写模式会整体替换 proxy-groups，rawConfig 里的组活不到
+        // 最后 —— 组前置的有效性按覆写列表判，不然 dialer-proxy 悬空。
+        finalGroupNames:
+            setupState.overwriteType == OverwriteType.custom &&
+                proxyGroups.isNotEmpty
+            ? {for (final group in proxyGroups) group.name}
+            : null,
       );
       chainGroupName = injected.groupName;
       chainNames = injected.chainNames;
       // GLOBAL 页签展示层过滤的名单 = 链节点 + 快照注入的前置节点。
       // 这两类的家都在「链式代理」页签，不在配置自己的节点列表里。
-      ref.read(chainInjectedNamesProvider.notifier).set({
-        ...injected.chainNames,
-        ...injected.injectedDialerNames,
-      });
+      if (isActiveProfile) {
+        ref.read(chainInjectedNamesProvider.notifier).set({
+          ...injected.chainNames,
+          ...injected.injectedDialerNames,
+        });
+      }
     } catch (_) {
       // 存储读挂了不能拖垮整份配置的组装 —— 没有链式代理，应用照常能跑。
-      ref.read(chainInjectedNamesProvider.notifier).set(const {});
+      if (isActiveProfile) {
+        ref.read(chainInjectedNamesProvider.notifier).set(const {});
+      }
     }
     // 自定义覆写模式会在 makeRealProfileTask 里**整体替换** proxy-groups ——
     // 上面注入的组会被顶掉。把链组以 ProxyGroup 形态补进覆写列表末尾
     // （用户自设计的分组里锚点组未必存在，固定追加在最后）。非 custom 模式
     // 不会替换 proxy-groups，rawConfig 里注入的组原样生效。
+    // ⛔ 先剔掉覆写列表里的同名组再追加：旧模型残留的「链式代理」组可能被
+    // ensureCustomOverwrite 种进覆写数据，直接追加会产出两个同名组，
+    // 整份配置加载失败 —— 与 rawConfig 注入路径的残留清理语义保持一致。
     if (chainGroupName.isNotEmpty &&
         setupState.overwriteType == OverwriteType.custom &&
         proxyGroups.isNotEmpty) {
+      proxyGroups.removeWhere((group) => group.name == chainGroupName);
       proxyGroups.add(
         ProxyGroup(
           id: 0,

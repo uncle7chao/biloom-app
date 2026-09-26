@@ -177,6 +177,9 @@ int nextChainNumber({
 /// 5. **分组只在至少有一条有效链时注入**：没有有效链（一条都没有 / 全部被跳过）
 ///    时不注入空组，「链式代理」页签与卡片自然隐藏；注入时插入位置固定在
 ///    「自动选择」后面，成员是全部有效链名。
+/// 6. [finalGroupNames]（可选）：调用方知道**最终生效**的组名单时传入（自定义
+///    覆写模式会整体替换 proxy-groups，rawConfig 里的组活不到最后）。组前置的
+///    有效性按它判；不传则按 rawConfig 当前的组列表判。
 ({String groupName, List<String> chainNames, List<String> injectedDialerNames})
 injectProxyChains(
   final Map<String, dynamic> rawConfig, {
@@ -184,6 +187,7 @@ injectProxyChains(
   required String groupName,
   required String autoGroupName,
   required String selectorGroupName,
+  Set<String>? finalGroupNames,
 }) {
   final proxies = rawConfig['proxies'];
   final proxyList = proxies is List
@@ -211,6 +215,21 @@ injectProxyChains(
   final residuePattern = RegExp(
     '^${RegExp.escape(groupName)}(?:-\\d+|\\d+)?\$',
   );
+  // 规则形态两种：TYPE,payload,target 与 TYPE,payload,target,no-resolve
+  // （no-resolve/src 是尾参，不是目标）。lastIndexOf(',') 会把尾参当成
+  // 目标名漏删 —— 悬空规则会让整份配置加载失败。
+  const ruleParams = {'no-resolve', 'src'};
+  String? ruleTargetOf(Object rule) {
+    if (rule is! String) return null;
+    final parts = rule.split(',');
+    if (parts.length < 2) return null;
+    final last = parts.last.trim();
+    if (parts.length >= 3 && ruleParams.contains(last.toLowerCase())) {
+      return parts[parts.length - 2].trim();
+    }
+    return last;
+  }
+
   final residueNames = <String>{
     for (final node in proxyList)
       if (residuePattern.hasMatch(nameOf(node))) nameOf(node),
@@ -220,6 +239,29 @@ injectProxyChains(
       ))
         group['name'] as String,
   };
+  // 残留名只出现在规则里（节点/组已经不在了）也要收进来 —— 规则指向专属
+  // 命名空间里不存在的名字，配置同样加载失败，一并是旧模型残留。
+  final rulesForCollect = rawConfig['rules'];
+  if (rulesForCollect is List) {
+    for (final rule in rulesForCollect) {
+      final target = ruleTargetOf(rule);
+      if (target != null && residuePattern.hasMatch(target)) {
+        residueNames.add(target);
+      }
+    }
+  }
+  final subRulesForCollect = rawConfig['sub-rules'];
+  if (subRulesForCollect is Map) {
+    for (final list in subRulesForCollect.values) {
+      if (list is! List) continue;
+      for (final rule in list) {
+        final target = ruleTargetOf(rule);
+        if (target != null && residuePattern.hasMatch(target)) {
+          residueNames.add(target);
+        }
+      }
+    }
+  }
   if (residueNames.isNotEmpty) {
     proxyList.removeWhere((node) => residueNames.contains(nameOf(node)));
     groupList.removeWhere(
@@ -236,25 +278,36 @@ injectProxyChains(
         group['proxies'] = kept.isNotEmpty ? kept : <String>['DIRECT'];
       }
     }
+    // 规则清理（形态与目标识别见上方 ruleTargetOf）。
     final rules = rawConfig['rules'];
     if (rules is List) {
-      bool ruleTargetsResidue(Object rule) {
-        if (rule is! String) return false;
-        final index = rule.lastIndexOf(',');
-        if (index < 0) return false;
-        return residueNames.contains(rule.substring(index + 1).trim());
+      rawConfig['rules'] = rules
+          .where((rule) => !residueNames.contains(ruleTargetOf(rule)))
+          .toList();
+    }
+    // sub-rules 是 Map<名, List<规则>>，里面的规则同样可能指向残留名。
+    final subRules = rawConfig['sub-rules'];
+    if (subRules is Map) {
+      for (final key in subRules.keys.toList()) {
+        final list = subRules[key];
+        if (list is List) {
+          subRules[key] = list
+              .where((rule) => !residueNames.contains(ruleTargetOf(rule)))
+              .toList();
+        }
       }
-
-      rawConfig['rules'] = rules.where((rule) => !ruleTargetsResidue(rule)).toList();
     }
   }
 
   // 节点与组共用同一个命名空间，前置可以是其中任何一种 —— 都算「存在」。
-  final existingNames = <String>{
-    for (final node in proxyList) nameOf(node),
+  // 但自定义覆写模式下 rawConfig 的组活不到最后（整体替换），组前置要按
+  // [finalGroupNames] 判；节点不受覆写影响，始终按配置本体验。
+  final nodeNames = {for (final node in proxyList) nameOf(node)};
+  final groupNames = {
     for (final group in groupList)
       group['name'] is String ? group['name'] as String : '',
   };
+  final existingNames = {...nodeNames, ...groupNames};
 
   /// 实时参数优先、快照兜底地解析一个节点参数；剥掉残留的 dialer-proxy。
   Map<String, dynamic>? resolveNode(String name, Map<String, dynamic>? snapshot) {
@@ -273,15 +326,20 @@ injectProxyChains(
     if (existingNames.contains(chain.name)) {
       continue; // 规则 3：撞名跳过，绝不写坏配置。
     }
-    // 前置必须真实存在：本配置的节点/组按名即可；外部节点靠快照注入。
-    // 两头都落空（比如订阅更新把前置节点删了）—— 这条链的引用会悬空，
-    // 整份配置加载失败的代价远大于少一条链，跳过。
-    if (!existingNames.contains(chain.dialer)) {
+    // 前置必须真实存在：本配置的节点按名即可；组前置在自定义覆写模式下按
+    // 最终生效的组名单判（覆写会整体替换 proxy-groups）；外部节点靠快照注入。
+    // 都落空（比如订阅更新把前置节点删了）—— 这条链的引用会悬空，整份配置
+    // 加载失败的代价远大于少一条链，跳过。
+    final dialerAsGroupValid = finalGroupNames != null
+        ? finalGroupNames.contains(chain.dialer)
+        : groupNames.contains(chain.dialer);
+    if (!nodeNames.contains(chain.dialer) && !dialerAsGroupValid) {
       final dialerNode = resolveNode(chain.dialer, chain.dialerNode);
       if (dialerNode == null) {
         continue;
       }
       proxyList.add(dialerNode);
+      nodeNames.add(nameOf(dialerNode));
       existingNames.add(nameOf(dialerNode));
       injectedDialerNames.add(nameOf(dialerNode));
     }

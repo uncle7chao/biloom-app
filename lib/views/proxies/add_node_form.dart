@@ -148,6 +148,13 @@ class ProxyNodeFormState extends State<ProxyNodeForm> {
         _bools[key] = value;
       }
     }
+    // ⛔ 内核的 TrojanOption/VlessOption 没有 reality 布尔字段，Reality 与否
+    // 完全由 reality-opts 的存在决定 —— 订阅/机场的 Reality 节点不会带
+    // reality: true。不补这条，编辑这类节点时开关显示未开启，保存时 reality
+    // 分支整体跳过，reality-opts 被静默剥离，节点退化成普通 TLS 连不上。
+    if (_bools['reality'] == null) {
+      _bools['reality'] = node['reality-opts'] is Map;
+    }
     final wsOpts = node['ws-opts'];
     if (wsOpts is Map) {
       final path = wsOpts['path'];
@@ -372,6 +379,7 @@ class ProxyNodeFormState extends State<ProxyNodeForm> {
           l('proxyFieldPublicKey'),
           pseudo: true,
           advanced: true,
+          requiredIf: (v) => v.boolOf('reality'),
           visible: (v) => v.boolOf('reality'),
         ),
         _Field(
@@ -736,12 +744,13 @@ class ProxyNodeFormState extends State<ProxyNodeForm> {
       }
     }
 
-    if (protocol.type == 'vless') {
-      if (_bools['reality'] == true) {
-        final realityOpts = <String, dynamic>{};
-        if (text['reality-public-key']?.isNotEmpty == true) {
-          realityOpts['public-key'] = text['reality-public-key'];
-        }
+    if (protocol.type == 'vless' && _bools['reality'] == true) {
+      // 公钥是 Reality 的身份凭据，没给就不写 reality-opts（与 trojan 分支
+      // 同一护栏）：空的 reality-opts 会让内核静默按普通 TLS 拨号，打
+      // Reality 服务器必失败且无提示。
+      final publicKey = text['reality-public-key'] ?? '';
+      if (publicKey.isNotEmpty) {
+        final realityOpts = <String, dynamic>{'public-key': publicKey};
         if (text['reality-short-id']?.isNotEmpty == true) {
           realityOpts['short-id'] = text['reality-short-id'];
         }
@@ -869,20 +878,34 @@ class ProxyNodeFormState extends State<ProxyNodeForm> {
           onChanged: (value) => setState(() => _bools[field.key] = value),
         );
       case _FieldType.dropdown:
+        final rawValue =
+            _controller(field.key, field).text.isEmpty &&
+                (field.initial?.isNotEmpty ?? false)
+            ? field.initial!
+            : _controller(field.key, field).text;
+        // ⛔ DropdownButton 的 value 必须在 items 里，否则 debug 断言直接崩、
+        // release 下拉显示空白。编辑模式的现值可能不在选项白名单里
+        // （network: http/h2/xhttp、机场自定义 cipher 等）—— 动态补一个条目
+        // 让现值可见可保留；提交仍按 controller 文本原样写回，白名单只管
+        // 新建时的推荐项。
+        final hasExtra =
+            rawValue.isNotEmpty && !field.options.contains(rawValue);
         return DropdownButtonFormField<String>(
-          initialValue: _controller(field.key, field).text.isEmpty &&
-                  (field.initial?.isNotEmpty ?? false)
-              ? field.initial
-              : _controller(field.key, field).text,
+          initialValue:
+              rawValue.isEmpty && !field.options.contains('')
+              ? null
+              : rawValue,
           decoration: InputDecoration(labelText: field.label),
-          items: field.options
-              .map(
-                (option) => DropdownMenuItem(
-                  value: option,
-                  child: Text(option.isEmpty ? l10n.proxyFormOptionNone : option),
-                ),
-              )
-              .toList(),
+          items: [
+            if (hasExtra)
+              DropdownMenuItem(value: rawValue, child: Text(rawValue)),
+            ...field.options.map(
+              (option) => DropdownMenuItem(
+                value: option,
+                child: Text(option.isEmpty ? l10n.proxyFormOptionNone : option),
+              ),
+            ),
+          ],
           onChanged: (value) =>
               setState(() => _controller(field.key, field).text = value ?? ''),
         );

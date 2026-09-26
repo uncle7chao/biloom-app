@@ -71,6 +71,9 @@ class _AddProxyNodeViewState extends ConsumerState<AddProxyNodeView> {
   }
 
   Future<void> _handleConvertToLocal() async {
+    // 读 URL 与执行转换必须同一份配置：_profileId 是用户在面板里选的目标，
+    // widget.profileId 只是打开时的初值 —— 两者在用户切换下拉后分叉，
+    // 各用各的会把另一份订阅的 URL 展示出来、却转换了错误的那份。
     final url = ref.read(profileProvider(_profileId))?.url ?? '';
     final confirmed = await dialogs.showMessage(
       // 把订阅链接原文一并显示：断开之后它就没了，让用户有机会先记下来。
@@ -81,7 +84,7 @@ class _AddProxyNodeViewState extends ConsumerState<AddProxyNodeView> {
     if (confirmed != true || !mounted) return;
     await ref
         .read(profilesActionProvider.notifier)
-        .convertProfileToLocal(widget.profileId);
+        .convertProfileToLocal(_profileId);
     if (!mounted) return;
     _showMessage(context.appLocalizations.profileConvertedToLocal);
     setState(() {});
