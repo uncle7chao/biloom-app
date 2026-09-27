@@ -2,6 +2,24 @@
   "schemaVersion": 2,
   "versions": [
     {
+      "version": "01.00.18",
+      "tag": "v01.00.18",
+      "date": "2026-09-27",
+      "prerelease": false,
+      "groups": [
+        {
+          "type": "feat",
+          "entries": [
+            {
+              "id": "94efe51",
+              "scope": "proxies",
+              "text": "Proxy chains are now a global index instead of belonging to the profile they were created in: the chain tab is always present in every profile (with a DIRECT placeholder when empty), every chain shows up and works under every profile, numbering is global, and chain creation/deletion no longer depends on which profile the panel was opened from"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "version": "01.00.17",
       "tag": "v01.00.17",
       "date": "2026-09-26",

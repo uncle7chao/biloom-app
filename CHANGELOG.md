@@ -1,5 +1,11 @@
 # Changelog
 
+## v01.00.18 (2026-09-27)
+
+**Features**
+
+- **proxies** Proxy chains are now a global index instead of belonging to the profile they were created in: the chain tab is always present in every profile (with a DIRECT placeholder when empty), every chain shows up and works under every profile, numbering is global, and chain creation/deletion no longer depends on which profile the panel was opened from (94efe51)
+
 ## v01.00.17 (2026-09-26)
 
 **Bug Fixes**
