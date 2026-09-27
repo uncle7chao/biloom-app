@@ -33,10 +33,10 @@ class ProxyChainStore {
   }
 
   /// 新建一条链，返回**最终名字**。默认名按 链式代理1、链式代理2 … 自动编号
-  /// （取已占用最大编号 +1，不回填空位）；自定义名原样使用，与既有链或目标
-  /// 配置里的节点/组撞名时 -2 兜底 —— 撞名会让整份配置加载失败，这里必须挡。
+  /// （全局编号，取已占用最大编号 +1，不回填空位）；自定义名原样使用，与既有
+  /// 链或各配置的节点/组撞名时 -2 兜底 —— 撞名会让整份配置加载失败，这里必须
+  /// 挡。链是全局索引（2026-09-27 定稿），**没有 profileId 归属**。
   static Future<String> add({
-    required int profileId,
     required String name,
     required bool autoNumber,
     required String defaultName,
@@ -53,7 +53,6 @@ class ProxyChainStore {
     if (autoNumber) {
       final number = nextChainNumber(
         chains: chains,
-        profileId: profileId,
         defaultName: defaultName,
       );
       finalName = '$defaultName$number';
@@ -69,7 +68,6 @@ class ProxyChainStore {
     }
     chains.add(
       ProxyChain(
-        profileId: profileId,
         name: finalName,
         exitName: exitName,
         exitNode: exitNode,
@@ -82,19 +80,17 @@ class ProxyChainStore {
     return finalName;
   }
 
-  /// 删除指定配置里名字命中的链，返回是否真的删了东西。
+  /// 删除名字命中的链，返回是否真的删了东西。
   ///
   /// 「删除节点」的两个入口（节点卡片右键、管理面板批量删）都先走这里改道：
   /// 链不在配置文件里，内核 removeProxyNodes 找不到它 —— 数据层删完重应用
-  /// 才是正确路径。
-  static Future<bool> removeNames({
-    required int profileId,
-    required Iterable<String> names,
-  }) async {
+  /// 才是正确路径。链名全局唯一（add 时已保证），按名字删即可，不用管删除
+  /// 动作发生在哪份配置里。
+  static Future<bool> removeNames({required Iterable<String> names}) async {
     final targets = names.toSet();
     final chains = await load();
     final kept = chains
-        .where((chain) => !(chain.profileId == profileId && targets.contains(chain.name)))
+        .where((chain) => !targets.contains(chain.name))
         .toList();
     if (kept.length == chains.length) {
       return false;
@@ -103,11 +99,9 @@ class ProxyChainStore {
     return true;
   }
 
-  /// 某份配置下的全部链名 —— 删除链路改道、面板撞名检查共用。
-  static Future<Set<String>> namesOfProfile(int profileId) async {
-    return {
-      for (final chain in await load())
-        if (chain.profileId == profileId) chain.name,
-    };
+  /// 全部链名 —— 删除链路改道、面板撞名检查共用。链全局无归属，一个名单
+  /// 就是全部。
+  static Future<Set<String>> allNames() async {
+    return {for (final chain in await load()) chain.name};
   }
 }

@@ -409,11 +409,10 @@ class SetupAction extends _$SetupAction {
     // B 配置的 GLOBAL 里消失（或 B 的链漏进 A），直到下次切换配置才恢复。
     final isActiveProfile = profileId == ref.read(currentProfileIdProvider);
     try {
-      final chains = (await ProxyChainStore.load())
-          .where((chain) => chain.profileId == profileId)
-          .toList();
-      // 链式代理只在至少有一条有效链时才注入分组；没链时不注入，
-      // 「链式代理」页签/卡片自然隐藏。
+      // 全局索引模型（2026-09-27 定稿）：链不属于任何配置，全部链在每份配置
+      // 的运行时里都尝试装配；「链式代理」分组常驻注入（没有有效链时成员是
+      // DIRECT 占位），页签在任何配置下都显示。
+      final chains = await ProxyChainStore.load();
       final injected = injectProxyChains(
         rawConfig,
         chains: chains,

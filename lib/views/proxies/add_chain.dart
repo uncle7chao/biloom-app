@@ -9,11 +9,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// 「添加链式代理」面板。
 ///
-/// **链式代理是一个独立节点，且不写进任何配置文件**（2026-09-25 模型定稿）：
+/// **链式代理是全局索引，不写进任何配置文件**（2026-09-27 模型定稿）：
 /// 提交后存进数据层（[ProxyChainStore]），组装运行时配置时注入 —— 一个链 =
 /// 参数复制自出口、`dialer-proxy` 指向前置的新条目，统一收进固定的「链式代理」
-/// 分组（永远显性、排在「自动选择」后面）。原始配置一个字节不动，订阅更新
-/// 也冲不掉；出口/前置的参数快照随链保存，跨配置挑选不需要先复制。
+/// 分组（常驻页签、排在「自动选择」后面，任何配置下都显示）。链不属于任何
+/// 配置：出口/前置可以从**任何**配置的节点里挑（候选分节只是告诉你节点从哪
+/// 来），链也不记录归属。原始配置一个字节不动，订阅更新也冲不掉；出口/前置
+/// 的参数快照随链保存，运行时当前配置里按名实时解析、解析不到退快照。
 /// 旧模型（把 dialer-proxy 写在出口身上）的「解除」入口保留，用于清理
 /// 历史上直接挂在出口上的链。
 ///
@@ -38,11 +40,10 @@ class _AddProxyChainViewState extends ConsumerState<AddProxyChainView> {
   /// 添花，不能因为它把整个面板拖垮。
   final Map<int, ProfileTargets> _foreignTargets = {};
 
-  /// 链的归属配置 = 打开面板时**当前生效**的那份（入口传进来，面板里不可换）。
+  /// 链的创建入口所在配置 = 打开面板时**当前生效**的那份（入口传进来）。
   ///
-  /// 曾经这里是可换的（目标配置下拉），独立节点模型落地后用户明确要求取消：
-  /// 链是「跟着当前用的配置走」的东西，跨配置挑节点已经由候选列表里的
-  /// 自动复制兜住，不需要再让用户先想清楚「存哪」再动手。
+  /// 它只决定主候选名单与撞名检查的起点 —— 链本身是全局索引，不记录归属，
+  /// 出口/前置可以来自任何配置（候选分节里带配置名标题）。
   int get _profileId => widget.profileId;
 
   /// 出口节点名 —— 链挂在它身上。
@@ -326,6 +327,14 @@ class _AddProxyChainViewState extends ConsumerState<AddProxyChainView> {
       return;
     }
     final dialerSnapshot = _snapshotNodeOf(_dialerProfileId, dialer);
+    // 撞名检查要覆盖**全部配置**的节点/组名：链是全局索引，在每份配置的运行
+    // 时里都会注入 —— 跟任何一份配置里的名字撞上都会让链在那边静默失效。
+    final foreignNames = [
+      for (final targets in _foreignTargets.values) ...[
+        for (final node in targets.proxies) node.name,
+        for (final group in targets.groups) group.name,
+      ],
+    ];
     final finalName = await ref
         .read(profilesActionProvider.notifier)
         .addProxyChainOnProfile(
@@ -336,6 +345,7 @@ class _AddProxyChainViewState extends ConsumerState<AddProxyChainView> {
           dialerNode: dialerSnapshot,
           name: isDefault ? kProxyChainGroupName : rawName,
           autoNumber: isDefault,
+          extraTakenNames: foreignNames,
         );
     if (!mounted) return;
     if (finalName == null) {

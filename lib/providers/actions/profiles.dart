@@ -350,12 +350,13 @@ class ProfilesAction extends _$ProfilesAction {
   /// **链式代理在这里改道**：链不在配置文件里（模型见 proxy_chains.dart），
   /// 内核自然找不到它。名字命中链记录的先从数据层删掉再重应用，其余名字才
   /// 走内核；两类都有的批量删除一次拆成两步，调用方拿到的还是同一个结果体。
+  /// 链是全局索引（无配置归属），链名匹配**不分配置**。
   Future<RemoveProxyNodesResult?> removeProxyNodesFromProfile({
     required int profileId,
     required List<String> names,
   }) async {
     return globalState.loadingRun(tag: LoadingTag.profiles, () async {
-      final chainNames = await ProxyChainStore.namesOfProfile(profileId);
+      final chainNames = await ProxyChainStore.allNames();
       final chainHits = names.where((name) => chainNames.contains(name)).toList();
       final configNames = names
           .where((name) => !chainNames.contains(name))
@@ -364,16 +365,14 @@ class ProfilesAction extends _$ProfilesAction {
       var missing = <String>[];
       if (chainHits.isNotEmpty) {
         final removedChains = await ProxyChainStore.removeNames(
-          profileId: profileId,
           names: chainHits,
         );
         if (removedChains) {
           removed = chainHits;
-          if (profileId == ref.read(currentProfileIdProvider)) {
-            ref
-                .read(setupActionProvider.notifier)
-                .applyProfileDebounce(silence: true);
-          }
+          // 链全局可见，删了哪条当前生效配置的页签都会变 —— 无条件重应用。
+          ref
+              .read(setupActionProvider.notifier)
+              .applyProfileDebounce(silence: true);
         } else {
           missing = chainHits;
         }
@@ -477,8 +476,12 @@ class ProfilesAction extends _$ProfilesAction {
   /// 运行时配置由 getProfile 注入。所以这里没有内核参与 —— 校验自己做：
   /// 出口必须真实存在（配置里能按名找到，或调用方带了参数快照）、前置必须
   /// 存在（节点/组按名找到，或带了快照），两头都落空的链会让运行时配置加载
-  /// 失败，必须当场挡下。重应用只在「这份配置就是当前生效配置」时触发 ——
-  /// 不是的话链在下一次切换到它时自然出现。
+  /// 失败，必须当场挡下。
+  ///
+  /// **链是全局索引**（2026-09-27 定稿）：记录不带配置归属；[profileId] 只用于
+  /// 撞名检查的候选名单来源。链在任何配置下都可见可用，所以建完**无条件重应用
+  /// 当前生效的配置** —— 不管这个面板是为哪份配置打开的，当前配置的页签里都
+  /// 要立刻出现新链。
   Future<String?> addProxyChainOnProfile({
     required int profileId,
     required String exit,
@@ -487,6 +490,7 @@ class ProfilesAction extends _$ProfilesAction {
     Map<String, dynamic>? dialerNode,
     required String name,
     required bool autoNumber,
+    Iterable<String> extraTakenNames = const [],
   }) async {
     return globalState.loadingRun(tag: LoadingTag.profiles, () async {
       final targets = await readProfileTargets(profileId);
@@ -509,7 +513,6 @@ class ProfilesAction extends _$ProfilesAction {
         );
       }
       final finalName = await ProxyChainStore.add(
-        profileId: profileId,
         name: name,
         autoNumber: autoNumber,
         // 配置层固定名（不走 l10n，理由见 kProxyChainGroupName 的文档）。
@@ -518,13 +521,13 @@ class ProfilesAction extends _$ProfilesAction {
         exitNode: exitNode,
         dialer: dialer,
         dialerNode: dialerNode,
-        takenNames: configNames,
+        // 撞名检查覆盖其他配置的候选（链在每份配置里都要能注入成功，
+        // 跟任何一份配置的节点/组重名都不行）。
+        takenNames: [...configNames, ...extraTakenNames],
       );
-      if (profileId == ref.read(currentProfileIdProvider)) {
-        ref
-            .read(setupActionProvider.notifier)
-            .applyProfileDebounce(silence: true);
-      }
+      ref
+          .read(setupActionProvider.notifier)
+          .applyProfileDebounce(silence: true);
       return finalName;
     }, title: currentAppLocalizations.addProxyChain);
   }
