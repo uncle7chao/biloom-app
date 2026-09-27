@@ -2,6 +2,24 @@
   "schemaVersion": 2,
   "versions": [
     {
+      "version": "01.00.19",
+      "tag": "v01.00.19",
+      "date": "2026-09-27",
+      "prerelease": false,
+      "groups": [
+        {
+          "type": "fix",
+          "entries": [
+            {
+              "id": "ace752f",
+              "scope": "core",
+              "text": "Nodes referenced by dialer-proxy (the front nodes injected for proxy chains) are no longer healed into the selector groups on every config load, so the proxy page no longer shows nodes from other subscriptions under the node-selection and auto-select tabs"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "version": "01.00.18",
       "tag": "v01.00.18",
       "date": "2026-09-27",

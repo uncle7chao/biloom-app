@@ -1,5 +1,11 @@
 # Changelog
 
+## v01.00.19 (2026-09-27)
+
+**Bug Fixes**
+
+- **core** Nodes referenced by dialer-proxy (the front nodes injected for proxy chains) are no longer healed into the selector groups on every config load, so the proxy page no longer shows nodes from other subscriptions under the node-selection and auto-select tabs (ace752f)
+
 ## v01.00.18 (2026-09-27)
 
 **Features**
