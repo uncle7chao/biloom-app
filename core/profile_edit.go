@@ -521,6 +521,23 @@ func healUngroupedProxies(root *yamlv3.Node) (bool, error) {
 		return false, nil
 	}
 
+	// dialer-proxy 引用的节点不算游离。链式代理把前置节点注入 proxies 只是给
+	// dialer-proxy 提供参数定义（全局索引模型，2026-09-27）：它的「入口」是引用
+	// 它的链节点，链节点统一归「链式代理」分组管。不豁免的话，内核每次加载
+	// 运行时配置（applyConfig → loadConfig → patchMissingDefaults 都会跑到这里）
+	// 都会把跨配置注入的前置节点接进节点选择/自动选择/故障转移 —— 用户会在自己
+	// 没订过的机场节点混进锚点组里，截图报障「乱七八糟的节点」就是这个。
+	for _, item := range proxiesNode.Content {
+		if item.Kind != yamlv3.MappingNode {
+			continue
+		}
+		dialer, _ := mappingEntry(item, "dialer-proxy")
+		if dialer == nil || dialer.Kind != yamlv3.ScalarNode || dialer.Value == "" {
+			continue
+		}
+		referenced[dialer.Value] = true
+	}
+
 	// 按配置里的顺序收集游离节点（而不是 map 遍历），追加时保持可预期的顺序。
 	ungrouped := make([]string, 0)
 	for _, item := range proxiesNode.Content {

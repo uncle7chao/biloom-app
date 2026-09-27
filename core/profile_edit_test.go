@@ -389,6 +389,80 @@ func TestPatchMissingDefaultsHealsUngroupedProxies(t *testing.T) {
 	}
 }
 
+// dialer-proxy 引用的前置节点不算游离：链式代理只把它注入 proxies 提供
+// dialer-proxy 的参数定义，入口是「链式代理」分组里的链节点。运行时配置每次
+// 加载都会经过 patchMissingDefaults（applyConfig → loadConfig），不豁免的话
+// 跨配置注入的前置节点每次都会被接进锚点组——代理页的节点选择/自动选择里
+// 冒出一堆别的订阅的节点（2026-09-27 用户截图报障）。链节点本身（美国出口）
+// 被「链式代理」组引用，也不该被重复追加；真正游离的裸节点照常接回。
+func TestHealSkipsDialerProxyFrontNodes(t *testing.T) {
+	const fixture = `mixed-port: 7890
+proxies:
+  - name: 美国出口
+    type: ss
+    server: 1.2.3.4
+    port: 8388
+    cipher: aes-256-gcm
+    password: pass
+    dialer-proxy: CF前置
+  - name: CF前置
+    type: ss
+    server: 5.6.7.8
+    port: 8388
+    cipher: aes-256-gcm
+    password: pass
+  - name: 裸节点
+    type: ss
+    server: 9.9.9.9
+    port: 8388
+    cipher: aes-256-gcm
+    password: pass
+proxy-groups:
+  - name: 节点选择
+    type: select
+    proxies:
+      - 自动选择
+      - DIRECT
+      - 美国出口
+  - name: 自动选择
+    type: url-test
+    proxies:
+      - DIRECT
+      - 美国出口
+  - name: 链式代理
+    type: select
+    proxies:
+      - 美国出口
+rules:
+  - MATCH,节点选择
+`
+	out, changed, _, err := patchMissingDefaults([]byte(fixture))
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !changed {
+		t.Fatal("ungrouped plain proxy was not healed")
+	}
+	shape := decodeShape(t, string(out))
+	for _, group := range []string{"节点选择", "自动选择"} {
+		members := groupMembers(t, shape, group)
+		if members["CF前置"] {
+			t.Fatalf("dialer-proxy front node %q must stay out of %s: %v", "CF前置", group, members)
+		}
+	}
+	selectMembers := groupMembers(t, shape, "节点选择")
+	if !selectMembers["裸节点"] {
+		t.Fatalf("plain ungrouped proxy was not healed into 节点选择: %v", selectMembers)
+	}
+	if !selectMembers["美国出口"] {
+		t.Fatalf("chain node must stay in 节点选择: %v", selectMembers)
+	}
+	chainMembers := groupMembers(t, shape, "链式代理")
+	if len(chainMembers) != 1 || !chainMembers["美国出口"] {
+		t.Fatalf("chain group members changed: %v", chainMembers)
+	}
+}
+
 // 分享链接不带 #名字（V2rayN 导出的常态）时自动生成 `地址:端口`，而不是报
 // 「缺少 name」把用户挡在门外。
 func TestParseShareLinkWithoutFragmentGetsGeneratedName(t *testing.T) {
