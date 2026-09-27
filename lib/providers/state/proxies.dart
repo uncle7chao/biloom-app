@@ -32,6 +32,30 @@ List<Proxy> filterGlobalGroupMembers(
       .toList();
 }
 
+/// 内核内置出站的 type 值（mihomo adapter 侧的 Type() 串）。它们不是订阅节点。
+const _builtinOutboundTypes = {
+  'Direct',
+  'Reject',
+  'Compatible',
+  'Pass',
+  'RejectDrop',
+};
+
+/// 组页签成员列表的展示层过滤（GLOBAL 之外的组共用）：成员里的**策略组**与
+/// **内置出站**（DIRECT/REJECT 等）不作为卡片出现。它们是「出口模式」的切换
+/// 入口（自动最快 / 主备 / 直连），不是节点 —— 混在节点列表里，看起来就像
+/// 页签掉进了节点列表（2026-09-27 用户拍板：一律不显示）。内核成员数据不动，
+/// 选中状态照旧；代价是这几个模式不再能从组页签里一键切回。GLOBAL 页签走
+/// 自己的规则（[filterGlobalGroupMembers]），不经过这里。
+List<Proxy> filterGroupMemberCards(List<Proxy> all) {
+  return all.where((proxy) {
+    if (GroupTypeExtension.valueList.contains(proxy.type)) {
+      return false;
+    }
+    return !_builtinOutboundTypes.contains(proxy.type);
+  }).toList();
+}
+
 @riverpod
 GroupsState currentGroupsState(Ref ref) {
   final mode = ref.watch(
@@ -44,7 +68,7 @@ GroupsState currentGroupsState(Ref ref) {
         final all =
             item.name == GroupName.GLOBAL.name
             ? filterGlobalGroupMembers(item.all, injectedChainNames)
-            : item.all;
+            : filterGroupMemberCards(item.all);
         return item.copyWith(
           now: '',
           all: all.map((proxy) => proxy.copyWith(now: '')).toList(),

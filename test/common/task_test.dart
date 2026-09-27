@@ -648,4 +648,29 @@ void main() {
     expect(filterGlobalGroupMembers(all, const {}), same(all));
     expect(filterGlobalGroupMembers(const [], injected), isEmpty);
   });
+
+  test('filterGroupMemberCards hides groups and built-in outbounds', () {
+    final all = const [
+      Proxy(name: '自动选择', type: 'URLTest'),
+      Proxy(name: '故障转移', type: 'Fallback'),
+      Proxy(name: 'DIRECT', type: 'Direct'),
+      Proxy(name: 'vl-reality-instance', type: 'Vless'),
+      Proxy(name: 'hy2-instance', type: 'Hysteria2'),
+      Proxy(name: '链式代理1', type: 'Shadowsocks'),
+    ];
+
+    final filtered = filterGroupMemberCards(all);
+    expect(filtered.map((proxy) => proxy.name), [
+      'vl-reality-instance',
+      'hy2-instance',
+      '链式代理1',
+    ]);
+
+    // 真节点直通：空列表与纯节点列表原样返回内容。
+    expect(filterGroupMemberCards(const []), isEmpty);
+    expect(
+      filterGroupMemberCards(const [Proxy(name: '裸节点', type: 'Trojan')]),
+      everyElement(isA<Proxy>()),
+    );
+  });
 }
