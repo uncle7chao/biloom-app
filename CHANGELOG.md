@@ -1,5 +1,11 @@
 # Changelog
 
+## v01.00.20 (2026-09-27)
+
+**Bug Fixes**
+
+- **proxies** Group tabs list nodes only now: the auto-select and fallback groups plus DIRECT no longer appear as cards mixed into the node list (they remain selectable at the config level and the GLOBAL tab keeps its own behavior) (283ee3a)
+
 ## v01.00.19 (2026-09-27)
 
 **Bug Fixes**
