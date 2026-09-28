@@ -1,5 +1,13 @@
 # Changelog
 
+## v01.00.22 (2026-09-28)
+
+**Features**
+
+- **dashboard** New Connections stat widget: active connection count, cumulative upload/download traffic and the top traffic target host; add it from the dashboard edit mode - it is not in the default layout and shows silent zeros while the core is down (36922af)
+- **proxies** Group tabs use a filled pill indicator matching the region filter chips instead of the underline, and the selected node card draws a thin primary border so the active node is easy to spot (f2bc169)
+- **proxies** Per-node download speed test: the button next to the delay test pulls a sample file through that node and shows the real bandwidth (transfer time only, color-graded like the delay readout); results are session-scoped and favorite stars now show in amber (589254e)
+
 ## v01.00.21 (2026-09-28)
 
 **Features**

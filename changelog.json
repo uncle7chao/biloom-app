@@ -2,6 +2,34 @@
   "schemaVersion": 2,
   "versions": [
     {
+      "version": "01.00.22",
+      "tag": "v01.00.22",
+      "date": "2026-09-28",
+      "prerelease": false,
+      "groups": [
+        {
+          "type": "feat",
+          "entries": [
+            {
+              "id": "36922af",
+              "scope": "dashboard",
+              "text": "New Connections stat widget: active connection count, cumulative upload/download traffic and the top traffic target host; add it from the dashboard edit mode - it is not in the default layout and shows silent zeros while the core is down"
+            },
+            {
+              "id": "f2bc169",
+              "scope": "proxies",
+              "text": "Group tabs use a filled pill indicator matching the region filter chips instead of the underline, and the selected node card draws a thin primary border so the active node is easy to spot"
+            },
+            {
+              "id": "589254e",
+              "scope": "proxies",
+              "text": "Per-node download speed test: the button next to the delay test pulls a sample file through that node and shows the real bandwidth (transfer time only, color-graded like the delay readout); results are session-scoped and favorite stars now show in amber"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "version": "01.00.21",
       "tag": "v01.00.21",
       "date": "2026-09-28",
