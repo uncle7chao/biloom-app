@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/metacubex/mihomo/component/http"
+	"github.com/metacubex/mihomo/constant"
 )
 
 // 「下载测速」：经指定节点真的下一个样本文件，量出响应体阶段的吞吐。
@@ -83,6 +84,17 @@ func handleMeasureSpeed(params *MeasureSpeedParams) (*MeasureSpeedResult, error)
 		return nil, fmt.Errorf("speed test queue timeout")
 	}
 
+	return downloadThrough(ctx, proxy, url, maxBytes)
+}
+
+// downloadThrough 经 proxy 把样本文件拉下来并计时 —— 从 handleMeasureSpeed
+// 拆出来是为了能对本地 httptest 服务器做纯离线测试（不碰真网络）。
+func downloadThrough(
+	ctx context.Context,
+	proxy constant.Proxy,
+	url string,
+	maxBytes int64,
+) (*MeasureSpeedResult, error) {
 	// 与测延迟、测落地同一条拨号路：proxy.DialContext(metadata)，对链式代理
 	// （dialer-proxy）和策略组（拨给当前选中节点）的行为一致。
 	resp, err := http.HttpRequest(

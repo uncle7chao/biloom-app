@@ -708,8 +708,10 @@ class ProxySpeedState {
   /// proxyName -> 响应体吞吐（字节/秒）。只存成功结果。
   final Map<String, double> results;
 
-  /// 本会话测失败的节点 —— 失败是「刚才测不出」，不能被入口态盖住。
-  final Set<String> failed;
+  /// 本会话测失败的节点 -> 失败原因（内核错误消息，截断）。失败是
+  /// 「刚才测不出」，不能被入口态盖住；原因必须带出来 —— 测速失败的
+  /// 可能性太多（节点不通/被对端拒绝/超时），只有两个字没法诊断。
+  final Map<String, String> failed;
 
   final Set<String> testing;
 
@@ -741,6 +743,7 @@ class ProxySpeed extends Notifier<ProxySpeedState> {
       testing: {...state.testing, proxyName},
     );
     double? speed;
+    String? reason;
     try {
       final core = ref.read(coreHandlerProvider);
       final result = await core.measureProxySpeed(
@@ -749,17 +752,22 @@ class ProxySpeed extends Notifier<ProxySpeedState> {
       );
       speed = result.speedBps;
     } catch (error) {
+      // 原文带出去：按钮 tooltip 会展示它，用户报障时这就是第一手证据。
+      reason = error.toString();
+      if (reason.length > 160) {
+        reason = '${reason.substring(0, 160)}…';
+      }
       commonPrint.log('Speed test failed for $proxyName: $error');
     }
     if (!ref.mounted) {
       return;
     }
     final results = {...state.results};
-    final failed = {...state.failed}..remove(proxyName);
+    final failed = Map<String, String>.from(state.failed)..remove(proxyName);
     if (speed != null) {
       results[proxyName] = speed;
     } else {
-      failed.add(proxyName);
+      failed[proxyName] = reason ?? 'unknown error';
     }
     state = ProxySpeedState(
       results: results,

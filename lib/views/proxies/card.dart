@@ -535,21 +535,23 @@ class _ProxySpeedButton extends ConsumerWidget {
         (state) => (
           testing: state.testing.contains(proxyName),
           speed: state.results[proxyName],
-          failed: state.failed.contains(proxyName),
+          failed: state.failed[proxyName],
         ),
       ),
     );
-    final color = failed
+    final color = failed != null
         ? Colors.red
         : _getSpeedColor(speed) ?? colorScheme.onSurfaceVariant;
     final label = switch ((testing, speed, failed)) {
       (true, _, _) => null,
-      (_, _, true) => appLocalizations.proxySpeedTestFailed,
-      (_, final value, false) when value != null => _formatProxySpeed(value),
+      (_, _, _) when failed != null => appLocalizations.proxySpeedTestFailed,
+      (_, final value?, null) => _formatProxySpeed(value),
       _ => appLocalizations.proxySpeedTest,
     };
     return Tooltip(
-      message: appLocalizations.proxySpeedTestHint,
+      // 失败时 tooltip 直接给原因 —— 用户报障时这就是第一手证据，
+      // 不用再去翻日志。
+      message: failed ?? appLocalizations.proxySpeedTestHint,
       child: Material(
         color: Colors.transparent,
         child: InkWell(
