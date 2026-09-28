@@ -1,5 +1,12 @@
 # Changelog
 
+## v01.00.21 (2026-09-28)
+
+**Features**
+
+- **ads** Remote ads config framework: a static JSON on biloom.top is fetched on startup within a 12h freshness window and cached; any network or parse failure keeps the previous state, so ads can never disturb the main flow (3721643)
+- **Windows** New Activities page: an embedded WebView loading our own promo page on biloom.top, with an open-in-browser button handing monetization to the real browser; the entry only appears when the remote config carries a valid promo URL and can be turned off remotely without rebuilding (baa8a44)
+
 ## v01.00.20 (2026-09-27)
 
 **Bug Fixes**

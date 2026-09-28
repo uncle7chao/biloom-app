@@ -2,6 +2,29 @@
   "schemaVersion": 2,
   "versions": [
     {
+      "version": "01.00.21",
+      "tag": "v01.00.21",
+      "date": "2026-09-28",
+      "prerelease": false,
+      "groups": [
+        {
+          "type": "feat",
+          "entries": [
+            {
+              "id": "3721643",
+              "scope": "ads",
+              "text": "Remote ads config framework: a static JSON on biloom.top is fetched on startup within a 12h freshness window and cached; any network or parse failure keeps the previous state, so ads can never disturb the main flow"
+            },
+            {
+              "id": "baa8a44",
+              "scope": "Windows",
+              "text": "New Activities page: an embedded WebView loading our own promo page on biloom.top, with an open-in-browser button handing monetization to the real browser; the entry only appears when the remote config carries a valid promo URL and can be turned off remotely without rebuilding"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "version": "01.00.20",
       "tag": "v01.00.20",
       "date": "2026-09-27",
