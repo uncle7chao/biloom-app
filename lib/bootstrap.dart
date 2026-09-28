@@ -154,6 +154,8 @@ class Bootstrap {
       _container.read(profilesActionProvider.notifier).autoUpdateProfiles(),
     );
     unawaited(_container.read(commonActionProvider.notifier).autoCheckUpdate());
+    // M3：广告远程开关按新鲜期拉取（失败静默，绝不影响主功能启动）。
+    unawaited(_container.read(adsConfigStoreProvider.notifier).refreshIfStale());
     unawaited(
       autoLaunch?.updateStatus(_container.read(appSettingProvider).autoLaunch),
     );
