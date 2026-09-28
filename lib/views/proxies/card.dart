@@ -96,13 +96,18 @@ class ProxyCard extends ConsumerWidget {
     if (confirmed != true || !context.mounted) return;
     final result = await ref
         .read(profilesActionProvider.notifier)
-        .removeProxyNodesFromProfile(profileId: profile.id, names: [proxy.name]);
+        .removeProxyNodesFromProfile(
+          profileId: profile.id,
+          names: [proxy.name],
+        );
     if (result == null || !context.mounted) return;
     context.showNotifier(
       result.missing.isNotEmpty
           ? appLocalizations.deleteNodeMissing
           : appLocalizations.deleteNodeSuccess,
-      level: result.missing.isEmpty ? MessageLevel.success : MessageLevel.warning,
+      level: result.missing.isEmpty
+          ? MessageLevel.success
+          : MessageLevel.warning,
     );
   }
 
@@ -126,7 +131,9 @@ class ProxyCard extends ConsumerWidget {
         onPressed: () {
           final profile = ref.read(currentProfileProvider);
           if (profile == null) return;
-          ref.read(proxyFavoritesProvider.notifier).toggle(profile.id, proxy.name);
+          ref
+              .read(proxyFavoritesProvider.notifier)
+              .toggle(profile.id, proxy.name);
         },
       ),
       CommonPopupMenuItem(
@@ -159,7 +166,8 @@ class ProxyCard extends ConsumerWidget {
         profileId != null &&
         (ref.watch(
               proxyFavoritesProvider.select(
-                (value) => value.value?[profileId.toString()]?.contains(proxy.name),
+                (value) =>
+                    value.value?[profileId.toString()]?.contains(proxy.name),
               ),
             ) ??
             false);
@@ -182,7 +190,9 @@ class ProxyCard extends ConsumerWidget {
                 child: Icon(
                   Icons.star,
                   size: 14,
-                  color: context.colorScheme.onSurfaceVariant,
+                  // 收藏星用琥珀色：灰色星和状态点/胶囊挤在一起几乎看不见，
+                  // 功能色在延迟色环里本来就有（绿黄红），琥珀是它的自然延伸。
+                  color: Colors.amber.shade400,
                 ),
               ),
             Consumer(
@@ -194,6 +204,7 @@ class ProxyCard extends ConsumerWidget {
                   type: CommonCardType.filled,
                   radius: AppCorner.lg,
                   key: key,
+                  highlightSelected: true,
                   onPressed: () {
                     _changeProxy(ref);
                   },
@@ -220,51 +231,67 @@ class ProxyCard extends ConsumerWidget {
                           // 信息一点没少，只是不再单占一行。
                           SizedBox(
                             height: proxyCardMetaHeight,
-                            child: Row(
-                              children: [
-                                // 左边这一块（地区 + 协议）共用一层 `Align`：它负责把
-                                // 整块顶到行首，同时把右侧剩余空间吃掉 —— 右下角的
-                                // 测速按钮才能贴住卡片右边（`Row` 不会自动把最后一
-                                // 个子项推到行尾）。
-                                Flexible(
-                                  child: Align(
-                                    alignment: AlignmentDirectional.centerStart,
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        // 地区认不出就整块跳过。这里用 collection-if
-                                        // 而不是让胶囊自己返回空盒子 —— 后者会把后面
-                                        // 那 6px 间距留在行里。
-                                        if (!region.isUnknown) ...[
-                                          Flexible(
-                                            child: _ProxyRegionChip(
-                                              region: region,
-                                            ),
-                                          ),
-                                          const SizedBox(width: 6),
-                                        ],
-                                        Flexible(
-                                          child: type == ProxyCardType.expand
-                                              ? _ProxyDescChip(proxy: proxy)
-                                              : _ProxyTypeChip(
-                                                  label: proxy.type,
+                            // 窄卡降级：行宽不足时「测落地」只留图标，语义靠
+                            // tooltip 和警示色兜底，入口不丢。
+                            child: LayoutBuilder(
+                              builder: (context, constraints) {
+                                final isCompact = constraints.maxWidth < 240;
+                                return Row(
+                                  children: [
+                                    // 左边这一块（地区 + 协议）共用一层 `Align`：它负责把
+                                    // 整块顶到行首，同时把右侧剩余空间吃掉 —— 右下角的
+                                    // 测速按钮才能贴住卡片右边（`Row` 不会自动把最后一
+                                    // 个子项推到行尾）。
+                                    Flexible(
+                                      child: Align(
+                                        alignment:
+                                            AlignmentDirectional.centerStart,
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            // 地区认不出就整块跳过。这里用 collection-if
+                                            // 而不是让胶囊自己返回空盒子 —— 后者会把后面
+                                            // 那 6px 间距留在行里。
+                                            if (!region.isUnknown) ...[
+                                              Flexible(
+                                                child: _ProxyRegionChip(
+                                                  region: region,
                                                 ),
+                                              ),
+                                              const SizedBox(width: 6),
+                                            ],
+                                            Flexible(
+                                              child:
+                                                  type == ProxyCardType.expand
+                                                  ? _ProxyDescChip(proxy: proxy)
+                                                  : _ProxyTypeChip(
+                                                      label: proxy.type,
+                                                    ),
+                                            ),
+                                          ],
                                         ),
-                                      ],
+                                      ),
                                     ),
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                _ProxyExitButton(
-                                  proxyName: proxy.name,
-                                ),
-                                const SizedBox(width: 6),
-                                _ProxyDelayButton(
-                                  proxyName: proxy.name,
-                                  testUrl: testUrl,
-                                  onTest: () => _handleTestCurrentDelay(ref),
-                                ),
-                              ],
+                                    const SizedBox(width: 8),
+                                    _ProxyExitButton(
+                                      proxyName: proxy.name,
+                                      compact: isCompact,
+                                    ),
+                                    const SizedBox(width: 6),
+                                    _ProxyDelayButton(
+                                      proxyName: proxy.name,
+                                      testUrl: testUrl,
+                                      onTest: () =>
+                                          _handleTestCurrentDelay(ref),
+                                    ),
+                                    const SizedBox(width: 6),
+                                    _ProxySpeedButton(
+                                      proxyName: proxy.name,
+                                      compact: isCompact,
+                                    ),
+                                  ],
+                                );
+                              },
                             ),
                           ),
                         ],
@@ -457,6 +484,120 @@ class _ProxyDelayButton extends ConsumerWidget {
   }
 }
 
+/// 带宽读数的展示口径：≥1 MB/s 用一位小数，之下直接整数 KB/s —— 与主流
+/// 测速工具的习惯一致，也保证胶囊宽度可控（不会出现 123456 KB/s）。
+String _formatProxySpeed(double bytesPerSecond) {
+  if (bytesPerSecond >= 1024 * 1024) {
+    return '${(bytesPerSecond / (1024 * 1024)).toStringAsFixed(1)} MB/s';
+  }
+  return '${(bytesPerSecond / 1024).round()} KB/s';
+}
+
+/// 带宽读数配色：沿用 `getDelayColor` 的三档语义（绿 = 好、琥珀 = 一般、
+/// 红 = 差），档位换算成吞吐：<1 MB/s 红、<5 MB/s 琥珀、往上绿。与延迟
+/// 配色同一个原则 —— 看一眼颜色就知道值不值得选。
+Color? _getSpeedColor(double? bytesPerSecond) {
+  if (bytesPerSecond == null) {
+    return null;
+  }
+  if (bytesPerSecond < 1024 * 1024) {
+    return Colors.red;
+  }
+  if (bytesPerSecond < 5 * 1024 * 1024) {
+    return const Color(0xFFC57F0A);
+  }
+  return Colors.green;
+}
+
+/// 单个节点的「下载测速」按钮。
+///
+/// 与 [_ProxyDelayButton] 同一套外观语言，量的是真带宽不是 ping：
+/// - 没测过：`⬇ 带宽`（入口常驻，看得出来能点）；
+/// - 测速中：圆圈加载，禁点防重复；
+/// - 有结果：`⬇ 12.3 MB/s`，颜色走 [_getSpeedColor]；测不出 → `⬇ 失败`（红）。
+///
+/// 结果**只存会话内**（带宽随时段波动，落库旧值只会误导），重启归零、
+/// 重测即刷新。窄卡模式只留图标，语义由 tooltip 兜底。
+class _ProxySpeedButton extends ConsumerWidget {
+  final String proxyName;
+
+  /// 窄卡模式：只显示图标，不显示文字标签。测试中仍显示转圈。
+  final bool compact;
+
+  const _ProxySpeedButton({required this.proxyName, this.compact = false});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final appLocalizations = context.appLocalizations;
+    final colorScheme = context.colorScheme;
+    final (:testing, :speed, :failed) = ref.watch(
+      proxySpeedProvider.select(
+        (state) => (
+          testing: state.testing.contains(proxyName),
+          speed: state.results[proxyName],
+          failed: state.failed.contains(proxyName),
+        ),
+      ),
+    );
+    final color = failed
+        ? Colors.red
+        : _getSpeedColor(speed) ?? colorScheme.onSurfaceVariant;
+    final label = switch ((testing, speed, failed)) {
+      (true, _, _) => null,
+      (_, _, true) => appLocalizations.proxySpeedTestFailed,
+      (_, final value, false) when value != null => _formatProxySpeed(value),
+      _ => appLocalizations.proxySpeedTest,
+    };
+    return Tooltip(
+      message: appLocalizations.proxySpeedTestHint,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: testing
+              ? null
+              : () => ref.read(proxySpeedProvider.notifier).test(proxyName),
+          borderRadius: AppRadius.xs,
+          child: Container(
+            height: proxyCardMetaHeight,
+            padding: const EdgeInsets.symmetric(horizontal: 6),
+            decoration: BoxDecoration(
+              color: colorScheme.surfaceContainerLow,
+              borderRadius: AppRadius.xs,
+              border: Border.all(
+                color: testing
+                    ? colorScheme.primary
+                    : colorScheme.outlineVariant,
+                width: 0.5,
+              ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (testing)
+                  const SizedBox(
+                    width: 12,
+                    height: 12,
+                    child: CommonCircleLoading(),
+                  )
+                else
+                  Icon(Icons.download, size: 12, color: color),
+                if (!compact && label != null) ...[
+                  const SizedBox(width: 4),
+                  Text(
+                    label,
+                    maxLines: 1,
+                    style: context.textTheme.labelSmall?.copyWith(color: color),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 /// 单个节点的「测落地」按钮。
 ///
 /// 名字里的地区是机场随手写的（实测本订阅 `US-*` 落在吉隆坡、`SG-*` 落在
@@ -473,7 +614,11 @@ class _ProxyDelayButton extends ConsumerWidget {
 class _ProxyExitButton extends ConsumerWidget {
   final String proxyName;
 
-  const _ProxyExitButton({required this.proxyName});
+  /// 窄卡模式：只显示图标，不显示文字标签。测试中仍显示转圈，
+  /// 失败/不一致的警示色不变 —— 语义由 tooltip 兜底。
+  final bool compact;
+
+  const _ProxyExitButton({required this.proxyName, this.compact = false});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -563,13 +708,15 @@ class _ProxyExitButton extends ConsumerWidget {
                   )
                 else
                   Icon(Icons.travel_explore, size: 12, color: color),
-                const SizedBox(width: 4),
-                EmojiText(
-                  label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: context.textTheme.labelSmall?.copyWith(color: color),
-                ),
+                if (!compact) ...[
+                  const SizedBox(width: 4),
+                  EmojiText(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: context.textTheme.labelSmall?.copyWith(color: color),
+                  ),
+                ],
               ],
             ),
           ),

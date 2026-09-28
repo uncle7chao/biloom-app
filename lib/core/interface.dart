@@ -67,6 +67,15 @@ mixin CoreInterface {
     required int timeoutMs,
   });
 
+  /// 「下载测速」：经 [proxyName] 节点真的下载一个样本文件，回实际下载
+  /// 字节数与响应体阶段吞吐（字节/秒）。计时不含拨号/握手 —— 那是延迟的活，
+  /// URLTest 已经量过；下载可能因超时或上限截断，截断不是失败，[bytes]
+  /// 就是实际拿到的量。内核侧见 `core/proxy_speed.go`。
+  Future<({int bytes, int elapsedMs, double speedBps})> measureProxySpeed({
+    required String proxyName,
+    required int timeoutMs,
+  });
+
   Future<String> updateConfig(UpdateParams updateParams);
 
   Future<String> setupConfig(SetupParams setupParams);
@@ -523,6 +532,31 @@ abstract class CoreHandlerInterface with CoreInterface {
     return (
       ip: data['ip'] as String? ?? '',
       country: data['country'] as String? ?? '',
+    );
+  }
+
+  @override
+  Future<({int bytes, int elapsedMs, double speedBps})> measureProxySpeed({
+    required String proxyName,
+    required int timeoutMs,
+  }) async {
+    final data = await _invokeMethod<Map<String, dynamic>>(
+      method: CoreMethod.measureProxySpeed,
+      arguments: {'name': proxyName, 'timeout': timeoutMs},
+      // 内核侧「排队等并发槽 + 下载」共享同一个 timeout 预算 —— 不会像测落地
+      // 那样按地址数翻倍，留出 IPC 往返余量即可。
+      timeout: Duration(milliseconds: timeoutMs + 10000),
+    );
+    if (data == null) {
+      throw const CoreMethodException(
+        code: 'empty_result',
+        message: 'Core returned an empty speed result',
+      );
+    }
+    return (
+      bytes: (data['bytes'] as num?)?.toInt() ?? 0,
+      elapsedMs: (data['elapsed-ms'] as num?)?.toInt() ?? 0,
+      speedBps: (data['speed-bps'] as num?)?.toDouble() ?? 0,
     );
   }
 

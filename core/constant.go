@@ -170,6 +170,24 @@ type RequestProxyIPResult struct {
 	Country string `json:"country"`
 }
 
+// MeasureSpeedParams / MeasureSpeedResult 的语义说明在 proxy_speed.go ——
+// 参数结构放在这里是为了和 TestDelayParams 等其余入参保持一处。
+type MeasureSpeedParams struct {
+	Name     string `json:"name"`
+	Url      string `json:"url"`
+	Timeout  int64  `json:"timeout"`
+	MaxBytes int64  `json:"max-bytes"`
+}
+
+// Bytes 是实际下载到的字节数（可能因超时或上限截断 —— 截断不等于失败，
+// 部分吞吐也是有效观测），SpeedBps 是响应体阶段的吞吐（字节/秒，不计
+// 拨号/握手）。语义说明见 proxy_speed.go。
+type MeasureSpeedResult struct {
+	Bytes     int64   `json:"bytes"`
+	ElapsedMs int64   `json:"elapsed-ms"`
+	SpeedBps  float64 `json:"speed-bps"`
+}
+
 type Traffic struct {
 	Up   int64 `json:"up"`
 	Down int64 `json:"down"`
@@ -205,6 +223,7 @@ const (
 	resetTrafficMethod             CoreMethod = "resetTraffic"
 	asyncTestDelayMethod           CoreMethod = "asyncTestDelay"
 	requestProxyIPMethod           CoreMethod = "requestProxyIP"
+	measureProxySpeedMethod        CoreMethod = "measureProxySpeed"
 	getConnectionsMethod           CoreMethod = "getConnections"
 	closeConnectionsMethod         CoreMethod = "closeConnections"
 	resetConnectionsMethod         CoreMethod = "resetConnections"

@@ -65,8 +65,7 @@ GroupsState currentGroupsState(Ref ref) {
   final groups = ref.watch(
     groupsProvider.select(
       (state) => state.map((item) {
-        final all =
-            item.name == GroupName.GLOBAL.name
+        final all = item.name == GroupName.GLOBAL.name
             ? filterGlobalGroupMembers(item.all, injectedChainNames)
             : filterGroupMemberCards(item.all);
         return item.copyWith(
@@ -338,25 +337,23 @@ String proxyDesc(Ref ref, Proxy proxy) {
 /// 刻意**手写** `Provider.family` 而不是加 `@riverpod` 注解 —— 生成器在环境
 /// 故障期跑不了。用 family 缓存则是有意义的 —— 卡片每次 build 都要取，
 /// 缓存后零成本。详细规则见 `lib/common/proxy_region.dart`。
-final proxyRegionProvider = Provider.family<ProxyRegion, Proxy>(
-  (ref, proxy) {
-    // 落地优先：实测过的节点标签跟着真实出口走（US 名字实落吉隆坡就标 🇲🇾），
-    // 没测过的才按名字认。用 **select 按节点名取** 而不是 watch 整表 —— 批量
-    // 测落地时每两秒就有一行变，watch 整表会让**所有**卡片跟着整页重build；
-    // select 之后只有「这条记录变了」的那张卡片重建。未变的行持有同一个
-    // ProxyExitInfo 实例，select 的同一性比较天然不会误触发。
-    final stored = ref.watch(
-      proxyExitStoreProvider.select((state) => state.value?[proxy.name]),
-    );
-    if (stored != null) {
-      final region = ProxyRegion.ofCountry(stored.countryCode);
-      if (region != null) {
-        return region;
-      }
+final proxyRegionProvider = Provider.family<ProxyRegion, Proxy>((ref, proxy) {
+  // 落地优先：实测过的节点标签跟着真实出口走（US 名字实落吉隆坡就标 🇲🇾），
+  // 没测过的才按名字认。用 **select 按节点名取** 而不是 watch 整表 —— 批量
+  // 测落地时每两秒就有一行变，watch 整表会让**所有**卡片跟着整页重build；
+  // select 之后只有「这条记录变了」的那张卡片重建。未变的行持有同一个
+  // ProxyExitInfo 实例，select 的同一性比较天然不会误触发。
+  final stored = ref.watch(
+    proxyExitStoreProvider.select((state) => state.value?[proxy.name]),
+  );
+  if (stored != null) {
+    final region = ProxyRegion.ofCountry(stored.countryCode);
+    if (region != null) {
+      return region;
     }
-    return resolveProxyRegion(proxy.name);
-  },
-);
+  }
+  return resolveProxyRegion(proxy.name);
+});
 
 /// 当前生效的「按地区筛选」：策略组名 → `ProxyRegion.key`（表里没有该键 = 不筛）。
 ///
@@ -659,9 +656,7 @@ class ProxyExit extends Notifier<ProxyExitState> {
     // 等 store 的初始加载完成再取新鲜记录：刚启动时 store 还在 AsyncLoading，
     // 直接读 .value 拿到的是空表 —— 会把库里已有新鲜记录的节点全部重测一遍。
     final fresh = await ref.read(proxyExitStoreProvider.future);
-    final queue = proxyNames
-        .where((name) => !fresh.containsKey(name))
-        .toList();
+    final queue = proxyNames.where((name) => !fresh.containsKey(name)).toList();
     if (queue.isEmpty) {
       return;
     }
@@ -680,8 +675,7 @@ class ProxyExit extends Notifier<ProxyExitState> {
     try {
       final results = await Connectivity().checkConnectivity();
       final unmetered = results.any(
-        (r) =>
-            r == ConnectivityResult.wifi || r == ConnectivityResult.ethernet,
+        (r) => r == ConnectivityResult.wifi || r == ConnectivityResult.ethernet,
       );
       return results.contains(ConnectivityResult.mobile) && !unmetered;
     } catch (_) {
@@ -705,6 +699,84 @@ class ProxyExit extends Notifier<ProxyExitState> {
 
 final proxyExitProvider = NotifierProvider<ProxyExit, ProxyExitState>(
   ProxyExit.new,
+);
+
+/// 「下载测速」的会话态。结果**不落库** —— 与测落地不同，带宽是随时段/
+/// 负载波动的量，落库的旧值只会误导（「昨晚 20 MB/s」≠ 现在还能 20），
+/// 所以与延迟同待遇：会话内有效，重启归零，重测即刷新。
+class ProxySpeedState {
+  /// proxyName -> 响应体吞吐（字节/秒）。只存成功结果。
+  final Map<String, double> results;
+
+  /// 本会话测失败的节点 —— 失败是「刚才测不出」，不能被入口态盖住。
+  final Set<String> failed;
+
+  final Set<String> testing;
+
+  const ProxySpeedState({
+    this.results = const {},
+    this.failed = const {},
+    this.testing = const {},
+  });
+}
+
+class ProxySpeed extends Notifier<ProxySpeedState> {
+  /// 单节点下载预算：排队 + 下载共享（内核侧同一预算），30s 足够慢节点
+  /// 拉出有效读数。守卫超时由 core 封装层再加。
+  static const _timeoutMs = 30000;
+
+  /// 内核侧 speedTestSlots 同为 4 —— 两侧一致，Dart 侧不会白排长队。
+  static const _concurrency = 4;
+
+  @override
+  ProxySpeedState build() => const ProxySpeedState();
+
+  Future<void> test(String proxyName) async {
+    if (state.testing.contains(proxyName)) {
+      return;
+    }
+    state = ProxySpeedState(
+      results: state.results,
+      failed: state.failed,
+      testing: {...state.testing, proxyName},
+    );
+    double? speed;
+    try {
+      final core = ref.read(coreHandlerProvider);
+      final result = await core.measureProxySpeed(
+        proxyName: proxyName,
+        timeoutMs: _timeoutMs,
+      );
+      speed = result.speedBps;
+    } catch (error) {
+      commonPrint.log('Speed test failed for $proxyName: $error');
+    }
+    if (!ref.mounted) {
+      return;
+    }
+    final results = {...state.results};
+    final failed = {...state.failed}..remove(proxyName);
+    if (speed != null) {
+      results[proxyName] = speed;
+    } else {
+      failed.add(proxyName);
+    }
+    state = ProxySpeedState(
+      results: results,
+      failed: failed,
+      testing: {...state.testing}..remove(proxyName),
+    );
+  }
+
+  /// 批量测速：TaskPool 限并发，留给后续入口（当前 UI 只挂单节点按钮）。
+  Future<void> testBatch(Iterable<String> proxyNames) async {
+    final pool = TaskPool(_concurrency);
+    await Future.wait(proxyNames.map((name) => pool.run(() => test(name))));
+  }
+}
+
+final proxySpeedProvider = NotifierProvider<ProxySpeed, ProxySpeedState>(
+  ProxySpeed.new,
 );
 
 @riverpod

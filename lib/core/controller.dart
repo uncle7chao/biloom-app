@@ -263,6 +263,17 @@ class CoreController {
     );
   }
 
+  /// 「下载测速」：见 [CoreInterface.measureProxySpeed]。
+  Future<({int bytes, int elapsedMs, double speedBps})> measureProxySpeed({
+    required String proxyName,
+    required int timeoutMs,
+  }) {
+    return _interface.measureProxySpeed(
+      proxyName: proxyName,
+      timeoutMs: timeoutMs,
+    );
+  }
+
   Future<Map<String, dynamic>> getConfig(int id) async {
     final profilePath = await appPath.getProfilePath(id.toString());
     final data = Map<String, dynamic>.from(

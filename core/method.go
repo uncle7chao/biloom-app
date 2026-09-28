@@ -219,6 +219,16 @@ var methodHandlers = map[CoreMethod]methodHandler{
 			response.success(result)
 		})
 	}),
+	measureProxySpeedMethod: withArguments(func(params *MeasureSpeedParams, response MethodResponse) {
+		safeGo(response, func() {
+			result, err := handleMeasureSpeed(params)
+			if err != nil {
+				response.failure("measure_speed_error", err.Error(), nil)
+				return
+			}
+			response.success(result)
+		})
+	}),
 	getConnectionsMethod: withoutArguments(func(response MethodResponse) {
 		response.success(handleGetConnections())
 	}),
