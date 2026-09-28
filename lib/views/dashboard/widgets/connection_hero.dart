@@ -66,44 +66,70 @@ class ConnectionHero extends ConsumerWidget {
           : () => ref.read(commonActionProvider.notifier).toggleRunning(),
       child: SizedBox(
         height: 84,
-        child: Row(
-          children: [
-            const SizedBox(width: 20),
-            leading,
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: textTheme.titleMedium?.toSoftBold,
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    subtitle,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: textTheme.bodyMedium?.copyWith(
-                      color: context.colorScheme.onSurfaceVariant,
+        // 渐变底只属于「已连接」态：从左侧品牌色 15% 渐到透明，让第一眼的
+        // 状态判断不依赖读字。裁剪层与卡片同圆角，渐变不会溢出圆角外。
+        child: ClipRSuperellipse(
+          borderRadius: AppRadius.xl,
+          child: Stack(
+            children: [
+              if (phase == ConnectionPhase.connected)
+                Positioned.fill(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: AlignmentDirectional.centerStart,
+                        end: AlignmentDirectional.centerEnd,
+                        colors: [
+                          context.colorScheme.primary.opacity15,
+                          context.colorScheme.primary.opacity0,
+                        ],
+                      ),
                     ),
                   ),
-                ],
-              ),
-            ),
-            // 已连接时把运行时长直接亮出来 —— 用户关心的下一个问题就是
-            // 「连了多久了」，别让他再去悬浮球那里找。
-            if (phase == ConnectionPhase.connected)
-              Padding(
-                padding: const EdgeInsets.only(right: 20, left: 8),
-                child: RunTimeText(
-                  timeStamp: ref.watch(runTimeProvider),
+                ),
+              Positioned.fill(
+                child: Row(
+                  children: [
+                    const SizedBox(width: 20),
+                    leading,
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            title,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: textTheme.titleMedium?.toSoftBold,
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            subtitle,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: textTheme.bodyMedium?.copyWith(
+                              color: context.colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    // 已连接时把运行时长直接亮出来 —— 用户关心的下一个问题
+                    // 就是「连了多久了」，别让他再去悬浮球那里找。
+                    if (phase == ConnectionPhase.connected)
+                      Padding(
+                        padding: const EdgeInsets.only(right: 20, left: 8),
+                        child: RunTimeText(
+                          timeStamp: ref.watch(runTimeProvider),
+                        ),
+                      ),
+                  ],
                 ),
               ),
-          ],
+            ],
+          ),
         ),
       ),
     );
