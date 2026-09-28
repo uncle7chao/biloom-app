@@ -11,6 +11,7 @@ list(APPEND FLUTTER_PLUGIN_LIST
   screen_retriever_windows
   tray
   url_launcher_windows
+  webview_windows
   wifi_ssid
   window_manager
 )
