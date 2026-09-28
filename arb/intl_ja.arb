@@ -759,7 +759,8 @@
   "retry": "再試行",
   "connectionsStat": "接続統計",
   "activeConnections": "アクティブ",
-  "proxySpeedTest": "帯域",
-  "proxySpeedTestHint": "ダウンロード速度テスト：このノード経由でサンプルファイルを取得し、実帯域を測定します（転送時間のみ計測、ハンドシェイクは含まず、結果はこのセッション内で有効）",
-  "proxySpeedTestFailed": "失敗"
+  "connectionsFilterProcess": "プロセス",
+  "connectionsFilterChain": "ノード",
+  "connectionsFilterRule": "ルール",
+  "connectionsCloseFiltered": "絞り込み結果を切断"
 }

@@ -24,8 +24,19 @@ class TrackerInfoItem extends ConsumerWidget {
   Widget _buildMeta(BuildContext context) {
     final traffic = Traffic(up: trackerInfo.upload, down: trackerInfo.download);
     final chains = trackerInfo.chains;
-    final metaText =
-        '${trackerInfo.start.getLastUpdateTimeDesc(context)} · ${traffic.desc}';
+    // 副标题一行带全高频信息：时间 · 流量 · 进程 · 规则。进程与规则原先
+    // 藏在详情 sheet 里，每次都要点进去看，高频排查场景不值得。
+    final process = trackerInfo.metadata.process;
+    final rule = trackerInfo.rule;
+    final rulePayload = trackerInfo.rulePayload;
+    final metaParts = <String>[
+      trackerInfo.start.getLastUpdateTimeDesc(context),
+      traffic.desc,
+      if (process.isNotEmpty) process,
+      if (rule.isNotEmpty)
+        rulePayload.isNotEmpty ? '$rule: $rulePayload' : rule,
+    ];
+    final metaText = metaParts.join(' · ');
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

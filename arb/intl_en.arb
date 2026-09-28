@@ -759,7 +759,8 @@
   "retry": "Retry",
   "connectionsStat": "Connections",
   "activeConnections": "Active",
-  "proxySpeedTest": "Speed",
-  "proxySpeedTestHint": "Download test: fetches a sample file through this node to measure real bandwidth (transfer time only, no handshake; the result is valid for this session)",
-  "proxySpeedTestFailed": "Failed"
+  "connectionsFilterProcess": "Process",
+  "connectionsFilterChain": "Node",
+  "connectionsFilterRule": "Rule",
+  "connectionsCloseFiltered": "Close filtered"
 }

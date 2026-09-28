@@ -107,7 +107,8 @@ class MessageLookup extends MessageLookupByLibrary {
       "${Intl.plural(count, one: '${count} год назад', few: '${count} года назад', many: '${count} лет назад', other: '${count} года назад')}";
 
   static String m35(name) => "Узел «${name}» скопирован в целевой профиль";
-  static String m36(name) => "В целевом профиле уже есть такой узел — используется «${name}»";
+  static String m36(name) =>
+      "В целевом профиле уже есть такой узел — используется «${name}»";
 
   static String m37(name) => "Цепочка «${name}» создана";
 
@@ -628,10 +629,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "inputRuleContent": MessageLookupByLibrary.simpleMessage(
       "Введите содержимое правила",
     ),
-    "installedAppsPermissionDeniedMessage":
-        MessageLookupByLibrary.simpleMessage(
-          "Разрешение на список приложений отклонено, поэтому установленные приложения недоступны. Предоставьте его вручную в системных настройках.",
-        ),
+    "installedAppsPermissionDeniedMessage": MessageLookupByLibrary.simpleMessage(
+      "Разрешение на список приложений отклонено, поэтому установленные приложения недоступны. Предоставьте его вручную в системных настройках.",
+    ),
     "installedAppsPermissionDesc": MessageLookupByLibrary.simpleMessage(
       "Эта система не выдаёт список установленных приложений без разрешения. Предоставьте его, чтобы настроить прокси для отдельных приложений.",
     ),
@@ -1367,103 +1367,210 @@ class MessageLookup extends MessageLookupByLibrary {
     "zhCN": MessageLookupByLibrary.simpleMessage("Упрощённый китайский"),
     "proxyRegionAll": MessageLookupByLibrary.simpleMessage("Все"),
     "proxyRegionCdn": MessageLookupByLibrary.simpleMessage("CF-релей"),
-    "proxyRegionFilter": MessageLookupByLibrary.simpleMessage("Фильтр по региону"),
-    "generateRegionGroups": MessageLookupByLibrary.simpleMessage("Группировать по регионам"),
-    "generateRegionGroupsTip": MessageLookupByLibrary.simpleMessage("Группирует узлы по региону выхода, чтобы их было проще находить. Группы хранятся в данных переопределения и не теряются при обновлении подписки."),
-    "generateRegionGroupsPreview": MessageLookupByLibrary.simpleMessage("Создаваемые группы"),
-    "generateRegionGroupsUnknown": MessageLookupByLibrary.simpleMessage("Узлы с нераспознанным регионом не группируются"),
-    "generateRegionGroupsKeep": MessageLookupByLibrary.simpleMessage("Без изменений"),
-    "generateRegionGroupsRemoveTip": MessageLookupByLibrary.simpleMessage("Эти группы ссылаются на узлы, которых больше нет; если их оставить, вся конфигурация не загрузится"),
-    "generateRegionGroupsDone": MessageLookupByLibrary.simpleMessage("Группы по регионам созданы"),
-    "generateRegionGroupsEmpty": MessageLookupByLibrary.simpleMessage("Регионы не распознаны"),
+    "proxyRegionFilter": MessageLookupByLibrary.simpleMessage(
+      "Фильтр по региону",
+    ),
+    "generateRegionGroups": MessageLookupByLibrary.simpleMessage(
+      "Группировать по регионам",
+    ),
+    "generateRegionGroupsTip": MessageLookupByLibrary.simpleMessage(
+      "Группирует узлы по региону выхода, чтобы их было проще находить. Группы хранятся в данных переопределения и не теряются при обновлении подписки.",
+    ),
+    "generateRegionGroupsPreview": MessageLookupByLibrary.simpleMessage(
+      "Создаваемые группы",
+    ),
+    "generateRegionGroupsUnknown": MessageLookupByLibrary.simpleMessage(
+      "Узлы с нераспознанным регионом не группируются",
+    ),
+    "generateRegionGroupsKeep": MessageLookupByLibrary.simpleMessage(
+      "Без изменений",
+    ),
+    "generateRegionGroupsRemoveTip": MessageLookupByLibrary.simpleMessage(
+      "Эти группы ссылаются на узлы, которых больше нет; если их оставить, вся конфигурация не загрузится",
+    ),
+    "generateRegionGroupsDone": MessageLookupByLibrary.simpleMessage(
+      "Группы по регионам созданы",
+    ),
+    "generateRegionGroupsEmpty": MessageLookupByLibrary.simpleMessage(
+      "Регионы не распознаны",
+    ),
     "proxyExitTest": MessageLookupByLibrary.simpleMessage("Выход"),
-    "proxyExitTestHint": MessageLookupByLibrary.simpleMessage("Проверить выход: измерить реальный регион выхода этого узла"),
+    "proxyExitTestHint": MessageLookupByLibrary.simpleMessage(
+      "Проверить выход: измерить реальный регион выхода этого узла",
+    ),
     "proxyExitFailed": MessageLookupByLibrary.simpleMessage("Ошибка"),
-    "proxyExitMismatch": MessageLookupByLibrary.simpleMessage("Не совпадает с регионом в названии"),
-    "connectionStateDisconnected": MessageLookupByLibrary.simpleMessage("Нет подключения"),
-    "connectionStateConnecting": MessageLookupByLibrary.simpleMessage("Подключение…"),
-    "connectionStateConnected": MessageLookupByLibrary.simpleMessage("Подключено"),
-    "connectionHeroTapToConnect": MessageLookupByLibrary.simpleMessage("Нажмите, чтобы подключить"),
-    "connectionHeroTapToDisconnect": MessageLookupByLibrary.simpleMessage("Нажмите, чтобы отключить"),
-    "intentGroups": MessageLookupByLibrary.simpleMessage("Группы по назначению"),
-    "intentGroupsTip": MessageLookupByLibrary.simpleMessage("Направляет домены каждого назначения в отдельную группу: отметка создаёт группу и правила (правила ставятся перед правилами подписки), снятие отметки удаляет и то и другое."),
+    "proxyExitMismatch": MessageLookupByLibrary.simpleMessage(
+      "Не совпадает с регионом в названии",
+    ),
+    "connectionStateDisconnected": MessageLookupByLibrary.simpleMessage(
+      "Нет подключения",
+    ),
+    "connectionStateConnecting": MessageLookupByLibrary.simpleMessage(
+      "Подключение…",
+    ),
+    "connectionStateConnected": MessageLookupByLibrary.simpleMessage(
+      "Подключено",
+    ),
+    "connectionHeroTapToConnect": MessageLookupByLibrary.simpleMessage(
+      "Нажмите, чтобы подключить",
+    ),
+    "connectionHeroTapToDisconnect": MessageLookupByLibrary.simpleMessage(
+      "Нажмите, чтобы отключить",
+    ),
+    "intentGroups": MessageLookupByLibrary.simpleMessage(
+      "Группы по назначению",
+    ),
+    "intentGroupsTip": MessageLookupByLibrary.simpleMessage(
+      "Направляет домены каждого назначения в отдельную группу: отметка создаёт группу и правила (правила ставятся перед правилами подписки), снятие отметки удаляет и то и другое.",
+    ),
     "intentStreaming": MessageLookupByLibrary.simpleMessage("Стриминг"),
     "intentAi": MessageLookupByLibrary.simpleMessage("AI-сервисы"),
     "intentSocial": MessageLookupByLibrary.simpleMessage("Соцсети"),
-    "intentGroupsDone": MessageLookupByLibrary.simpleMessage("Группы по назначению применены"),
-    "bestPresetTitle": MessageLookupByLibrary.simpleMessage("Вернуть рекомендованные настройки"),
-    "bestPresetDesc": MessageLookupByLibrary.simpleMessage("Автоматически выбрать лучший режим для этого устройства"),
-    "bestPresetFirstRunTip": MessageLookupByLibrary.simpleMessage("Мы можем выбрать режим под это устройство: TUN при наличии нужных прав, иначе системный прокси. Применить сейчас?"),
+    "intentGroupsDone": MessageLookupByLibrary.simpleMessage(
+      "Группы по назначению применены",
+    ),
+    "bestPresetTitle": MessageLookupByLibrary.simpleMessage(
+      "Вернуть рекомендованные настройки",
+    ),
+    "bestPresetDesc": MessageLookupByLibrary.simpleMessage(
+      "Автоматически выбрать лучший режим для этого устройства",
+    ),
+    "bestPresetFirstRunTip": MessageLookupByLibrary.simpleMessage(
+      "Мы можем выбрать режим под это устройство: TUN при наличии нужных прав, иначе системный прокси. Применить сейчас?",
+    ),
     "bestPresetApply": MessageLookupByLibrary.simpleMessage("Применить"),
-    "bestPresetTunApplied": MessageLookupByLibrary.simpleMessage("Режим TUN включён"),
-    "bestPresetSystemProxyApplied": MessageLookupByLibrary.simpleMessage("Системный прокси включён (приложение запущено без прав администратора, TUN недоступен; перезапустите с правами администратора, чтобы использовать TUN)"),
+    "bestPresetTunApplied": MessageLookupByLibrary.simpleMessage(
+      "Режим TUN включён",
+    ),
+    "bestPresetSystemProxyApplied": MessageLookupByLibrary.simpleMessage(
+      "Системный прокси включён (приложение запущено без прав администратора, TUN недоступен; перезапустите с правами администратора, чтобы использовать TUN)",
+    ),
     "addNodePasteMode": MessageLookupByLibrary.simpleMessage("Вставка"),
     "addNodeManualMode": MessageLookupByLibrary.simpleMessage("Ручной ввод"),
     "addNodeProtocol": MessageLookupByLibrary.simpleMessage("Протокол"),
     "proxyFormAdvanced": MessageLookupByLibrary.simpleMessage("Дополнительно"),
-    "proxyFormMissingRequired": MessageLookupByLibrary.simpleMessage("Заполните обязательные поля"),
+    "proxyFormMissingRequired": MessageLookupByLibrary.simpleMessage(
+      "Заполните обязательные поля",
+    ),
     "proxyFormOptionNone": MessageLookupByLibrary.simpleMessage("Нет"),
     "proxyFieldName": MessageLookupByLibrary.simpleMessage("Имя узла"),
     "proxyFieldServer": MessageLookupByLibrary.simpleMessage("Сервер"),
     "proxyFieldPort": MessageLookupByLibrary.simpleMessage("Порт"),
-    "proxyFieldUsername": MessageLookupByLibrary.simpleMessage("Имя пользователя"),
+    "proxyFieldUsername": MessageLookupByLibrary.simpleMessage(
+      "Имя пользователя",
+    ),
     "proxyFieldPassword": MessageLookupByLibrary.simpleMessage("Пароль"),
     "proxyFieldUuid": MessageLookupByLibrary.simpleMessage("UUID"),
     "proxyFieldAlterId": MessageLookupByLibrary.simpleMessage("alterId"),
     "proxyFieldCipher": MessageLookupByLibrary.simpleMessage("Шифрование"),
     "proxyFieldUdp": MessageLookupByLibrary.simpleMessage("Разрешить UDP"),
     "proxyFieldTls": MessageLookupByLibrary.simpleMessage("TLS"),
-    "proxyFieldSkipCertVerify": MessageLookupByLibrary.simpleMessage("Пропустить проверку сертификата"),
+    "proxyFieldSkipCertVerify": MessageLookupByLibrary.simpleMessage(
+      "Пропустить проверку сертификата",
+    ),
     "proxyFieldNetwork": MessageLookupByLibrary.simpleMessage("Транспорт"),
     "proxyFieldWsPath": MessageLookupByLibrary.simpleMessage("Путь WS"),
     "proxyFieldWsHost": MessageLookupByLibrary.simpleMessage("WS Host"),
-    "proxyFieldGrpcService": MessageLookupByLibrary.simpleMessage("Имя сервиса gRPC"),
+    "proxyFieldGrpcService": MessageLookupByLibrary.simpleMessage(
+      "Имя сервиса gRPC",
+    ),
     "proxyFieldSni": MessageLookupByLibrary.simpleMessage("SNI"),
     "proxyFieldFlow": MessageLookupByLibrary.simpleMessage("Flow"),
-    "proxyFieldReality": MessageLookupByLibrary.simpleMessage("Включить Reality"),
-    "proxyFieldPublicKey": MessageLookupByLibrary.simpleMessage("Публичный ключ Reality"),
-    "proxyFieldShortId": MessageLookupByLibrary.simpleMessage("Short ID Reality"),
-    "proxyFieldFingerprint": MessageLookupByLibrary.simpleMessage("Отпечаток клиента"),
+    "proxyFieldReality": MessageLookupByLibrary.simpleMessage(
+      "Включить Reality",
+    ),
+    "proxyFieldPublicKey": MessageLookupByLibrary.simpleMessage(
+      "Публичный ключ Reality",
+    ),
+    "proxyFieldShortId": MessageLookupByLibrary.simpleMessage(
+      "Short ID Reality",
+    ),
+    "proxyFieldFingerprint": MessageLookupByLibrary.simpleMessage(
+      "Отпечаток клиента",
+    ),
     "proxyFieldObfs": MessageLookupByLibrary.simpleMessage("Обфускация"),
-    "proxyFieldObfsPassword": MessageLookupByLibrary.simpleMessage("Пароль обфускации"),
+    "proxyFieldObfsPassword": MessageLookupByLibrary.simpleMessage(
+      "Пароль обфускации",
+    ),
     "proxyFieldUp": MessageLookupByLibrary.simpleMessage("Исходящая полоса"),
     "proxyFieldDown": MessageLookupByLibrary.simpleMessage("Входящая полоса"),
-    "addNodeTargetProfile": MessageLookupByLibrary.simpleMessage("Целевой профиль"),
-    "smartAntidetection": MessageLookupByLibrary.simpleMessage("Умная анти-детекция"),
-    "smartAntidetectionDesc": MessageLookupByLibrary.simpleMessage("Автоматически добавляет узлам TLS-отпечатки и другие параметры анти-детекции; если узел недоступен, автоматически пробует другой отпечаток. Настройка вручную не требуется."),
-    "proxyFieldAlpn": MessageLookupByLibrary.simpleMessage("ALPN (через запятую)"),
-    "proxyFieldPorts": MessageLookupByLibrary.simpleMessage("Диапазон портов (напр. 20000-30000)"),
-    "proxyFieldHopInterval": MessageLookupByLibrary.simpleMessage("Интервал прыжка портов (с)"),
+    "addNodeTargetProfile": MessageLookupByLibrary.simpleMessage(
+      "Целевой профиль",
+    ),
+    "smartAntidetection": MessageLookupByLibrary.simpleMessage(
+      "Умная анти-детекция",
+    ),
+    "smartAntidetectionDesc": MessageLookupByLibrary.simpleMessage(
+      "Автоматически добавляет узлам TLS-отпечатки и другие параметры анти-детекции; если узел недоступен, автоматически пробует другой отпечаток. Настройка вручную не требуется.",
+    ),
+    "proxyFieldAlpn": MessageLookupByLibrary.simpleMessage(
+      "ALPN (через запятую)",
+    ),
+    "proxyFieldPorts": MessageLookupByLibrary.simpleMessage(
+      "Диапазон портов (напр. 20000-30000)",
+    ),
+    "proxyFieldHopInterval": MessageLookupByLibrary.simpleMessage(
+      "Интервал прыжка портов (с)",
+    ),
     "manageNodes": MessageLookupByLibrary.simpleMessage("Управление узлами"),
     "deleteNode": MessageLookupByLibrary.simpleMessage("Удалить узел"),
-    "deleteNodeConfirm": MessageLookupByLibrary.simpleMessage("Узел будет удалён из профиля вместе со всеми ссылками на него. Удалить?"),
-    "deleteNodeSuccess": MessageLookupByLibrary.simpleMessage("Удалённые узлы:"),
-    "deleteNodeMissing": MessageLookupByLibrary.simpleMessage("Эти узлы не найдены (возможно, уже удалены):"),
-    "noProxyNodes": MessageLookupByLibrary.simpleMessage("В этом профиле пока нет узлов"),
+    "deleteNodeConfirm": MessageLookupByLibrary.simpleMessage(
+      "Узел будет удалён из профиля вместе со всеми ссылками на него. Удалить?",
+    ),
+    "deleteNodeSuccess": MessageLookupByLibrary.simpleMessage(
+      "Удалённые узлы:",
+    ),
+    "deleteNodeMissing": MessageLookupByLibrary.simpleMessage(
+      "Эти узлы не найдены (возможно, уже удалены):",
+    ),
+    "noProxyNodes": MessageLookupByLibrary.simpleMessage(
+      "В этом профиле пока нет узлов",
+    ),
     "deleteSelected": MessageLookupByLibrary.simpleMessage("Удалить выбранные"),
-    "deleteNodesConfirm": MessageLookupByLibrary.simpleMessage("Выбранные узлы будут удалены из профиля вместе со всеми ссылками на них. Удалить?"),
-    "updateFailedTip": MessageLookupByLibrary.simpleMessage("Последнее обновление не удалось"),
-    "groupsUpdateFailedTip": MessageLookupByLibrary.simpleMessage("Не удалось загрузить группы прокси. Проверьте конфигурацию или перезапустите ядро"),
+    "deleteNodesConfirm": MessageLookupByLibrary.simpleMessage(
+      "Выбранные узлы будут удалены из профиля вместе со всеми ссылками на них. Удалить?",
+    ),
+    "updateFailedTip": MessageLookupByLibrary.simpleMessage(
+      "Последнее обновление не удалось",
+    ),
+    "groupsUpdateFailedTip": MessageLookupByLibrary.simpleMessage(
+      "Не удалось загрузить группы прокси. Проверьте конфигурацию или перезапустите ядро",
+    ),
     "editNode": MessageLookupByLibrary.simpleMessage("Изменить узел"),
     "editNodeSuccess": MessageLookupByLibrary.simpleMessage("Узел обновлён"),
     "favoriteNode": MessageLookupByLibrary.simpleMessage("В избранное"),
-    "unfavoriteNode": MessageLookupByLibrary.simpleMessage("Убрать из избранного"),
+    "unfavoriteNode": MessageLookupByLibrary.simpleMessage(
+      "Убрать из избранного",
+    ),
     "autoExitTest": MessageLookupByLibrary.simpleMessage("Автопроверка выхода"),
-    "autoExitTestDesc": MessageLookupByLibrary.simpleMessage("Раз в день перепроверяет узлы без свежих записей, чтобы метки регионов оставались точными; недавние результаты пропускаются"),
+    "autoExitTestDesc": MessageLookupByLibrary.simpleMessage(
+      "Раз в день перепроверяет узлы без свежих записей, чтобы метки регионов оставались точными; недавние результаты пропускаются",
+    ),
     "proxyChainNodeCopied": m35,
     "proxyChainNodeReused": m36,
-    "proxyChainDefaultName": MessageLookupByLibrary.simpleMessage("Цепочка прокси"),
-    "proxyChainNameLabel": MessageLookupByLibrary.simpleMessage("Название цепочки"),
+    "proxyChainDefaultName": MessageLookupByLibrary.simpleMessage(
+      "Цепочка прокси",
+    ),
+    "proxyChainNameLabel": MessageLookupByLibrary.simpleMessage(
+      "Название цепочки",
+    ),
     "proxyChainCreated": m37,
-    "proxyChainPickerTopHint": MessageLookupByLibrary.simpleMessage("Показаны только 20 самых быстрых узлов профиля; остальные ищите поиском"),
+    "proxyChainPickerTopHint": MessageLookupByLibrary.simpleMessage(
+      "Показаны только 20 самых быстрых узлов профиля; остальные ищите поиском",
+    ),
     "activity": MessageLookupByLibrary.simpleMessage("Активность"),
     "openInBrowser": MessageLookupByLibrary.simpleMessage("Открыть в браузере"),
-    "activityLoadFailed": MessageLookupByLibrary.simpleMessage("Не удалось загрузить страницу"),
+    "activityLoadFailed": MessageLookupByLibrary.simpleMessage(
+      "Не удалось загрузить страницу",
+    ),
     "retry": MessageLookupByLibrary.simpleMessage("Повторить"),
-    "connectionsStat": MessageLookupByLibrary.simpleMessage("Статистика соединений"),
+    "connectionsStat": MessageLookupByLibrary.simpleMessage(
+      "Статистика соединений",
+    ),
     "activeConnections": MessageLookupByLibrary.simpleMessage("Активные"),
-    "proxySpeedTest": MessageLookupByLibrary.simpleMessage("Скорость"),
-    "proxySpeedTestHint": MessageLookupByLibrary.simpleMessage("Тест загрузки: скачивает файл через этот узел, чтобы измерить реальную пропускную способность (только время передачи, без рукопожатия; результат действует в текущем сеансе)"),
-    "proxySpeedTestFailed": MessageLookupByLibrary.simpleMessage("Ошибка"),
+    "connectionsFilterProcess": MessageLookupByLibrary.simpleMessage("Процесс"),
+    "connectionsFilterChain": MessageLookupByLibrary.simpleMessage("Узел"),
+    "connectionsFilterRule": MessageLookupByLibrary.simpleMessage("Правило"),
+    "connectionsCloseFiltered": MessageLookupByLibrary.simpleMessage("Закрыть отфильтрованные"),
   };
 }

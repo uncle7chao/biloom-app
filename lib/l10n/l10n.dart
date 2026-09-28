@@ -5547,47 +5547,92 @@ class AppLocalizations {
 
   /// `Filter by region`
   String get proxyRegionFilter {
-    return Intl.message('Filter by region', name: 'proxyRegionFilter', desc: '', args: []);
+    return Intl.message(
+      'Filter by region',
+      name: 'proxyRegionFilter',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Group by region`
   String get generateRegionGroups {
-    return Intl.message('Group by region', name: 'generateRegionGroups', desc: '', args: []);
+    return Intl.message(
+      'Group by region',
+      name: 'generateRegionGroups',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Sorts nodes into strategy groups by egress region so a region's nodes are quick to find. The groups live in the override data, so updating the subscription keeps them.`
   String get generateRegionGroupsTip {
-    return Intl.message('Sorts nodes into strategy groups by egress region so a region\'s nodes are quick to find. The groups live in the override data, so updating the subscription keeps them.', name: 'generateRegionGroupsTip', desc: '', args: []);
+    return Intl.message(
+      'Sorts nodes into strategy groups by egress region so a region\'s nodes are quick to find. The groups live in the override data, so updating the subscription keeps them.',
+      name: 'generateRegionGroupsTip',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Groups to create`
   String get generateRegionGroupsPreview {
-    return Intl.message('Groups to create', name: 'generateRegionGroupsPreview', desc: '', args: []);
+    return Intl.message(
+      'Groups to create',
+      name: 'generateRegionGroupsPreview',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Nodes with an unrecognised region are not grouped`
   String get generateRegionGroupsUnknown {
-    return Intl.message('Nodes with an unrecognised region are not grouped', name: 'generateRegionGroupsUnknown', desc: '', args: []);
+    return Intl.message(
+      'Nodes with an unrecognised region are not grouped',
+      name: 'generateRegionGroupsUnknown',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Left as is`
   String get generateRegionGroupsKeep {
-    return Intl.message('Left as is', name: 'generateRegionGroupsKeep', desc: '', args: []);
+    return Intl.message(
+      'Left as is',
+      name: 'generateRegionGroupsKeep',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `These groups reference nodes that no longer exist; keeping them makes the whole config fail to load`
   String get generateRegionGroupsRemoveTip {
-    return Intl.message('These groups reference nodes that no longer exist; keeping them makes the whole config fail to load', name: 'generateRegionGroupsRemoveTip', desc: '', args: []);
+    return Intl.message(
+      'These groups reference nodes that no longer exist; keeping them makes the whole config fail to load',
+      name: 'generateRegionGroupsRemoveTip',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Region groups created`
   String get generateRegionGroupsDone {
-    return Intl.message('Region groups created', name: 'generateRegionGroupsDone', desc: '', args: []);
+    return Intl.message(
+      'Region groups created',
+      name: 'generateRegionGroupsDone',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `No recognisable regions`
   String get generateRegionGroupsEmpty {
-    return Intl.message('No recognisable regions', name: 'generateRegionGroupsEmpty', desc: '', args: []);
+    return Intl.message(
+      'No recognisable regions',
+      name: 'generateRegionGroupsEmpty',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Test exit`
@@ -5597,7 +5642,12 @@ class AppLocalizations {
 
   /// `Test exit: measure the real exit region of this node`
   String get proxyExitTestHint {
-    return Intl.message('Test exit: measure the real exit region of this node', name: 'proxyExitTestHint', desc: '', args: []);
+    return Intl.message(
+      'Test exit: measure the real exit region of this node',
+      name: 'proxyExitTestHint',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Failed`
@@ -5607,47 +5657,92 @@ class AppLocalizations {
 
   /// `Differs from the region in its name`
   String get proxyExitMismatch {
-    return Intl.message('Differs from the region in its name', name: 'proxyExitMismatch', desc: '', args: []);
+    return Intl.message(
+      'Differs from the region in its name',
+      name: 'proxyExitMismatch',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Disconnected`
   String get connectionStateDisconnected {
-    return Intl.message('Disconnected', name: 'connectionStateDisconnected', desc: '', args: []);
+    return Intl.message(
+      'Disconnected',
+      name: 'connectionStateDisconnected',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Connecting…`
   String get connectionStateConnecting {
-    return Intl.message('Connecting…', name: 'connectionStateConnecting', desc: '', args: []);
+    return Intl.message(
+      'Connecting…',
+      name: 'connectionStateConnecting',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Connected`
   String get connectionStateConnected {
-    return Intl.message('Connected', name: 'connectionStateConnected', desc: '', args: []);
+    return Intl.message(
+      'Connected',
+      name: 'connectionStateConnected',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Tap to connect`
   String get connectionHeroTapToConnect {
-    return Intl.message('Tap to connect', name: 'connectionHeroTapToConnect', desc: '', args: []);
+    return Intl.message(
+      'Tap to connect',
+      name: 'connectionHeroTapToConnect',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Tap to disconnect`
   String get connectionHeroTapToDisconnect {
-    return Intl.message('Tap to disconnect', name: 'connectionHeroTapToDisconnect', desc: '', args: []);
+    return Intl.message(
+      'Tap to disconnect',
+      name: 'connectionHeroTapToDisconnect',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Intent groups`
   String get intentGroups {
-    return Intl.message('Intent groups', name: 'intentGroups', desc: '', args: []);
+    return Intl.message(
+      'Intent groups',
+      name: 'intentGroups',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Route matching domains into a dedicated group per intent: checking one creates its group and rules (rules go before the subscription rules), unchecking removes both.`
   String get intentGroupsTip {
-    return Intl.message('Route matching domains into a dedicated group per intent: checking one creates its group and rules (rules go before the subscription rules), unchecking removes both.', name: 'intentGroupsTip', desc: '', args: []);
+    return Intl.message(
+      'Route matching domains into a dedicated group per intent: checking one creates its group and rules (rules go before the subscription rules), unchecking removes both.',
+      name: 'intentGroupsTip',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Streaming`
   String get intentStreaming {
-    return Intl.message('Streaming', name: 'intentStreaming', desc: '', args: []);
+    return Intl.message(
+      'Streaming',
+      name: 'intentStreaming',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `AI services`
@@ -5662,22 +5757,42 @@ class AppLocalizations {
 
   /// `Intent groups applied`
   String get intentGroupsDone {
-    return Intl.message('Intent groups applied', name: 'intentGroupsDone', desc: '', args: []);
+    return Intl.message(
+      'Intent groups applied',
+      name: 'intentGroupsDone',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Restore recommended settings`
   String get bestPresetTitle {
-    return Intl.message('Restore recommended settings', name: 'bestPresetTitle', desc: '', args: []);
+    return Intl.message(
+      'Restore recommended settings',
+      name: 'bestPresetTitle',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Pick the best takeover mode for this device automatically`
   String get bestPresetDesc {
-    return Intl.message('Pick the best takeover mode for this device automatically', name: 'bestPresetDesc', desc: '', args: []);
+    return Intl.message(
+      'Pick the best takeover mode for this device automatically',
+      name: 'bestPresetDesc',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `We can pick the takeover mode that fits this device: TUN mode when the device grants the needed privileges, otherwise the system proxy. Apply now?`
   String get bestPresetFirstRunTip {
-    return Intl.message('We can pick the takeover mode that fits this device: TUN mode when the device grants the needed privileges, otherwise the system proxy. Apply now?', name: 'bestPresetFirstRunTip', desc: '', args: []);
+    return Intl.message(
+      'We can pick the takeover mode that fits this device: TUN mode when the device grants the needed privileges, otherwise the system proxy. Apply now?',
+      name: 'bestPresetFirstRunTip',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Apply`
@@ -5687,12 +5802,22 @@ class AppLocalizations {
 
   /// `TUN mode is now enabled`
   String get bestPresetTunApplied {
-    return Intl.message('TUN mode is now enabled', name: 'bestPresetTunApplied', desc: '', args: []);
+    return Intl.message(
+      'TUN mode is now enabled',
+      name: 'bestPresetTunApplied',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `System proxy is now enabled (the app is not running as administrator, so TUN is unavailable; restart it as administrator to use TUN)`
   String get bestPresetSystemProxyApplied {
-    return Intl.message('System proxy is now enabled (the app is not running as administrator, so TUN is unavailable; restart it as administrator to use TUN)', name: 'bestPresetSystemProxyApplied', desc: '', args: []);
+    return Intl.message(
+      'System proxy is now enabled (the app is not running as administrator, so TUN is unavailable; restart it as administrator to use TUN)',
+      name: 'bestPresetSystemProxyApplied',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Paste`
@@ -5702,32 +5827,62 @@ class AppLocalizations {
 
   /// `Manual entry`
   String get addNodeManualMode {
-    return Intl.message('Manual entry', name: 'addNodeManualMode', desc: '', args: []);
+    return Intl.message(
+      'Manual entry',
+      name: 'addNodeManualMode',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Protocol`
   String get addNodeProtocol {
-    return Intl.message('Protocol', name: 'addNodeProtocol', desc: '', args: []);
+    return Intl.message(
+      'Protocol',
+      name: 'addNodeProtocol',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Advanced`
   String get proxyFormAdvanced {
-    return Intl.message('Advanced', name: 'proxyFormAdvanced', desc: '', args: []);
+    return Intl.message(
+      'Advanced',
+      name: 'proxyFormAdvanced',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Required fields are missing`
   String get proxyFormMissingRequired {
-    return Intl.message('Required fields are missing', name: 'proxyFormMissingRequired', desc: '', args: []);
+    return Intl.message(
+      'Required fields are missing',
+      name: 'proxyFormMissingRequired',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `None`
   String get proxyFormOptionNone {
-    return Intl.message('None', name: 'proxyFormOptionNone', desc: '', args: []);
+    return Intl.message(
+      'None',
+      name: 'proxyFormOptionNone',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Node name`
   String get proxyFieldName {
-    return Intl.message('Node name', name: 'proxyFieldName', desc: '', args: []);
+    return Intl.message(
+      'Node name',
+      name: 'proxyFieldName',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Server`
@@ -5742,12 +5897,22 @@ class AppLocalizations {
 
   /// `Username`
   String get proxyFieldUsername {
-    return Intl.message('Username', name: 'proxyFieldUsername', desc: '', args: []);
+    return Intl.message(
+      'Username',
+      name: 'proxyFieldUsername',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Password`
   String get proxyFieldPassword {
-    return Intl.message('Password', name: 'proxyFieldPassword', desc: '', args: []);
+    return Intl.message(
+      'Password',
+      name: 'proxyFieldPassword',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `UUID`
@@ -5757,7 +5922,12 @@ class AppLocalizations {
 
   /// `alterId`
   String get proxyFieldAlterId {
-    return Intl.message('alterId', name: 'proxyFieldAlterId', desc: '', args: []);
+    return Intl.message(
+      'alterId',
+      name: 'proxyFieldAlterId',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Cipher`
@@ -5767,7 +5937,12 @@ class AppLocalizations {
 
   /// `Enable UDP`
   String get proxyFieldUdp {
-    return Intl.message('Enable UDP', name: 'proxyFieldUdp', desc: '', args: []);
+    return Intl.message(
+      'Enable UDP',
+      name: 'proxyFieldUdp',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `TLS`
@@ -5777,27 +5952,52 @@ class AppLocalizations {
 
   /// `Skip certificate verification`
   String get proxyFieldSkipCertVerify {
-    return Intl.message('Skip certificate verification', name: 'proxyFieldSkipCertVerify', desc: '', args: []);
+    return Intl.message(
+      'Skip certificate verification',
+      name: 'proxyFieldSkipCertVerify',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Transport`
   String get proxyFieldNetwork {
-    return Intl.message('Transport', name: 'proxyFieldNetwork', desc: '', args: []);
+    return Intl.message(
+      'Transport',
+      name: 'proxyFieldNetwork',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `WS path`
   String get proxyFieldWsPath {
-    return Intl.message('WS path', name: 'proxyFieldWsPath', desc: '', args: []);
+    return Intl.message(
+      'WS path',
+      name: 'proxyFieldWsPath',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `WS Host`
   String get proxyFieldWsHost {
-    return Intl.message('WS Host', name: 'proxyFieldWsHost', desc: '', args: []);
+    return Intl.message(
+      'WS Host',
+      name: 'proxyFieldWsHost',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `gRPC service name`
   String get proxyFieldGrpcService {
-    return Intl.message('gRPC service name', name: 'proxyFieldGrpcService', desc: '', args: []);
+    return Intl.message(
+      'gRPC service name',
+      name: 'proxyFieldGrpcService',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `SNI`
@@ -5812,77 +6012,152 @@ class AppLocalizations {
 
   /// `Enable Reality`
   String get proxyFieldReality {
-    return Intl.message('Enable Reality', name: 'proxyFieldReality', desc: '', args: []);
+    return Intl.message(
+      'Enable Reality',
+      name: 'proxyFieldReality',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Reality public key`
   String get proxyFieldPublicKey {
-    return Intl.message('Reality public key', name: 'proxyFieldPublicKey', desc: '', args: []);
+    return Intl.message(
+      'Reality public key',
+      name: 'proxyFieldPublicKey',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Reality Short ID`
   String get proxyFieldShortId {
-    return Intl.message('Reality Short ID', name: 'proxyFieldShortId', desc: '', args: []);
+    return Intl.message(
+      'Reality Short ID',
+      name: 'proxyFieldShortId',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Client fingerprint`
   String get proxyFieldFingerprint {
-    return Intl.message('Client fingerprint', name: 'proxyFieldFingerprint', desc: '', args: []);
+    return Intl.message(
+      'Client fingerprint',
+      name: 'proxyFieldFingerprint',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Obfuscation`
   String get proxyFieldObfs {
-    return Intl.message('Obfuscation', name: 'proxyFieldObfs', desc: '', args: []);
+    return Intl.message(
+      'Obfuscation',
+      name: 'proxyFieldObfs',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Obfuscation password`
   String get proxyFieldObfsPassword {
-    return Intl.message('Obfuscation password', name: 'proxyFieldObfsPassword', desc: '', args: []);
+    return Intl.message(
+      'Obfuscation password',
+      name: 'proxyFieldObfsPassword',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Upload bandwidth`
   String get proxyFieldUp {
-    return Intl.message('Upload bandwidth', name: 'proxyFieldUp', desc: '', args: []);
+    return Intl.message(
+      'Upload bandwidth',
+      name: 'proxyFieldUp',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Download bandwidth`
   String get proxyFieldDown {
-    return Intl.message('Download bandwidth', name: 'proxyFieldDown', desc: '', args: []);
+    return Intl.message(
+      'Download bandwidth',
+      name: 'proxyFieldDown',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Target profile`
   String get addNodeTargetProfile {
-    return Intl.message('Target profile', name: 'addNodeTargetProfile', desc: '', args: []);
+    return Intl.message(
+      'Target profile',
+      name: 'addNodeTargetProfile',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Smart anti-detection`
   String get smartAntidetection {
-    return Intl.message('Smart anti-detection', name: 'smartAntidetection', desc: '', args: []);
+    return Intl.message(
+      'Smart anti-detection',
+      name: 'smartAntidetection',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Automatically fills in TLS fingerprints and other anti-detection parameters, and retries with a different fingerprint when a node fails to connect. No manual setup.`
   String get smartAntidetectionDesc {
-    return Intl.message('Automatically fills in TLS fingerprints and other anti-detection parameters, and retries with a different fingerprint when a node fails to connect. No manual setup.', name: 'smartAntidetectionDesc', desc: '', args: []);
+    return Intl.message(
+      'Automatically fills in TLS fingerprints and other anti-detection parameters, and retries with a different fingerprint when a node fails to connect. No manual setup.',
+      name: 'smartAntidetectionDesc',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `ALPN (comma separated)`
   String get proxyFieldAlpn {
-    return Intl.message('ALPN (comma separated)', name: 'proxyFieldAlpn', desc: '', args: []);
+    return Intl.message(
+      'ALPN (comma separated)',
+      name: 'proxyFieldAlpn',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Port range (e.g. 20000-30000)`
   String get proxyFieldPorts {
-    return Intl.message('Port range (e.g. 20000-30000)', name: 'proxyFieldPorts', desc: '', args: []);
+    return Intl.message(
+      'Port range (e.g. 20000-30000)',
+      name: 'proxyFieldPorts',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Hop interval (s)`
   String get proxyFieldHopInterval {
-    return Intl.message('Hop interval (s)', name: 'proxyFieldHopInterval', desc: '', args: []);
+    return Intl.message(
+      'Hop interval (s)',
+      name: 'proxyFieldHopInterval',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Manage nodes`
   String get manageNodes {
-    return Intl.message('Manage nodes', name: 'manageNodes', desc: '', args: []);
+    return Intl.message(
+      'Manage nodes',
+      name: 'manageNodes',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Delete node`
@@ -5892,42 +6167,82 @@ class AppLocalizations {
 
   /// `The node will be removed from the profile and all its references cleaned up. Delete it?`
   String get deleteNodeConfirm {
-    return Intl.message('The node will be removed from the profile and all its references cleaned up. Delete it?', name: 'deleteNodeConfirm', desc: '', args: []);
+    return Intl.message(
+      'The node will be removed from the profile and all its references cleaned up. Delete it?',
+      name: 'deleteNodeConfirm',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Deleted nodes:`
   String get deleteNodeSuccess {
-    return Intl.message('Deleted nodes:', name: 'deleteNodeSuccess', desc: '', args: []);
+    return Intl.message(
+      'Deleted nodes:',
+      name: 'deleteNodeSuccess',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `These nodes were not found (possibly already deleted):`
   String get deleteNodeMissing {
-    return Intl.message('These nodes were not found (possibly already deleted):', name: 'deleteNodeMissing', desc: '', args: []);
+    return Intl.message(
+      'These nodes were not found (possibly already deleted):',
+      name: 'deleteNodeMissing',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `No nodes in this profile yet`
   String get noProxyNodes {
-    return Intl.message('No nodes in this profile yet', name: 'noProxyNodes', desc: '', args: []);
+    return Intl.message(
+      'No nodes in this profile yet',
+      name: 'noProxyNodes',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Delete selected`
   String get deleteSelected {
-    return Intl.message('Delete selected', name: 'deleteSelected', desc: '', args: []);
+    return Intl.message(
+      'Delete selected',
+      name: 'deleteSelected',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `The selected nodes will be removed from the profile and all their references cleaned up. Delete them?`
   String get deleteNodesConfirm {
-    return Intl.message('The selected nodes will be removed from the profile and all their references cleaned up. Delete them?', name: 'deleteNodesConfirm', desc: '', args: []);
+    return Intl.message(
+      'The selected nodes will be removed from the profile and all their references cleaned up. Delete them?',
+      name: 'deleteNodesConfirm',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Last update failed`
   String get updateFailedTip {
-    return Intl.message('Last update failed', name: 'updateFailedTip', desc: '', args: []);
+    return Intl.message(
+      'Last update failed',
+      name: 'updateFailedTip',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Failed to load proxy groups. Check the config or restart the core`
   String get groupsUpdateFailedTip {
-    return Intl.message('Failed to load proxy groups. Check the config or restart the core', name: 'groupsUpdateFailedTip', desc: '', args: []);
+    return Intl.message(
+      'Failed to load proxy groups. Check the config or restart the core',
+      name: 'groupsUpdateFailedTip',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Edit node`
@@ -5937,37 +6252,72 @@ class AppLocalizations {
 
   /// `Node updated`
   String get editNodeSuccess {
-    return Intl.message('Node updated', name: 'editNodeSuccess', desc: '', args: []);
+    return Intl.message(
+      'Node updated',
+      name: 'editNodeSuccess',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Favorite node`
   String get favoriteNode {
-    return Intl.message('Favorite node', name: 'favoriteNode', desc: '', args: []);
+    return Intl.message(
+      'Favorite node',
+      name: 'favoriteNode',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Unfavorite node`
   String get unfavoriteNode {
-    return Intl.message('Unfavorite node', name: 'unfavoriteNode', desc: '', args: []);
+    return Intl.message(
+      'Unfavorite node',
+      name: 'unfavoriteNode',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Auto exit test`
   String get autoExitTest {
-    return Intl.message('Auto exit test', name: 'autoExitTest', desc: '', args: []);
+    return Intl.message(
+      'Auto exit test',
+      name: 'autoExitTest',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Re-tests nodes without fresh records once a day to keep region labels accurate; recent results are skipped`
   String get autoExitTestDesc {
-    return Intl.message('Re-tests nodes without fresh records once a day to keep region labels accurate; recent results are skipped', name: 'autoExitTestDesc', desc: '', args: []);
+    return Intl.message(
+      'Re-tests nodes without fresh records once a day to keep region labels accurate; recent results are skipped',
+      name: 'autoExitTestDesc',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Node "{name}" copied to the target profile`
   String proxyChainNodeCopied(Object name) {
-    return Intl.message('Node "$name" copied to the target profile', name: 'proxyChainNodeCopied', desc: '', args: [name]);
+    return Intl.message(
+      'Node "$name" copied to the target profile',
+      name: 'proxyChainNodeCopied',
+      desc: '',
+      args: [name],
+    );
   }
 
   /// `An identical node already exists in the target profile; reusing "{name}"`
   String proxyChainNodeReused(Object name) {
-    return Intl.message('An identical node already exists in the target profile; reusing "$name"', name: 'proxyChainNodeReused', desc: '', args: [name]);
+    return Intl.message(
+      'An identical node already exists in the target profile; reusing "$name"',
+      name: 'proxyChainNodeReused',
+      desc: '',
+      args: [name],
+    );
   }
 
   /// `Proxy Chain`
@@ -5992,7 +6342,12 @@ class AppLocalizations {
 
   /// `Proxy chain "{name}" created`
   String proxyChainCreated(Object name) {
-    return Intl.message('Proxy chain "$name" created', name: 'proxyChainCreated', desc: '', args: [name]);
+    return Intl.message(
+      'Proxy chain "$name" created',
+      name: 'proxyChainCreated',
+      desc: '',
+      args: [name],
+    );
   }
 
   /// `Only the 20 fastest nodes per profile are listed; use search to find more`
@@ -6012,12 +6367,22 @@ class AppLocalizations {
 
   /// `Open in browser`
   String get openInBrowser {
-    return Intl.message('Open in browser', name: 'openInBrowser', desc: '', args: []);
+    return Intl.message(
+      'Open in browser',
+      name: 'openInBrowser',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Failed to load the page`
   String get activityLoadFailed {
-    return Intl.message('Failed to load the page', name: 'activityLoadFailed', desc: '', args: []);
+    return Intl.message(
+      'Failed to load the page',
+      name: 'activityLoadFailed',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Retry`
@@ -6027,27 +6392,48 @@ class AppLocalizations {
 
   /// `Connections`
   String get connectionsStat {
-    return Intl.message('Connections', name: 'connectionsStat', desc: '', args: []);
+    return Intl.message(
+      'Connections',
+      name: 'connectionsStat',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Active`
   String get activeConnections {
-    return Intl.message('Active', name: 'activeConnections', desc: '', args: []);
+    return Intl.message(
+      'Active',
+      name: 'activeConnections',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Speed`
-  String get proxySpeedTest {
-    return Intl.message('Speed', name: 'proxySpeedTest', desc: '', args: []);
-  }
 
   /// `Download test: fetches a sample file through this node to measure real bandwidth (transfer time only, no handshake; the result is valid for this session)`
-  String get proxySpeedTestHint {
-    return Intl.message('Download test: fetches a sample file through this node to measure real bandwidth (transfer time only, no handshake; the result is valid for this session)', name: 'proxySpeedTestHint', desc: '', args: []);
-  }
 
   /// `Failed`
-  String get proxySpeedTestFailed {
-    return Intl.message('Failed', name: 'proxySpeedTestFailed', desc: '', args: []);
+
+  /// `Process`
+  String get connectionsFilterProcess {
+    return Intl.message('Process', name: 'connectionsFilterProcess', desc: '', args: []);
+  }
+
+  /// `Node`
+  String get connectionsFilterChain {
+    return Intl.message('Node', name: 'connectionsFilterChain', desc: '', args: []);
+  }
+
+  /// `Rule`
+  String get connectionsFilterRule {
+    return Intl.message('Rule', name: 'connectionsFilterRule', desc: '', args: []);
+  }
+
+  /// `Close filtered`
+  String get connectionsCloseFiltered {
+    return Intl.message('Close filtered', name: 'connectionsCloseFiltered', desc: '', args: []);
   }
 }
 

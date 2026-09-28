@@ -759,7 +759,8 @@
   "retry": "Повторить",
   "connectionsStat": "Статистика соединений",
   "activeConnections": "Активные",
-  "proxySpeedTest": "Скорость",
-  "proxySpeedTestHint": "Тест загрузки: скачивает файл через этот узел, чтобы измерить реальную пропускную способность (только время передачи, без рукопожатия; результат действует в текущем сеансе)",
-  "proxySpeedTestFailed": "Ошибка"
+  "connectionsFilterProcess": "Процесс",
+  "connectionsFilterChain": "Узел",
+  "connectionsFilterRule": "Правило",
+  "connectionsCloseFiltered": "Закрыть отфильтрованные"
 }

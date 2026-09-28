@@ -107,7 +107,8 @@ class MessageLookup extends MessageLookupByLibrary {
       "${Intl.plural(count, one: '1 year ago', other: '${count} years ago')}";
 
   static String m35(name) => "Node \"${name}\" copied to the target profile";
-  static String m36(name) => "An identical node already exists in the target profile; reusing \"${name}\"";
+  static String m36(name) =>
+      "An identical node already exists in the target profile; reusing \"${name}\"";
 
   static String m37(name) => "Proxy chain \"${name}\" created";
 
@@ -606,10 +607,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "inputRuleContent": MessageLookupByLibrary.simpleMessage(
       "Enter the rule content",
     ),
-    "installedAppsPermissionDeniedMessage":
-        MessageLookupByLibrary.simpleMessage(
-          "The app list permission was denied, so installed apps cannot be listed. Please grant it manually in system settings.",
-        ),
+    "installedAppsPermissionDeniedMessage": MessageLookupByLibrary.simpleMessage(
+      "The app list permission was denied, so installed apps cannot be listed. Please grant it manually in system settings.",
+    ),
     "installedAppsPermissionDesc": MessageLookupByLibrary.simpleMessage(
       "This system hides the installed app list until the permission is granted. Authorize it to configure the per-app proxy.",
     ),
@@ -1299,41 +1299,89 @@ class MessageLookup extends MessageLookupByLibrary {
     "zhCN": MessageLookupByLibrary.simpleMessage("Simplified Chinese"),
     "proxyRegionAll": MessageLookupByLibrary.simpleMessage("All"),
     "proxyRegionCdn": MessageLookupByLibrary.simpleMessage("CF relay"),
-    "proxyRegionFilter": MessageLookupByLibrary.simpleMessage("Filter by region"),
-    "generateRegionGroups": MessageLookupByLibrary.simpleMessage("Group by region"),
-    "generateRegionGroupsTip": MessageLookupByLibrary.simpleMessage("Sorts nodes into strategy groups by egress region so a region's nodes are quick to find. The groups live in the override data, so updating the subscription keeps them."),
-    "generateRegionGroupsPreview": MessageLookupByLibrary.simpleMessage("Groups to create"),
-    "generateRegionGroupsUnknown": MessageLookupByLibrary.simpleMessage("Nodes with an unrecognised region are not grouped"),
-    "generateRegionGroupsKeep": MessageLookupByLibrary.simpleMessage("Left as is"),
-    "generateRegionGroupsRemoveTip": MessageLookupByLibrary.simpleMessage("These groups reference nodes that no longer exist; keeping them makes the whole config fail to load"),
-    "generateRegionGroupsDone": MessageLookupByLibrary.simpleMessage("Region groups created"),
-    "generateRegionGroupsEmpty": MessageLookupByLibrary.simpleMessage("No recognisable regions"),
+    "proxyRegionFilter": MessageLookupByLibrary.simpleMessage(
+      "Filter by region",
+    ),
+    "generateRegionGroups": MessageLookupByLibrary.simpleMessage(
+      "Group by region",
+    ),
+    "generateRegionGroupsTip": MessageLookupByLibrary.simpleMessage(
+      "Sorts nodes into strategy groups by egress region so a region's nodes are quick to find. The groups live in the override data, so updating the subscription keeps them.",
+    ),
+    "generateRegionGroupsPreview": MessageLookupByLibrary.simpleMessage(
+      "Groups to create",
+    ),
+    "generateRegionGroupsUnknown": MessageLookupByLibrary.simpleMessage(
+      "Nodes with an unrecognised region are not grouped",
+    ),
+    "generateRegionGroupsKeep": MessageLookupByLibrary.simpleMessage(
+      "Left as is",
+    ),
+    "generateRegionGroupsRemoveTip": MessageLookupByLibrary.simpleMessage(
+      "These groups reference nodes that no longer exist; keeping them makes the whole config fail to load",
+    ),
+    "generateRegionGroupsDone": MessageLookupByLibrary.simpleMessage(
+      "Region groups created",
+    ),
+    "generateRegionGroupsEmpty": MessageLookupByLibrary.simpleMessage(
+      "No recognisable regions",
+    ),
     "proxyExitTest": MessageLookupByLibrary.simpleMessage("Test exit"),
-    "proxyExitTestHint": MessageLookupByLibrary.simpleMessage("Test exit: measure the real exit region of this node"),
+    "proxyExitTestHint": MessageLookupByLibrary.simpleMessage(
+      "Test exit: measure the real exit region of this node",
+    ),
     "proxyExitFailed": MessageLookupByLibrary.simpleMessage("Failed"),
-    "proxyExitMismatch": MessageLookupByLibrary.simpleMessage("Differs from the region in its name"),
-    "connectionStateDisconnected": MessageLookupByLibrary.simpleMessage("Disconnected"),
-    "connectionStateConnecting": MessageLookupByLibrary.simpleMessage("Connecting…"),
-    "connectionStateConnected": MessageLookupByLibrary.simpleMessage("Connected"),
-    "connectionHeroTapToConnect": MessageLookupByLibrary.simpleMessage("Tap to connect"),
-    "connectionHeroTapToDisconnect": MessageLookupByLibrary.simpleMessage("Tap to disconnect"),
+    "proxyExitMismatch": MessageLookupByLibrary.simpleMessage(
+      "Differs from the region in its name",
+    ),
+    "connectionStateDisconnected": MessageLookupByLibrary.simpleMessage(
+      "Disconnected",
+    ),
+    "connectionStateConnecting": MessageLookupByLibrary.simpleMessage(
+      "Connecting…",
+    ),
+    "connectionStateConnected": MessageLookupByLibrary.simpleMessage(
+      "Connected",
+    ),
+    "connectionHeroTapToConnect": MessageLookupByLibrary.simpleMessage(
+      "Tap to connect",
+    ),
+    "connectionHeroTapToDisconnect": MessageLookupByLibrary.simpleMessage(
+      "Tap to disconnect",
+    ),
     "intentGroups": MessageLookupByLibrary.simpleMessage("Intent groups"),
-    "intentGroupsTip": MessageLookupByLibrary.simpleMessage("Route matching domains into a dedicated group per intent: checking one creates its group and rules (rules go before the subscription rules), unchecking removes both."),
+    "intentGroupsTip": MessageLookupByLibrary.simpleMessage(
+      "Route matching domains into a dedicated group per intent: checking one creates its group and rules (rules go before the subscription rules), unchecking removes both.",
+    ),
     "intentStreaming": MessageLookupByLibrary.simpleMessage("Streaming"),
     "intentAi": MessageLookupByLibrary.simpleMessage("AI services"),
     "intentSocial": MessageLookupByLibrary.simpleMessage("Social"),
-    "intentGroupsDone": MessageLookupByLibrary.simpleMessage("Intent groups applied"),
-    "bestPresetTitle": MessageLookupByLibrary.simpleMessage("Restore recommended settings"),
-    "bestPresetDesc": MessageLookupByLibrary.simpleMessage("Pick the best takeover mode for this device automatically"),
-    "bestPresetFirstRunTip": MessageLookupByLibrary.simpleMessage("We can pick the takeover mode that fits this device: TUN mode when the device grants the needed privileges, otherwise the system proxy. Apply now?"),
+    "intentGroupsDone": MessageLookupByLibrary.simpleMessage(
+      "Intent groups applied",
+    ),
+    "bestPresetTitle": MessageLookupByLibrary.simpleMessage(
+      "Restore recommended settings",
+    ),
+    "bestPresetDesc": MessageLookupByLibrary.simpleMessage(
+      "Pick the best takeover mode for this device automatically",
+    ),
+    "bestPresetFirstRunTip": MessageLookupByLibrary.simpleMessage(
+      "We can pick the takeover mode that fits this device: TUN mode when the device grants the needed privileges, otherwise the system proxy. Apply now?",
+    ),
     "bestPresetApply": MessageLookupByLibrary.simpleMessage("Apply"),
-    "bestPresetTunApplied": MessageLookupByLibrary.simpleMessage("TUN mode is now enabled"),
-    "bestPresetSystemProxyApplied": MessageLookupByLibrary.simpleMessage("System proxy is now enabled (the app is not running as administrator, so TUN is unavailable; restart it as administrator to use TUN)"),
+    "bestPresetTunApplied": MessageLookupByLibrary.simpleMessage(
+      "TUN mode is now enabled",
+    ),
+    "bestPresetSystemProxyApplied": MessageLookupByLibrary.simpleMessage(
+      "System proxy is now enabled (the app is not running as administrator, so TUN is unavailable; restart it as administrator to use TUN)",
+    ),
     "addNodePasteMode": MessageLookupByLibrary.simpleMessage("Paste"),
     "addNodeManualMode": MessageLookupByLibrary.simpleMessage("Manual entry"),
     "addNodeProtocol": MessageLookupByLibrary.simpleMessage("Protocol"),
     "proxyFormAdvanced": MessageLookupByLibrary.simpleMessage("Advanced"),
-    "proxyFormMissingRequired": MessageLookupByLibrary.simpleMessage("Required fields are missing"),
+    "proxyFormMissingRequired": MessageLookupByLibrary.simpleMessage(
+      "Required fields are missing",
+    ),
     "proxyFormOptionNone": MessageLookupByLibrary.simpleMessage("None"),
     "proxyFieldName": MessageLookupByLibrary.simpleMessage("Node name"),
     "proxyFieldServer": MessageLookupByLibrary.simpleMessage("Server"),
@@ -1345,57 +1393,104 @@ class MessageLookup extends MessageLookupByLibrary {
     "proxyFieldCipher": MessageLookupByLibrary.simpleMessage("Cipher"),
     "proxyFieldUdp": MessageLookupByLibrary.simpleMessage("Enable UDP"),
     "proxyFieldTls": MessageLookupByLibrary.simpleMessage("TLS"),
-    "proxyFieldSkipCertVerify": MessageLookupByLibrary.simpleMessage("Skip certificate verification"),
+    "proxyFieldSkipCertVerify": MessageLookupByLibrary.simpleMessage(
+      "Skip certificate verification",
+    ),
     "proxyFieldNetwork": MessageLookupByLibrary.simpleMessage("Transport"),
     "proxyFieldWsPath": MessageLookupByLibrary.simpleMessage("WS path"),
     "proxyFieldWsHost": MessageLookupByLibrary.simpleMessage("WS Host"),
-    "proxyFieldGrpcService": MessageLookupByLibrary.simpleMessage("gRPC service name"),
+    "proxyFieldGrpcService": MessageLookupByLibrary.simpleMessage(
+      "gRPC service name",
+    ),
     "proxyFieldSni": MessageLookupByLibrary.simpleMessage("SNI"),
     "proxyFieldFlow": MessageLookupByLibrary.simpleMessage("Flow"),
     "proxyFieldReality": MessageLookupByLibrary.simpleMessage("Enable Reality"),
-    "proxyFieldPublicKey": MessageLookupByLibrary.simpleMessage("Reality public key"),
-    "proxyFieldShortId": MessageLookupByLibrary.simpleMessage("Reality Short ID"),
-    "proxyFieldFingerprint": MessageLookupByLibrary.simpleMessage("Client fingerprint"),
+    "proxyFieldPublicKey": MessageLookupByLibrary.simpleMessage(
+      "Reality public key",
+    ),
+    "proxyFieldShortId": MessageLookupByLibrary.simpleMessage(
+      "Reality Short ID",
+    ),
+    "proxyFieldFingerprint": MessageLookupByLibrary.simpleMessage(
+      "Client fingerprint",
+    ),
     "proxyFieldObfs": MessageLookupByLibrary.simpleMessage("Obfuscation"),
-    "proxyFieldObfsPassword": MessageLookupByLibrary.simpleMessage("Obfuscation password"),
+    "proxyFieldObfsPassword": MessageLookupByLibrary.simpleMessage(
+      "Obfuscation password",
+    ),
     "proxyFieldUp": MessageLookupByLibrary.simpleMessage("Upload bandwidth"),
-    "proxyFieldDown": MessageLookupByLibrary.simpleMessage("Download bandwidth"),
-    "addNodeTargetProfile": MessageLookupByLibrary.simpleMessage("Target profile"),
-    "smartAntidetection": MessageLookupByLibrary.simpleMessage("Smart anti-detection"),
-    "smartAntidetectionDesc": MessageLookupByLibrary.simpleMessage("Automatically fills in TLS fingerprints and other anti-detection parameters, and retries with a different fingerprint when a node fails to connect. No manual setup."),
-    "proxyFieldAlpn": MessageLookupByLibrary.simpleMessage("ALPN (comma separated)"),
-    "proxyFieldPorts": MessageLookupByLibrary.simpleMessage("Port range (e.g. 20000-30000)"),
-    "proxyFieldHopInterval": MessageLookupByLibrary.simpleMessage("Hop interval (s)"),
+    "proxyFieldDown": MessageLookupByLibrary.simpleMessage(
+      "Download bandwidth",
+    ),
+    "addNodeTargetProfile": MessageLookupByLibrary.simpleMessage(
+      "Target profile",
+    ),
+    "smartAntidetection": MessageLookupByLibrary.simpleMessage(
+      "Smart anti-detection",
+    ),
+    "smartAntidetectionDesc": MessageLookupByLibrary.simpleMessage(
+      "Automatically fills in TLS fingerprints and other anti-detection parameters, and retries with a different fingerprint when a node fails to connect. No manual setup.",
+    ),
+    "proxyFieldAlpn": MessageLookupByLibrary.simpleMessage(
+      "ALPN (comma separated)",
+    ),
+    "proxyFieldPorts": MessageLookupByLibrary.simpleMessage(
+      "Port range (e.g. 20000-30000)",
+    ),
+    "proxyFieldHopInterval": MessageLookupByLibrary.simpleMessage(
+      "Hop interval (s)",
+    ),
     "manageNodes": MessageLookupByLibrary.simpleMessage("Manage nodes"),
     "deleteNode": MessageLookupByLibrary.simpleMessage("Delete node"),
-    "deleteNodeConfirm": MessageLookupByLibrary.simpleMessage("The node will be removed from the profile and all its references cleaned up. Delete it?"),
+    "deleteNodeConfirm": MessageLookupByLibrary.simpleMessage(
+      "The node will be removed from the profile and all its references cleaned up. Delete it?",
+    ),
     "deleteNodeSuccess": MessageLookupByLibrary.simpleMessage("Deleted nodes:"),
-    "deleteNodeMissing": MessageLookupByLibrary.simpleMessage("These nodes were not found (possibly already deleted):"),
-    "noProxyNodes": MessageLookupByLibrary.simpleMessage("No nodes in this profile yet"),
+    "deleteNodeMissing": MessageLookupByLibrary.simpleMessage(
+      "These nodes were not found (possibly already deleted):",
+    ),
+    "noProxyNodes": MessageLookupByLibrary.simpleMessage(
+      "No nodes in this profile yet",
+    ),
     "deleteSelected": MessageLookupByLibrary.simpleMessage("Delete selected"),
-    "deleteNodesConfirm": MessageLookupByLibrary.simpleMessage("The selected nodes will be removed from the profile and all their references cleaned up. Delete them?"),
-    "updateFailedTip": MessageLookupByLibrary.simpleMessage("Last update failed"),
-    "groupsUpdateFailedTip": MessageLookupByLibrary.simpleMessage("Failed to load proxy groups. Check the config or restart the core"),
+    "deleteNodesConfirm": MessageLookupByLibrary.simpleMessage(
+      "The selected nodes will be removed from the profile and all their references cleaned up. Delete them?",
+    ),
+    "updateFailedTip": MessageLookupByLibrary.simpleMessage(
+      "Last update failed",
+    ),
+    "groupsUpdateFailedTip": MessageLookupByLibrary.simpleMessage(
+      "Failed to load proxy groups. Check the config or restart the core",
+    ),
     "editNode": MessageLookupByLibrary.simpleMessage("Edit node"),
     "editNodeSuccess": MessageLookupByLibrary.simpleMessage("Node updated"),
     "favoriteNode": MessageLookupByLibrary.simpleMessage("Favorite node"),
     "unfavoriteNode": MessageLookupByLibrary.simpleMessage("Unfavorite node"),
     "autoExitTest": MessageLookupByLibrary.simpleMessage("Auto exit test"),
-    "autoExitTestDesc": MessageLookupByLibrary.simpleMessage("Re-tests nodes without fresh records once a day to keep region labels accurate; recent results are skipped"),
+    "autoExitTestDesc": MessageLookupByLibrary.simpleMessage(
+      "Re-tests nodes without fresh records once a day to keep region labels accurate; recent results are skipped",
+    ),
     "proxyChainNodeCopied": m35,
     "proxyChainNodeReused": m36,
-    "proxyChainDefaultName": MessageLookupByLibrary.simpleMessage("Proxy Chain"),
+    "proxyChainDefaultName": MessageLookupByLibrary.simpleMessage(
+      "Proxy Chain",
+    ),
     "proxyChainNameLabel": MessageLookupByLibrary.simpleMessage("Chain name"),
     "proxyChainCreated": m37,
-    "proxyChainPickerTopHint": MessageLookupByLibrary.simpleMessage("Only the 20 fastest nodes per profile are listed; use search to find more"),
+    "proxyChainPickerTopHint": MessageLookupByLibrary.simpleMessage(
+      "Only the 20 fastest nodes per profile are listed; use search to find more",
+    ),
     "activity": MessageLookupByLibrary.simpleMessage("Activities"),
     "openInBrowser": MessageLookupByLibrary.simpleMessage("Open in browser"),
-    "activityLoadFailed": MessageLookupByLibrary.simpleMessage("Failed to load the page"),
+    "activityLoadFailed": MessageLookupByLibrary.simpleMessage(
+      "Failed to load the page",
+    ),
     "retry": MessageLookupByLibrary.simpleMessage("Retry"),
     "connectionsStat": MessageLookupByLibrary.simpleMessage("Connections"),
     "activeConnections": MessageLookupByLibrary.simpleMessage("Active"),
-    "proxySpeedTest": MessageLookupByLibrary.simpleMessage("Speed"),
-    "proxySpeedTestHint": MessageLookupByLibrary.simpleMessage("Download test: fetches a sample file through this node to measure real bandwidth (transfer time only, no handshake; the result is valid for this session)"),
-    "proxySpeedTestFailed": MessageLookupByLibrary.simpleMessage("Failed"),
+    "connectionsFilterProcess": MessageLookupByLibrary.simpleMessage("Process"),
+    "connectionsFilterChain": MessageLookupByLibrary.simpleMessage("Node"),
+    "connectionsFilterRule": MessageLookupByLibrary.simpleMessage("Rule"),
+    "connectionsCloseFiltered": MessageLookupByLibrary.simpleMessage("Close filtered"),
   };
 }
