@@ -1,5 +1,12 @@
 # Changelog
 
+## v01.00.24 (2026-09-28)
+
+**Features**
+
+- **settings** Settings sections are now grouped into rounded cards across all settings pages (basic/network/dns config, access, about, dns leak, proxies settings and quick options) instead of flat dividers (34b9b9a)
+- **dashboard** Connected state on the home hero card gains a subtle primary gradient; subscription cards color the traffic bar amber at 75% and red at 90% usage and fall back to a short expiry date on narrow cards (b1cb28c)
+
 ## v01.00.23 (2026-09-28)
 
 **Features**

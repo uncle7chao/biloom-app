@@ -2,6 +2,29 @@
   "schemaVersion": 2,
   "versions": [
     {
+      "version": "01.00.24",
+      "tag": "v01.00.24",
+      "date": "2026-09-28",
+      "prerelease": false,
+      "groups": [
+        {
+          "type": "feat",
+          "entries": [
+            {
+              "id": "34b9b9a",
+              "scope": "settings",
+              "text": "Settings sections are now grouped into rounded cards across all settings pages (basic/network/dns config, access, about, dns leak, proxies settings and quick options) instead of flat dividers"
+            },
+            {
+              "id": "b1cb28c",
+              "scope": "dashboard",
+              "text": "Connected state on the home hero card gains a subtle primary gradient; subscription cards color the traffic bar amber at 75% and red at 90% usage and fall back to a short expiry date on narrow cards"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "version": "01.00.23",
       "tag": "v01.00.23",
       "date": "2026-09-28",
