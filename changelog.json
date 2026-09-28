@@ -2,6 +2,24 @@
   "schemaVersion": 2,
   "versions": [
     {
+      "version": "01.00.25",
+      "tag": "v01.00.25",
+      "date": "2026-09-28",
+      "prerelease": false,
+      "groups": [
+        {
+          "type": "feat",
+          "entries": [
+            {
+              "id": "0875096",
+              "scope": "proxies",
+              "text": "Proxy chains are now selectable directly in the node-selection group and in GLOBAL, so exactly one choice is active at a time in either mode: picking a chain routes traffic through it, picking a plain node bypasses it, and the chain tab stays as the management panel"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "version": "01.00.24",
       "tag": "v01.00.24",
       "date": "2026-09-28",

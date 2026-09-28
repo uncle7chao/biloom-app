@@ -1,5 +1,11 @@
 # Changelog
 
+## v01.00.25 (2026-09-28)
+
+**Features**
+
+- **proxies** Proxy chains are now selectable directly in the node-selection group and in GLOBAL, so exactly one choice is active at a time in either mode: picking a chain routes traffic through it, picking a plain node bypasses it, and the chain tab stays as the management panel (0875096)
+
 ## v01.00.24 (2026-09-28)
 
 **Features**
