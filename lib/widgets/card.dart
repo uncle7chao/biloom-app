@@ -98,6 +98,7 @@ class CommonCard extends StatelessWidget {
     this.isError = false,
     this.enterActionsOnRight = false,
     this.skipTraversal = false,
+    this.highlightSelected = false,
     required this.child,
   }) : isSelected = isSelected ?? false;
 
@@ -106,6 +107,7 @@ class CommonCard extends StatelessWidget {
   final bool skipTraversal;
   final bool isSelected;
   final bool isError;
+  final bool highlightSelected;
   final void Function()? onPressed;
   final void Function()? onLongPress;
   final Widget? selectWidget;
@@ -137,6 +139,11 @@ class CommonCard extends StatelessWidget {
       );
     }
     if (type == CommonCardType.filled) {
+      // 「当前生效」强化：filled 默认无描边，但调用方可要求选中卡带一圈
+      // 品牌色细描边（代理页节点卡用），让扫一眼就能锁到当前生效的节点。
+      if (highlightSelected && isSelected) {
+        return BorderSide(color: colorScheme.primary, width: 1);
+      }
       return BorderSide.none;
     }
     final hoverColor = isSelected

@@ -225,28 +225,35 @@ class ProxiesTabViewState extends ConsumerState<ProxiesTabView>
                 return Stack(
                   alignment: AlignmentDirectional.centerStart,
                   children: [
-                    TabBar(
-                      controller: _tabController,
-                      padding: EdgeInsets.only(
-                        left: 16,
-                        right: 16 + (value ? 16 : 0),
-                      ),
-                      dividerColor: Colors.transparent,
-                      isScrollable: true,
-                      tabAlignment: TabAlignment.start,
-                      tabs: [
-                        for (final group in groups)
-                          Tab(
-                            child: Builder(
-                              builder: (context) {
-                                return EmojiText(
-                                  group.name,
-                                  style: DefaultTextStyle.of(context).style,
-                                );
-                              },
-                            ),
+                    AnimatedBuilder(
+                      animation: _tabController!,
+                      builder: (_, _) {
+                        return TabBar(
+                          controller: _tabController,
+                          padding: EdgeInsets.only(
+                            left: 16,
+                            right: 16 + (value ? 16 : 0),
                           ),
-                      ],
+                          dividerColor: Colors.transparent,
+                          // 选中态交给页签自己的胶囊（与地区筛选 chip 同一套
+                          // 语言），内核下划线指示器整个撤掉。
+                          indicator: const BoxDecoration(),
+                          isScrollable: true,
+                          tabAlignment: TabAlignment.start,
+                          labelPadding: const EdgeInsets.symmetric(
+                            horizontal: 3,
+                          ),
+                          tabs: [
+                            for (var i = 0; i < groups.length; i++)
+                              Tab(
+                                child: _ProxyTabPill(
+                                  name: groups[i].name,
+                                  selected: i == _tabController!.index,
+                                ),
+                              ),
+                          ],
+                        );
+                      },
                     ),
                     if (value) Positioned(right: 0, child: child!),
                   ],
@@ -261,7 +268,8 @@ class ProxiesTabViewState extends ConsumerState<ProxiesTabView>
                       context.colorScheme.surface.opacity10,
                       context.colorScheme.surface,
                     ],
-                    stops: const [0.0, 0.1],
+                    // 渐变带拉宽：「更多」按钮不再从一条硬边上突然冒出来。
+                    stops: const [0.0, 0.25],
                   ),
                 ),
                 child: _buildMoreButton(),
@@ -347,10 +355,9 @@ List<Proxy> _applyRegionFilter(
   }
   return proxies
       .where(
-        (proxy) => resolveProxyRegionWithLanding(
-          proxy.name,
-          landingByProxy,
-        ).key == effective,
+        (proxy) =>
+            resolveProxyRegionWithLanding(proxy.name, landingByProxy).key ==
+            effective,
       )
       .toList();
 }
@@ -423,7 +430,9 @@ class _ProxyGroupViewState extends ConsumerState<ProxyGroupView> {
       _applyRegionFilter(
         group.all,
         // 用 `read` 拿不到变化 —— 必须先 `watch` 起来，筛选一改这一页才会重建。
-        ref.watch(proxyRegionFilterProvider.select((state) => state[group.name])),
+        ref.watch(
+          proxyRegionFilterProvider.select((state) => state[group.name]),
+        ),
         ref.watch(proxyLandingCodesProvider),
       ),
       favorites,
@@ -536,6 +545,45 @@ class _DelayTestButtonState extends State<DelayTestButton>
         backgroundColor: colorScheme.surfaceContainerHigh,
         foregroundColor: colorScheme.onSurfaceVariant,
         child: const Icon(Icons.network_ping),
+      ),
+    );
+  }
+}
+
+/// 分组页签胶囊：选中 = secondaryContainer 底 + primary 细描边，与地区筛选
+/// chip、节点卡「当前生效」是同一套选中语言（不引入第二套配色）。
+/// 未选中 = 透明底 + 中性字。整体高度压在 TabBar 自身高度内，不改页签条
+/// 的布局尺寸。
+class _ProxyTabPill extends StatelessWidget {
+  final String name;
+  final bool selected;
+
+  const _ProxyTabPill({required this.name, required this.selected});
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = context.colorScheme;
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 5),
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      alignment: AlignmentDirectional.center,
+      decoration: BoxDecoration(
+        color: selected ? colorScheme.secondaryContainer : Colors.transparent,
+        borderRadius: AppRadius.full,
+        border: Border.all(
+          color: selected ? colorScheme.primary : Colors.transparent,
+          width: 0.5,
+        ),
+      ),
+      child: EmojiText(
+        name,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: context.textTheme.labelLarge?.copyWith(
+          color: selected
+              ? colorScheme.onSecondaryContainer
+              : colorScheme.onSurfaceVariant,
+        ),
       ),
     );
   }
