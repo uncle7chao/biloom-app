@@ -1,5 +1,11 @@
 # Changelog
 
+## v01.00.23 (2026-09-28)
+
+**Features**
+
+- **connections** Connections page structured filters: filter the live list by process, node or rule via dropdown chips, close every filtered connection at once, and see process and rule directly on each row instead of inside the details sheet (process values require find-process-mode=always) (60eff6c)
+
 ## v01.00.22 (2026-09-28)
 
 **Features**

@@ -2,6 +2,24 @@
   "schemaVersion": 2,
   "versions": [
     {
+      "version": "01.00.23",
+      "tag": "v01.00.23",
+      "date": "2026-09-28",
+      "prerelease": false,
+      "groups": [
+        {
+          "type": "feat",
+          "entries": [
+            {
+              "id": "60eff6c",
+              "scope": "connections",
+              "text": "Connections page structured filters: filter the live list by process, node or rule via dropdown chips, close every filtered connection at once, and see process and rule directly on each row instead of inside the details sheet (process values require find-process-mode=always)"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "version": "01.00.22",
       "tag": "v01.00.22",
       "date": "2026-09-28",
