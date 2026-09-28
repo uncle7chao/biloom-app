@@ -284,11 +284,6 @@ class ProxyCard extends ConsumerWidget {
                                       onTest: () =>
                                           _handleTestCurrentDelay(ref),
                                     ),
-                                    const SizedBox(width: 6),
-                                    _ProxySpeedButton(
-                                      proxyName: proxy.name,
-                                      compact: isCompact,
-                                    ),
                                   ],
                                 );
                               },
@@ -475,122 +470,6 @@ class _ProxyDelayButton extends ConsumerWidget {
                   maxLines: 1,
                   style: context.textTheme.labelSmall?.copyWith(color: color),
                 ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// 带宽读数的展示口径：≥1 MB/s 用一位小数，之下直接整数 KB/s —— 与主流
-/// 测速工具的习惯一致，也保证胶囊宽度可控（不会出现 123456 KB/s）。
-String _formatProxySpeed(double bytesPerSecond) {
-  if (bytesPerSecond >= 1024 * 1024) {
-    return '${(bytesPerSecond / (1024 * 1024)).toStringAsFixed(1)} MB/s';
-  }
-  return '${(bytesPerSecond / 1024).round()} KB/s';
-}
-
-/// 带宽读数配色：沿用 `getDelayColor` 的三档语义（绿 = 好、琥珀 = 一般、
-/// 红 = 差），档位换算成吞吐：<1 MB/s 红、<5 MB/s 琥珀、往上绿。与延迟
-/// 配色同一个原则 —— 看一眼颜色就知道值不值得选。
-Color? _getSpeedColor(double? bytesPerSecond) {
-  if (bytesPerSecond == null) {
-    return null;
-  }
-  if (bytesPerSecond < 1024 * 1024) {
-    return Colors.red;
-  }
-  if (bytesPerSecond < 5 * 1024 * 1024) {
-    return const Color(0xFFC57F0A);
-  }
-  return Colors.green;
-}
-
-/// 单个节点的「下载测速」按钮。
-///
-/// 与 [_ProxyDelayButton] 同一套外观语言，量的是真带宽不是 ping：
-/// - 没测过：`⬇ 带宽`（入口常驻，看得出来能点）；
-/// - 测速中：圆圈加载，禁点防重复；
-/// - 有结果：`⬇ 12.3 MB/s`，颜色走 [_getSpeedColor]；测不出 → `⬇ 失败`（红）。
-///
-/// 结果**只存会话内**（带宽随时段波动，落库旧值只会误导），重启归零、
-/// 重测即刷新。窄卡模式只留图标，语义由 tooltip 兜底。
-class _ProxySpeedButton extends ConsumerWidget {
-  final String proxyName;
-
-  /// 窄卡模式：只显示图标，不显示文字标签。测试中仍显示转圈。
-  final bool compact;
-
-  const _ProxySpeedButton({required this.proxyName, this.compact = false});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final appLocalizations = context.appLocalizations;
-    final colorScheme = context.colorScheme;
-    final (:testing, :speed, :failed) = ref.watch(
-      proxySpeedProvider.select(
-        (state) => (
-          testing: state.testing.contains(proxyName),
-          speed: state.results[proxyName],
-          failed: state.failed[proxyName],
-        ),
-      ),
-    );
-    final color = failed != null
-        ? Colors.red
-        : _getSpeedColor(speed) ?? colorScheme.onSurfaceVariant;
-    final label = switch ((testing, speed, failed)) {
-      (true, _, _) => null,
-      (_, _, _) when failed != null => appLocalizations.proxySpeedTestFailed,
-      (_, final value?, null) => _formatProxySpeed(value),
-      _ => appLocalizations.proxySpeedTest,
-    };
-    return Tooltip(
-      // 失败时 tooltip 直接给原因 —— 用户报障时这就是第一手证据，
-      // 不用再去翻日志。
-      message: failed ?? appLocalizations.proxySpeedTestHint,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: testing
-              ? null
-              : () => ref.read(proxySpeedProvider.notifier).test(proxyName),
-          borderRadius: AppRadius.xs,
-          child: Container(
-            height: proxyCardMetaHeight,
-            padding: const EdgeInsets.symmetric(horizontal: 6),
-            decoration: BoxDecoration(
-              color: colorScheme.surfaceContainerLow,
-              borderRadius: AppRadius.xs,
-              border: Border.all(
-                color: testing
-                    ? colorScheme.primary
-                    : colorScheme.outlineVariant,
-                width: 0.5,
-              ),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (testing)
-                  const SizedBox(
-                    width: 12,
-                    height: 12,
-                    child: CommonCircleLoading(),
-                  )
-                else
-                  Icon(Icons.download, size: 12, color: color),
-                if (!compact && label != null) ...[
-                  const SizedBox(width: 4),
-                  Text(
-                    label,
-                    maxLines: 1,
-                    style: context.textTheme.labelSmall?.copyWith(color: color),
-                  ),
-                ],
               ],
             ),
           ),
