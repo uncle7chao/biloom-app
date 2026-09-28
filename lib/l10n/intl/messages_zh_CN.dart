@@ -1034,5 +1034,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "openInBrowser": MessageLookupByLibrary.simpleMessage("在浏览器中打开"),
     "activityLoadFailed": MessageLookupByLibrary.simpleMessage("活动页加载失败"),
     "retry": MessageLookupByLibrary.simpleMessage("重试"),
+    "connectionsStat": MessageLookupByLibrary.simpleMessage("连接统计"),
+    "activeConnections": MessageLookupByLibrary.simpleMessage("活动连接"),
+    "proxySpeedTest": MessageLookupByLibrary.simpleMessage("带宽"),
+    "proxySpeedTestHint": MessageLookupByLibrary.simpleMessage("下载测速：经该节点下载样本文件量出真实带宽（只计时传输阶段，不含握手；结果本次会话内有效）"),
+    "proxySpeedTestFailed": MessageLookupByLibrary.simpleMessage("失败"),
   };
 }

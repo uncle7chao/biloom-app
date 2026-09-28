@@ -44,6 +44,10 @@ extension DashboardWidgetView on DashboardWidget {
       crossAxisCellCount: 4,
       child: MemoryInfo(),
     ),
+    DashboardWidget.connectionsStat => const GridItem(
+      crossAxisCellCount: 4,
+      child: ConnectionsStat(),
+    ),
   };
 }
 

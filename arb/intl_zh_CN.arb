@@ -756,5 +756,10 @@
   "activity": "活动",
   "openInBrowser": "在浏览器中打开",
   "activityLoadFailed": "活动页加载失败",
-  "retry": "重试"
+  "retry": "重试",
+  "connectionsStat": "连接统计",
+  "activeConnections": "活动连接",
+  "proxySpeedTest": "带宽",
+  "proxySpeedTestHint": "下载测速：经该节点下载样本文件量出真实带宽（只计时传输阶段，不含握手；结果本次会话内有效）",
+  "proxySpeedTestFailed": "失败"
 }

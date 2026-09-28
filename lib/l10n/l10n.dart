@@ -6024,6 +6024,31 @@ class AppLocalizations {
   String get retry {
     return Intl.message('Retry', name: 'retry', desc: '', args: []);
   }
+
+  /// `Connections`
+  String get connectionsStat {
+    return Intl.message('Connections', name: 'connectionsStat', desc: '', args: []);
+  }
+
+  /// `Active`
+  String get activeConnections {
+    return Intl.message('Active', name: 'activeConnections', desc: '', args: []);
+  }
+
+  /// `Speed`
+  String get proxySpeedTest {
+    return Intl.message('Speed', name: 'proxySpeedTest', desc: '', args: []);
+  }
+
+  /// `Download test: fetches a sample file through this node to measure real bandwidth (transfer time only, no handshake; the result is valid for this session)`
+  String get proxySpeedTestHint {
+    return Intl.message('Download test: fetches a sample file through this node to measure real bandwidth (transfer time only, no handshake; the result is valid for this session)', name: 'proxySpeedTestHint', desc: '', args: []);
+  }
+
+  /// `Failed`
+  String get proxySpeedTestFailed {
+    return Intl.message('Failed', name: 'proxySpeedTestFailed', desc: '', args: []);
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<AppLocalizations> {

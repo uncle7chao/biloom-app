@@ -756,5 +756,10 @@
   "activity": "アクティビティ",
   "openInBrowser": "ブラウザで開く",
   "activityLoadFailed": "ページの読み込みに失敗しました",
-  "retry": "再試行"
+  "retry": "再試行",
+  "connectionsStat": "接続統計",
+  "activeConnections": "アクティブ",
+  "proxySpeedTest": "帯域",
+  "proxySpeedTestHint": "ダウンロード速度テスト：このノード経由でサンプルファイルを取得し、実帯域を測定します（転送時間のみ計測、ハンドシェイクは含まず、結果はこのセッション内で有効）",
+  "proxySpeedTestFailed": "失敗"
 }

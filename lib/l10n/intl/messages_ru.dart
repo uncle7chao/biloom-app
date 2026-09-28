@@ -1460,5 +1460,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "openInBrowser": MessageLookupByLibrary.simpleMessage("Открыть в браузере"),
     "activityLoadFailed": MessageLookupByLibrary.simpleMessage("Не удалось загрузить страницу"),
     "retry": MessageLookupByLibrary.simpleMessage("Повторить"),
+    "connectionsStat": MessageLookupByLibrary.simpleMessage("Статистика соединений"),
+    "activeConnections": MessageLookupByLibrary.simpleMessage("Активные"),
+    "proxySpeedTest": MessageLookupByLibrary.simpleMessage("Скорость"),
+    "proxySpeedTestHint": MessageLookupByLibrary.simpleMessage("Тест загрузки: скачивает файл через этот узел, чтобы измерить реальную пропускную способность (только время передачи, без рукопожатия; результат действует в текущем сеансе)"),
+    "proxySpeedTestFailed": MessageLookupByLibrary.simpleMessage("Ошибка"),
   };
 }

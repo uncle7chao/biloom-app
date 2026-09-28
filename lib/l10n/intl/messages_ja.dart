@@ -1176,5 +1176,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "openInBrowser": MessageLookupByLibrary.simpleMessage("ブラウザで開く"),
     "activityLoadFailed": MessageLookupByLibrary.simpleMessage("ページの読み込みに失敗しました"),
     "retry": MessageLookupByLibrary.simpleMessage("再試行"),
+    "connectionsStat": MessageLookupByLibrary.simpleMessage("接続統計"),
+    "activeConnections": MessageLookupByLibrary.simpleMessage("アクティブ"),
+    "proxySpeedTest": MessageLookupByLibrary.simpleMessage("帯域"),
+    "proxySpeedTestHint": MessageLookupByLibrary.simpleMessage("ダウンロード速度テスト：このノード経由でサンプルファイルを取得し、実帯域を測定します（転送時間のみ計測、ハンドシェイクは含まず、結果はこのセッション内で有効）"),
+    "proxySpeedTestFailed": MessageLookupByLibrary.simpleMessage("失敗"),
   };
 }

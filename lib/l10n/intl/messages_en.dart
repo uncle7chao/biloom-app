@@ -1392,5 +1392,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "openInBrowser": MessageLookupByLibrary.simpleMessage("Open in browser"),
     "activityLoadFailed": MessageLookupByLibrary.simpleMessage("Failed to load the page"),
     "retry": MessageLookupByLibrary.simpleMessage("Retry"),
+    "connectionsStat": MessageLookupByLibrary.simpleMessage("Connections"),
+    "activeConnections": MessageLookupByLibrary.simpleMessage("Active"),
+    "proxySpeedTest": MessageLookupByLibrary.simpleMessage("Speed"),
+    "proxySpeedTestHint": MessageLookupByLibrary.simpleMessage("Download test: fetches a sample file through this node to measure real bandwidth (transfer time only, no handshake; the result is valid for this session)"),
+    "proxySpeedTestFailed": MessageLookupByLibrary.simpleMessage("Failed"),
   };
 }
