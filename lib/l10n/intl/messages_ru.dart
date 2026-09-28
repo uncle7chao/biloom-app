@@ -1456,5 +1456,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "proxyChainNameLabel": MessageLookupByLibrary.simpleMessage("Название цепочки"),
     "proxyChainCreated": m37,
     "proxyChainPickerTopHint": MessageLookupByLibrary.simpleMessage("Показаны только 20 самых быстрых узлов профиля; остальные ищите поиском"),
+    "activity": MessageLookupByLibrary.simpleMessage("Активность"),
+    "openInBrowser": MessageLookupByLibrary.simpleMessage("Открыть в браузере"),
+    "activityLoadFailed": MessageLookupByLibrary.simpleMessage("Не удалось загрузить страницу"),
+    "retry": MessageLookupByLibrary.simpleMessage("Повторить"),
   };
 }

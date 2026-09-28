@@ -11,6 +11,7 @@ class Navigation implements NavigationPort {
   List<NavigationItem> getItems({
     bool openLogs = false,
     bool hasProxies = false,
+    bool hasPromo = false,
   }) {
     return [
       NavigationItem(
@@ -70,6 +71,18 @@ class Navigation implements NavigationPort {
         builder: (_) => const ToolsView(key: GlobalObjectKey(PageLabel.tools)),
         modes: [NavigationItemMode.desktop, NavigationItemMode.mobile],
       ),
+      // 「活动」入口（M3 方案 v2）：引流位不是广告位 —— WebView 加载
+      // biloom.top 的自家页面，「在浏览器中打开」跳系统浏览器承接广告。
+      // [hasPromo] 由远程开关 JSON 下发（promoWindowProvider 裁决平台与
+      // url 白名单），配置无效时整个入口不渲染，不占位。
+      if (hasPromo)
+        NavigationItem(
+          keep: true,
+          icon: const Icon(Icons.campaign),
+          label: PageLabel.activity,
+          builder: (_) =>
+              const ActivityView(key: GlobalObjectKey(PageLabel.activity)),
+        ),
     ];
   }
 

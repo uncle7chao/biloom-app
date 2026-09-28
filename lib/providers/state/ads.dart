@@ -103,3 +103,18 @@ final adsBannerPlacementProvider = Provider<AdPlacementProps?>((ref) {
   final config = ref.watch(adsConfigStoreProvider).value;
   return adsBannerPropsFor(config, platform);
 });
+
+/// 当前平台「活动」入口的生效配置；null = 不渲染入口（非 Windows /
+/// 总开关关 / 从未拉到配置 / url 无效）。
+///
+/// 活动页是引流位不是广告位（模型见 common/ads.dart），**不查
+/// [kAdSdkPlatforms]** —— WebView 不依赖广告 SDK，Windows 现在就能用。
+/// 平台裁决只放 Windows：Android 侧将来若复用（比如开屏活动页）再放开，
+/// 批 1 不做没验证过的平台。
+final promoWindowProvider = Provider<PromoWindowProps?>((ref) {
+  if (!system.isWindows) {
+    return null;
+  }
+  final config = ref.watch(adsConfigStoreProvider).value;
+  return adsPromoPropsFor(config);
+});

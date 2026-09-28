@@ -12,12 +12,21 @@
 /// 远程 JSON 的约定格式（多余字段忽略，缺字段取安全默认值=关）：
 /// ```json
 /// {
-///   "v": 1,
+///   "v": 2,
 ///   "enabled": true,
 ///   "bannerAndroid": {"enabled": true, "adUnitId": "ca-app-pub-…/…"},
-///   "bannerWindows": {"enabled": false, "adUnitId": ""}
+///   "bannerWindows": {"enabled": false, "adUnitId": ""},
+///   "promoWindows": {"enabled": true, "url": "https://biloom.top/promo",
+///                    "badge": "新"}
 /// }
 /// ```
+///
+/// v2 新增 [AdsRemoteConfig.promoWindows]：Windows 端「活动」页入口。它是
+/// **引流位不是广告位**——WebView 加载自家页面（绝不允许 AdSense 代码进
+/// 应用内窗口，政策会封整个 AdSense 账号），页内「在浏览器中打开」跳系统
+/// 浏览器，广告收入由官网承接。url 有**域白名单**（[isValidPromoUrl]）：
+/// 远程配置只能指向 biloom.top 及其子域，防止开关 JSON 被改后 WebView 被
+/// 指向任意站点。
 library;
 
 import 'dart:convert';
@@ -47,6 +56,55 @@ enum AdPlatform { android, windows, macos, linux }
 /// state 层的平台裁决要先查它（跨库可见性），它本来就是公开的接缝。
 const kAdSdkPlatforms = <AdPlatform>{};
 
+/// 活动页 url 的**域白名单**：只允许 https 与 biloom.top 及其子域。
+///
+/// 远程开关 JSON 是唯一真源，但它本身也是可被篡改的输入（DNS 劫持、托管
+/// 被黑、JSON 手改）——WebView 是应用里权限最高的组件（可执行任意网页
+/// JS），入口 url 必须在客户端再校验一道。大小写不敏感；尾随的 `/`、查询
+/// 参数与路径都放行（路径内容仍是我们自己服务器上的东西）。
+bool isValidPromoUrl(String url) {
+  final Uri? uri;
+  try {
+    uri = Uri.tryParse(url);
+  } catch (_) {
+    return false;
+  }
+  if (uri == null || uri.scheme.toLowerCase() != 'https') {
+    return false;
+  }
+  final host = uri.host.toLowerCase();
+  return host == 'biloom.top' || host.endsWith('.biloom.top');
+}
+
+/// 「活动」页入口的远程配置（Windows 端引流位）。
+class PromoWindowProps {
+  const PromoWindowProps({
+    required this.enabled,
+    required this.url,
+    required this.badge,
+  });
+
+  final bool enabled;
+
+  /// 活动页地址。为空或不在 [isValidPromoUrl] 白名单内时即便 enabled 也
+  /// 视为关 —— 与广告位「没位子的开=关」同一哲学。
+  final String url;
+
+  /// 侧栏入口角标文字（如「新」）。空 = 无角标。
+  final String badge;
+
+  /// 非法/缺字段一律取**安全默认值**：关。
+  static PromoWindowProps fromMap(Map<dynamic, dynamic> map) {
+    final url = map['url'];
+    final badge = map['badge'];
+    return PromoWindowProps(
+      enabled: map['enabled'] == true,
+      url: url is String ? url : '',
+      badge: badge is String ? badge : '',
+    );
+  }
+}
+
 /// 一个广告位的远程配置。
 class AdPlacementProps {
   const AdPlacementProps({required this.enabled, required this.adUnitId});
@@ -75,6 +133,7 @@ class AdsRemoteConfig {
     required this.enabled,
     required this.bannerAndroid,
     required this.bannerWindows,
+    this.promoWindows = const PromoWindowProps(enabled: false, url: '', badge: ''),
   });
 
   final int v;
@@ -86,6 +145,9 @@ class AdsRemoteConfig {
   /// Windows/macOS/Linux 共用：当前没有 SDK，永远不展示；预留字段让远程
   /// 端可以先配好，SDK 接缝打开即生效。
   final AdPlacementProps bannerWindows;
+
+  /// Windows 端「活动」页入口（引流位，见 [isValidPromoUrl] 的白名单说明）。
+  final PromoWindowProps promoWindows;
 
   /// 解析远程 JSON 文本。任何形态的坏数据（非 Map、编码失败、结构不符）
   /// 都返回 null —— 调用方拿到 null 就当「无配置」处理，绝不上抛。
@@ -114,6 +176,11 @@ class AdsRemoteConfig {
       bannerWindows: AdPlacementProps.fromMap(
         decoded['bannerWindows'] is Map
             ? decoded['bannerWindows'] as Map
+            : const {},
+      ),
+      promoWindows: PromoWindowProps.fromMap(
+        decoded['promoWindows'] is Map
+            ? decoded['promoWindows'] as Map
             : const {},
       ),
     );
@@ -146,6 +213,20 @@ AdPlacementProps? adsBannerPropsFor(AdsRemoteConfig? config, AdPlatform platform
     AdPlatform.linux => config.bannerWindows,
   };
   if (!props.enabled || props.adUnitId.isEmpty) {
+    return null;
+  }
+  return props;
+}
+
+/// 「活动」入口的**配置层**判定：总开关 → 位开关 → url 有效（白名单域 +
+/// 非空），任何一环不满足都返回 null。与 [adsBannerPropsFor] 同一风格：
+/// 这里只做配置层；「平台是否提供活动入口」由 state 层裁决。
+PromoWindowProps? adsPromoPropsFor(AdsRemoteConfig? config) {
+  if (config == null || !config.enabled) {
+    return null;
+  }
+  final props = config.promoWindows;
+  if (!props.enabled || !isValidPromoUrl(props.url)) {
     return null;
   }
   return props;

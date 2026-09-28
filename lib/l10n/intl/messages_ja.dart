@@ -1172,5 +1172,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "proxyChainNameLabel": MessageLookupByLibrary.simpleMessage("チェーン名"),
     "proxyChainCreated": m37,
     "proxyChainPickerTopHint": MessageLookupByLibrary.simpleMessage("各プロファイルの最速20ノードのみ表示。それ以外は検索で見つけてください"),
+    "activity": MessageLookupByLibrary.simpleMessage("アクティビティ"),
+    "openInBrowser": MessageLookupByLibrary.simpleMessage("ブラウザで開く"),
+    "activityLoadFailed": MessageLookupByLibrary.simpleMessage("ページの読み込みに失敗しました"),
+    "retry": MessageLookupByLibrary.simpleMessage("再試行"),
   };
 }

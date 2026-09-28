@@ -752,5 +752,9 @@
   "proxyChainDefaultName": "プロキシチェーン",
   "proxyChainNameLabel": "チェーン名",
   "proxyChainCreated": "チェーン「{name}」を作成しました",
-  "proxyChainPickerTopHint": "各プロファイルの最速20ノードのみ表示。それ以外は検索で見つけてください"
+  "proxyChainPickerTopHint": "各プロファイルの最速20ノードのみ表示。それ以外は検索で見つけてください",
+  "activity": "アクティビティ",
+  "openInBrowser": "ブラウザで開く",
+  "activityLoadFailed": "ページの読み込みに失敗しました",
+  "retry": "再試行"
 }

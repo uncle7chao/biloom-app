@@ -752,5 +752,9 @@
   "proxyChainDefaultName": "Proxy Chain",
   "proxyChainNameLabel": "Chain name",
   "proxyChainCreated": "Proxy chain \"{name}\" created",
-  "proxyChainPickerTopHint": "Only the 20 fastest nodes per profile are listed; use search to find more"
+  "proxyChainPickerTopHint": "Only the 20 fastest nodes per profile are listed; use search to find more",
+  "activity": "Activities",
+  "openInBrowser": "Open in browser",
+  "activityLoadFailed": "Failed to load the page",
+  "retry": "Retry"
 }

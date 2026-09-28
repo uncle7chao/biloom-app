@@ -6004,6 +6004,26 @@ class AppLocalizations {
       args: [],
     );
   }
+
+  /// `Activities`
+  String get activity {
+    return Intl.message('Activities', name: 'activity', desc: '', args: []);
+  }
+
+  /// `Open in browser`
+  String get openInBrowser {
+    return Intl.message('Open in browser', name: 'openInBrowser', desc: '', args: []);
+  }
+
+  /// `Failed to load the page`
+  String get activityLoadFailed {
+    return Intl.message('Failed to load the page', name: 'activityLoadFailed', desc: '', args: []);
+  }
+
+  /// `Retry`
+  String get retry {
+    return Intl.message('Retry', name: 'retry', desc: '', args: []);
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<AppLocalizations> {

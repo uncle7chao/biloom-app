@@ -1388,5 +1388,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "proxyChainNameLabel": MessageLookupByLibrary.simpleMessage("Chain name"),
     "proxyChainCreated": m37,
     "proxyChainPickerTopHint": MessageLookupByLibrary.simpleMessage("Only the 20 fastest nodes per profile are listed; use search to find more"),
+    "activity": MessageLookupByLibrary.simpleMessage("Activities"),
+    "openInBrowser": MessageLookupByLibrary.simpleMessage("Open in browser"),
+    "activityLoadFailed": MessageLookupByLibrary.simpleMessage("Failed to load the page"),
+    "retry": MessageLookupByLibrary.simpleMessage("Retry"),
   };
 }

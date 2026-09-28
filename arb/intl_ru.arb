@@ -752,5 +752,9 @@
   "proxyChainDefaultName": "Цепочка прокси",
   "proxyChainNameLabel": "Название цепочки",
   "proxyChainCreated": "Цепочка «{name}» создана",
-  "proxyChainPickerTopHint": "Показаны только 20 самых быстрых узлов профиля; остальные ищите поиском"
+  "proxyChainPickerTopHint": "Показаны только 20 самых быстрых узлов профиля; остальные ищите поиском",
+  "activity": "Активность",
+  "openInBrowser": "Открыть в браузере",
+  "activityLoadFailed": "Не удалось загрузить страницу",
+  "retry": "Повторить"
 }

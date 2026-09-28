@@ -1030,5 +1030,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "proxyChainNameLabel": MessageLookupByLibrary.simpleMessage("链式代理名称"),
     "proxyChainCreated": m37,
     "proxyChainPickerTopHint": MessageLookupByLibrary.simpleMessage("每份配置只显示测速最快的前 20 个节点，更多请用搜索"),
+    "activity": MessageLookupByLibrary.simpleMessage("活动"),
+    "openInBrowser": MessageLookupByLibrary.simpleMessage("在浏览器中打开"),
+    "activityLoadFailed": MessageLookupByLibrary.simpleMessage("活动页加载失败"),
+    "retry": MessageLookupByLibrary.simpleMessage("重试"),
   };
 }

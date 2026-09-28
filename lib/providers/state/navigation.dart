@@ -10,11 +10,15 @@ NavigationItemsState navigationItemsState(Ref ref) {
     currentGroupsStateProvider.select((state) => state.value.isNotEmpty),
   );
   final isInit = ref.watch(initProvider);
+  // 「活动」入口配置（M3 方案 v2）由远程开关 JSON 下发：provider 内部裁决
+  // 平台（目前只放 Windows）与 url 白名单，null = 整个入口不渲染。
+  final hasPromo = ref.watch(promoWindowProvider) != null;
   return NavigationItemsState(
     value:
         navigationPort?.getItems(
           openLogs: openLogs,
           hasProxies: !isInit ? hasProfiles : hasProxies,
+          hasPromo: hasPromo,
         ) ??
         const [],
   );
