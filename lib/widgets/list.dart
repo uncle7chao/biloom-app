@@ -543,6 +543,12 @@ class ListHeader extends StatelessWidget {
   }
 }
 
+/// 分节渲染（设置类页面的标准分节）。
+///
+/// 视觉上是一个「卡片组」：节头（[ListHeader]）+ 一整块圆角卡，卡内每行
+/// 由 [CommonCard] 的 filled 面承载、行间用透明分隔条撑开 —— 与
+/// [generateSectionV2] 同一套语言（本函数就是它的多节版，签名保持与旧
+/// 平铺版一致，调用点无需感知视觉变化）。
 List<Widget> generateSection({
   String? title,
   required Iterable<Widget> items,
@@ -551,8 +557,30 @@ List<Widget> generateSection({
   bool separated = true,
 }) {
   final genItems = separated
-      ? items.separated(const Divider(height: 0))
-      : items;
+      ? items
+            .map<Widget>(
+              (item) => ClipRSuperellipse(
+                borderRadius: AppRadius.xs,
+                child: CommonCard(
+                  type: CommonCardType.filled,
+                  radius: AppCorner.none,
+                  child: item,
+                ),
+              ),
+            )
+            .separated(const Divider(height: 2, color: Colors.transparent))
+      : items
+            .map<Widget>(
+              (item) => ClipRSuperellipse(
+                borderRadius: AppRadius.xs,
+                child: CommonCard(
+                  type: CommonCardType.filled,
+                  radius: AppCorner.none,
+                  child: item,
+                ),
+              ),
+            )
+            .toList();
   return [
     if (items.isNotEmpty && title != null)
       ListHeader(
@@ -562,7 +590,11 @@ List<Widget> generateSection({
             ? listHeaderPadding.copyWith(top: 8.ap)
             : listHeaderPadding,
       ),
-    ...genItems,
+    if (items.isNotEmpty)
+      ClipRSuperellipse(
+        borderRadius: AppRadius.md,
+        child: Column(children: [...genItems]),
+      ),
   ];
 }
 
