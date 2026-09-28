@@ -649,6 +649,113 @@ void main() {
     expect(filterGlobalGroupMembers(const [], injected), isEmpty);
   });
 
+  group('injectProxyChains merges chain names into the selector group', () {
+    Map<String, dynamic> baseConfig() => {
+      'proxies': [
+        {'name': '出口节点', 'type': 'ss', 'server': 'a.com', 'port': 443},
+        {'name': '前置节点', 'type': 'ss', 'server': 'b.com', 'port': 443},
+      ],
+      'proxy-groups': [
+        {
+          'name': '节点选择',
+          'type': 'select',
+          'proxies': ['出口节点', '自动选择'],
+        },
+        {
+          'name': '自动选择',
+          'type': 'url-test',
+          'proxies': ['出口节点'],
+        },
+      ],
+      'rules': ['MATCH,节点选择'],
+    };
+
+    List<ProxyChain> oneChain() => [
+      ProxyChain(
+        name: '链式代理1',
+        exitName: '出口节点',
+        exitNode: {
+          'name': '出口节点',
+          'type': 'ss',
+          'server': 'a.com',
+          'port': 443,
+        },
+        dialer: '前置节点',
+        createdAt: 1,
+      ),
+    ];
+
+    Map<String, dynamic> selectorOf(Map<String, dynamic> config) {
+      return (config['proxy-groups'] as List)
+          .whereType<Map>()
+          .firstWhere((group) => group['name'] == '节点选择')
+          .cast<String, dynamic>();
+    }
+
+    test('appends chain names to the end of the selector group', () {
+      final config = baseConfig();
+      injectProxyChains(
+        config,
+        chains: oneChain(),
+        groupName: '链式代理',
+        autoGroupName: '自动选择',
+        selectorGroupName: '节点选择',
+      );
+
+      expect(selectorOf(config)['proxies'], ['出口节点', '自动选择', '链式代理1']);
+    });
+
+    test('is idempotent across repeated injections', () {
+      final config = baseConfig();
+      for (var i = 0; i < 3; i++) {
+        injectProxyChains(
+          config,
+          chains: oneChain(),
+          groupName: '链式代理',
+          autoGroupName: '自动选择',
+          selectorGroupName: '节点选择',
+        );
+        expect(selectorOf(config)['proxies'], ['出口节点', '自动选择', '链式代理1']);
+      }
+    });
+
+    test('does not touch a selector group of the wrong type', () {
+      final config = baseConfig();
+      (config['proxy-groups'] as List).firstWhere((group) {
+        return group is Map && group['name'] == '节点选择';
+      })['type'] = 'url-test';
+
+      injectProxyChains(
+        config,
+        chains: oneChain(),
+        groupName: '链式代理',
+        autoGroupName: '自动选择',
+        selectorGroupName: '节点选择',
+      );
+
+      expect(selectorOf(config)['proxies'], ['出口节点', '自动选择']);
+    });
+
+    test('survives a missing selector group', () {
+      final config = baseConfig();
+      final injected = injectProxyChains(
+        config,
+        chains: oneChain(),
+        groupName: '链式代理',
+        autoGroupName: '自动选择',
+        selectorGroupName: '不存在的主组',
+      );
+
+      expect(injected.chainNames, ['链式代理1']);
+      expect(
+        (config['proxy-groups'] as List).whereType<Map>().map(
+          (group) => group['name'],
+        ),
+        contains('节点选择'),
+      );
+    });
+  });
+
   test('filterGroupMemberCards hides groups and built-in outbounds', () {
     final all = const [
       Proxy(name: '自动选择', type: 'URLTest'),

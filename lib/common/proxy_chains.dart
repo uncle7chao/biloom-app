@@ -82,15 +82,11 @@ class ProxyChain {
     // 模型下没有归属概念，快照已足够撑起注入。
     return ProxyChain(
       name: name,
-      exitName: json['exitName'] is String
-          ? json['exitName'] as String
-          : name,
+      exitName: json['exitName'] is String ? json['exitName'] as String : name,
       exitNode: exitNode.cast<String, dynamic>(),
       dialer: dialer,
       dialerNode: dialerNode is Map ? dialerNode.cast<String, dynamic>() : null,
-      createdAt: json['createdAt'] is int
-          ? json['createdAt'] as int
-          : 0,
+      createdAt: json['createdAt'] is int ? json['createdAt'] as int : 0,
     );
   }
 
@@ -127,10 +123,7 @@ List<ProxyChain> decodeProxyChains(String raw) {
     return <ProxyChain>[];
   }
   if (decoded is! List) return <ProxyChain>[];
-  return decoded
-      .map(_chainFromJson)
-      .whereType<ProxyChain>()
-      .toList();
+  return decoded.map(_chainFromJson).whereType<ProxyChain>().toList();
 }
 
 /// 给默认名取下一个编号：取已占用最大编号 +1，不回填空位 —— 编号与创建
@@ -140,9 +133,7 @@ int nextChainNumber({
   required Iterable<ProxyChain> chains,
   required String defaultName,
 }) {
-  final prefix = RegExp(
-    '^${RegExp.escape(defaultName)}(\\d+)\$',
-  );
+  final prefix = RegExp('^${RegExp.escape(defaultName)}(\\d+)\$');
   var max = 0;
   for (final chain in chains) {
     final match = prefix.firstMatch(chain.name);
@@ -189,6 +180,13 @@ int nextChainNumber({
 /// 6. [finalGroupNames]（可选）：调用方知道**最终生效**的组名单时传入（自定义
 ///    覆写模式会整体替换 proxy-groups，rawConfig 里的组活不到最后）。组前置的
 ///    有效性按它判；不传则按 rawConfig 当前的组列表判。
+/// 7. **链名并入主入口组**（2026-09-28 用户拍板：不管什么模式，链与普通节点
+///    只能选一个，选中的生效）：成功注入的链名追加进 [selectorGroupName]
+///    （节点选择）select 组的成员末尾 —— 规则模式下普通节点与链节点同列单选，
+///    选链即走链。成员引用的都是上面刚注入成功的链节点，不存在悬空；先查再追，
+///    重复注入（订阅更新/重应用）不会追加第二份。目标组不存在或不是 select
+///    类型时静默跳过（链仍可从「链式代理」页签与 GLOBAL 选择）。
+///    自定义覆写模式下这一步同样会被整体替换顶掉，调用方要对覆写列表再补一次。
 ({String groupName, List<String> chainNames, List<String> injectedDialerNames})
 injectProxyChains(
   final Map<String, dynamic> rawConfig, {
@@ -341,7 +339,10 @@ injectProxyChains(
   final existingNames = {...nodeNames, ...groupNames};
 
   /// 实时参数优先、快照兜底地解析一个节点参数；剥掉残留的 dialer-proxy。
-  Map<String, dynamic>? resolveNode(String name, Map<String, dynamic>? snapshot) {
+  Map<String, dynamic>? resolveNode(
+    String name,
+    Map<String, dynamic>? snapshot,
+  ) {
     for (final node in proxyList) {
       if (nameOf(node) == name) {
         return Map<String, dynamic>.from(node)..remove('dialer-proxy');
@@ -422,6 +423,28 @@ injectProxyChains(
   } else {
     groupList.insert(insertAt + 1, groupEntry);
   }
+
+  // 链名并入「节点选择」（规则 7，见函数头注释）：规则模式的流量入口组里
+  // 普通节点与链节点同列单选 —— 用户拍板的「只能选一个，选中的生效」。
+  if (chainNames.isNotEmpty) {
+    for (final group in groupList) {
+      if (group['name'] != selectorGroupName) continue;
+      if (group['type'] != 'select') continue;
+      final members = group['proxies'];
+      if (members is! List) continue;
+      final merged = members.whereType<String>().toList();
+      var changed = false;
+      for (final name in chainNames) {
+        if (!merged.contains(name)) {
+          merged.add(name);
+          changed = true;
+        }
+      }
+      if (changed) group['proxies'] = merged;
+      break; // 同名组只认第一个（组名在配置里必须唯一）。
+    }
+  }
+
   rawConfig['proxy-groups'] = groupList;
   return (
     groupName: realGroupName,

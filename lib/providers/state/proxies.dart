@@ -1,9 +1,11 @@
 part of '../state.dart';
 
-/// 链式代理注入进运行时配置的节点名集合：链节点本体 + 快照注入的外部前置
-/// 节点本体（见 `common/proxy_chains.dart` 的 injectProxyChains）。GLOBAL 页签
-/// 的展示层用它把这些「链的东西」从节点列表里摘掉 —— 链统一在「链式代理」
-/// 页签里出现与选择。配置组装（setup.dart）在每次应用配置时重写本集合。
+/// 链式代理注入进运行时配置的**快照前置节点**名集合（见
+/// `common/proxy_chains.dart` 的 injectProxyChains）。GLOBAL 页签的展示层用它
+/// 把这些纯技术性节点从成员列表里摘掉 —— 它们的家在「链式代理」页签。
+/// ⛔ 链节点本体**不在**本集合（2026-09-28 用户拍板「不管什么模式只能选一个，
+/// 选中的生效」）：全局模式的流量入口是 GLOBAL，链节点必须显示在 GLOBAL 成员里
+/// 才能直接选链。配置组装（setup.dart）在每次应用配置时重写本集合。
 ///
 /// 手写 Notifier 不走代码生成：本文件里 ProxyRegionFilter 等同款处理（生成器
 /// 在环境故障期跑不动，而这里必须在组装配置的主隔离同步写入）。
@@ -17,9 +19,10 @@ class ChainInjectedNames extends Notifier<Set<String>> {
 final chainInjectedNamesProvider =
     NotifierProvider<ChainInjectedNames, Set<String>>(ChainInjectedNames.new);
 
-/// GLOBAL 组的展示层过滤：链式代理注入的节点（链节点 + 快照前置节点）
-/// 不出现在 GLOBAL 成员里 —— 它们的家在「链式代理」页签。内核数据不动，
-/// 仅展示层过滤。抽成顶层纯函数便于测试。
+/// GLOBAL 组的展示层过滤：传入名单里的名字不出现在 GLOBAL 成员里。内核数据
+/// 不动，仅展示层过滤。抽成顶层纯函数便于测试。
+/// 现名单只有快照前置节点（链节点要在 GLOBAL 里显示，见
+/// [chainInjectedNamesProvider] 的注释）。
 List<Proxy> filterGlobalGroupMembers(
   List<Proxy> all,
   Set<String> injectedChainNames,

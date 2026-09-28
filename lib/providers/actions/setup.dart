@@ -430,11 +430,12 @@ class SetupAction extends _$SetupAction {
       );
       chainGroupName = injected.groupName;
       chainNames = injected.chainNames;
-      // GLOBAL 页签展示层过滤的名单 = 链节点 + 快照注入的前置节点。
-      // 这两类的家都在「链式代理」页签，不在配置自己的节点列表里。
+      // GLOBAL 页签展示层过滤的名单 = 快照注入的前置节点。链节点**不在**
+      // 过滤名单里（2026-09-28 用户拍板「不管什么模式只能选一个，选中的生效」
+      // 的另一半）：全局模式的流量入口是 GLOBAL，链节点必须留在 GLOBAL 成员里
+      // 才能直接选链。前置节点是纯技术性存在（家在「链式代理」页签），继续藏。
       if (isActiveProfile) {
         ref.read(chainInjectedNamesProvider.notifier).set({
-          ...injected.chainNames,
           ...injected.injectedDialerNames,
         });
       }
@@ -463,6 +464,30 @@ class SetupAction extends _$SetupAction {
           proxies: chainNames.isNotEmpty ? chainNames : const ['DIRECT'],
         ),
       );
+      // 链名并入「节点选择」（injectProxyChains 规则 7 的覆写侧补齐）：
+      // rawConfig 里追加的那份会被整体替换顶掉，对覆写列表里的同名组再来一次。
+      // 覆写设计里没有「节点选择」组时跳过 —— 链仍可从「链式代理」页签与
+      // GLOBAL 选择，不写坏任何东西。
+      if (chainNames.isNotEmpty) {
+        for (var i = 0; i < proxyGroups.length; i++) {
+          final group = proxyGroups[i];
+          if (group.name != '节点选择' || group.type != GroupType.Selector) {
+            continue;
+          }
+          final members = [...?group.proxies];
+          var changed = false;
+          for (final name in chainNames) {
+            if (!members.contains(name)) {
+              members.add(name);
+              changed = true;
+            }
+          }
+          if (changed) {
+            proxyGroups[i] = group.copyWith(proxies: members);
+          }
+          break;
+        }
+      }
     }
     // 智能抗检测：给缺省指纹的节点补默认值/轮换覆盖值。放在覆写脚本之后，
     // 脚本产出的节点同样被补齐；只补缺省，显式值不动（原则见 smart_params.dart）。
