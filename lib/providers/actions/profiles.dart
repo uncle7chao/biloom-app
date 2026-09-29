@@ -33,6 +33,11 @@ class ProfilesAction extends _$ProfilesAction {
         unawaited(ref.read(setupActionProvider.notifier).setRunning(false));
       }
     }
+    unawaited(
+      ref
+          .read(backupActionProvider.notifier)
+          .runAutoBackup(trigger: AutoBackupTrigger.removeProfile),
+    );
   }
 
   Future<String> validateConfigWithData(String data) async {
@@ -205,6 +210,11 @@ class ProfilesAction extends _$ProfilesAction {
     );
     if (profile != null) {
       putProfile(profile);
+      unawaited(
+        ref
+            .read(backupActionProvider.notifier)
+            .runAutoBackup(trigger: AutoBackupTrigger.addProfile),
+      );
     }
   }
 
@@ -234,6 +244,11 @@ class ProfilesAction extends _$ProfilesAction {
     if (profile == null) return;
     ref.read(currentPageLabelProvider.notifier).toProfiles();
     putProfile(profile);
+    unawaited(
+      ref
+          .read(backupActionProvider.notifier)
+          .runAutoBackup(trigger: AutoBackupTrigger.addProfile),
+    );
   }
 
   Future<void> addProfileFormURL(String url) async {
@@ -253,6 +268,11 @@ class ProfilesAction extends _$ProfilesAction {
     );
     if (profile != null) {
       putProfile(profile);
+      unawaited(
+        ref
+            .read(backupActionProvider.notifier)
+            .runAutoBackup(trigger: AutoBackupTrigger.addProfile),
+      );
     }
   }
 
@@ -357,7 +377,9 @@ class ProfilesAction extends _$ProfilesAction {
   }) async {
     return globalState.loadingRun(tag: LoadingTag.profiles, () async {
       final chainNames = await ProxyChainStore.allNames();
-      final chainHits = names.where((name) => chainNames.contains(name)).toList();
+      final chainHits = names
+          .where((name) => chainNames.contains(name))
+          .toList();
       final configNames = names
           .where((name) => !chainNames.contains(name))
           .toList();
@@ -498,19 +520,13 @@ class ProfilesAction extends _$ProfilesAction {
         for (final target in targets.proxies) target.name,
         for (final target in targets.groups) target.name,
       ];
-      final exitFound =
-          configNames.contains(exit) || exitNode.isNotEmpty;
+      final exitFound = configNames.contains(exit) || exitNode.isNotEmpty;
       if (!exitFound) {
-        throw MessageException(
-          currentAppLocalizations.proxyChainPickExit,
-        );
+        throw MessageException(currentAppLocalizations.proxyChainPickExit);
       }
-      final dialerFound =
-          configNames.contains(dialer) || dialerNode != null;
+      final dialerFound = configNames.contains(dialer) || dialerNode != null;
       if (!dialerFound) {
-        throw MessageException(
-          currentAppLocalizations.proxyChainPickFront,
-        );
+        throw MessageException(currentAppLocalizations.proxyChainPickFront);
       }
       final finalName = await ProxyChainStore.add(
         name: name,
@@ -602,8 +618,7 @@ class ProfilesAction extends _$ProfilesAction {
       // 用户在两个页面之间认的是同一个名字。
       nameOf: (region) => '${region.emoji} ${region.label}',
       landingByProxy: {
-        for (final entry in landing.entries)
-          entry.key: entry.value.countryCode,
+        for (final entry in landing.entries) entry.key: entry.value.countryCode,
       },
     );
   }
@@ -684,10 +699,7 @@ class ProfilesAction extends _$ProfilesAction {
   /// 规则必须排在订阅自带规则**之前**（排在 GEOSITE,CN 直连后面就永远轮不到），
   /// `ProfileCustomRules.put` 的 autoOrder 恰好把新规则插到最前 —— 依赖这个
   /// 行为而不是自己拼 order 键。取消勾选的意图会连同它的规则一起删掉。
-  Future<int> applyIntentGroupPlan(
-    int profileId,
-    IntentGroupPlan plan,
-  ) async {
+  Future<int> applyIntentGroupPlan(int profileId, IntentGroupPlan plan) async {
     final existing = await ref.read(proxyGroupsProvider(profileId).future);
     final idOfName = <String, int>{
       for (final group in existing) group.name: group.id,

@@ -428,6 +428,14 @@ class ProxyFavorites extends AsyncNotifier<Map<String, List<String>>> {
     state = AsyncData(current);
     unawaited(ProxyFavoritesStore.save(current));
   }
+
+  /// 恢复备份时整体替换（SP 已由调用方写好，这里只同步内存态）。
+  ///
+  /// 单独开方法而不是从外面摸 `.state`：riverpod 3 把 AsyncNotifier 的
+  /// state 写入口限定在了子类内部，外部赋值直接编译报错。
+  void replaceAll(Map<String, List<String>> favorites) {
+    state = AsyncData(favorites);
+  }
 }
 
 final proxyFavoritesProvider =
