@@ -1,5 +1,11 @@
 # Changelog
 
+## v01.00.26 (2026-09-29)
+
+**Bug Fixes**
+
+- **proxies** The selected node shows a check mark at the top-right corner of its card in every group (select groups previously only changed the card background, which is invisible on dark themes), and the proxy-chain tab now mirrors the selection that actually takes effect - the chain is highlighted and marked only while the node-selection group (rule mode) or GLOBAL (global mode) points at it, and tapping a chain there switches the real exit instead of writing a no-op selection (95b62b3)
+
 ## v01.00.25 (2026-09-28)
 
 **Features**
