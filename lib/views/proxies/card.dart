@@ -55,24 +55,48 @@ class ProxyCard extends ConsumerWidget {
     );
   }
 
-  Future<void> _changeProxy(WidgetRef ref) async {
+  Future<void> _changeProxy(WidgetRef ref, String selectionSource) async {
     final isComputedSelected = groupType.isComputedSelected;
     final isSelector = groupType == GroupType.Selector;
     if (isComputedSelected || isSelector) {
-      final currentProxyName = ref.read(proxyNameProvider(groupName));
+      final currentProxyName = ref.read(proxyNameProvider(selectionSource));
       final nextProxyName = switch (isComputedSelected) {
         true => currentProxyName == proxy.name ? '' : proxy.name,
         false => proxy.name,
       };
       ref
           .read(proxiesActionProvider.notifier)
-          .changeProxyDebounce(groupName, nextProxyName);
+          .changeProxyDebounce(selectionSource, nextProxyName);
       return;
     }
     dialogs.showNotifier(
       currentAppLocalizations.notSelectedTip,
       level: MessageLevel.warning,
     );
+  }
+
+  /// 「链式代理」组是管理视图，它自己的选中记录不产生流量效果 —— 真正的
+  /// 出口选择在 [kPrimarySelectorGroupName]（规则模式）或 GLOBAL（全局模式）。
+  /// 链卡片的选中态与点击都改道到那个生效选择器，保证全应用「选中 = 生效」
+  /// 只有一份：链被主选择器选中时这里亮 + 打勾，普通节点被选中时链不亮。
+  /// 返回 null = 不是链卡片（或空链的 DIRECT 占位、生效选择器不存在），
+  /// 按普通组行为处理。
+  String? _effectiveChainSelectorName(WidgetRef ref) {
+    if (groupName != kProxyChainGroupName || proxy.name == 'DIRECT') {
+      return null;
+    }
+    final mode = ref.watch(
+      patchClashConfigProvider.select((state) => state.mode),
+    );
+    final candidate = mode == Mode.global
+        ? GroupName.GLOBAL.name
+        : kPrimarySelectorGroupName;
+    final exists = ref.watch(
+      groupsProvider.select(
+        (groups) => groups.any((group) => group.name == candidate),
+      ),
+    );
+    return exists ? candidate : null;
   }
 
   Future<void> _handleDelete(BuildContext context, WidgetRef ref) async {
@@ -161,6 +185,8 @@ class ProxyCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final proxyNameText = _buildProxyNameText(context);
     final region = ref.watch(proxyRegionProvider(proxy));
+    // 链卡片（链式代理页签）的选中语义挂在生效选择器上，其余卡片用自己组。
+    final selectionSource = _effectiveChainSelectorName(ref) ?? groupName;
     final profileId = ref.watch(currentProfileIdProvider);
     final isFavorite =
         profileId != null &&
@@ -198,7 +224,7 @@ class ProxyCard extends ConsumerWidget {
             Consumer(
               builder: (_, ref, child) {
                 final selectedProxyName = ref.watch(
-                  selectedProxyNameProvider(groupName),
+                  selectedProxyNameProvider(selectionSource),
                 );
                 return CommonCard(
                   type: CommonCardType.filled,
@@ -206,7 +232,7 @@ class ProxyCard extends ConsumerWidget {
                   key: key,
                   highlightSelected: true,
                   onPressed: () {
-                    _changeProxy(ref);
+                    _changeProxy(ref, selectionSource);
                   },
                   isSelected: selectedProxyName == proxy.name,
                   child: child!,
@@ -296,12 +322,20 @@ class ProxyCard extends ConsumerWidget {
                 ),
               ),
             ),
-            if (groupType.isComputedSelected)
-              Positioned(
-                top: 0,
-                right: 0,
-                child: _ProxyComputedMark(groupName: groupName, proxy: proxy),
+            // 选中标记：卡片右上角打勾。**所有组类型都显示** —— 用户反馈
+            // 「之前选中节点卡片右上角有打勾，现在没了」：select 组选中此前只有
+            // 底色/描边变化，深色主题下几乎认不出，用户据此以为选中没生效
+            // （链式代理「无法使用」的误报正源于此）。computed 组（URLTest/
+            // Fallback）保持上游原语义 —— 勾标记的是计算出的实际出口；select
+            // 组标记的是用户选中的节点。名字不匹配时组件自己返回空盒子。
+            Positioned(
+              top: 0,
+              right: 0,
+              child: _ProxyComputedMark(
+                groupName: selectionSource,
+                proxy: proxy,
               ),
+            ),
           ],
         ),
       ),
@@ -629,7 +663,9 @@ class _ProxyComputedMark extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final proxyName = ref.watch(proxyNameProvider(groupName));
+    // selectedProxyName = 用户选中（selectedMap），没点过时回退内核上报的
+    // 组当前实际选中（now）—— 进页面就能看到「当前生效」的勾，不用先点一次。
+    final proxyName = ref.watch(selectedProxyNameProvider(groupName));
     if (proxyName != proxy.name) {
       return const SizedBox();
     }

@@ -9,7 +9,8 @@ export 'proxy_chains.dart'
         decodeProxyChains,
         injectProxyChains,
         nextChainNumber,
-        kProxyChainGroupName;
+        kProxyChainGroupName,
+        kPrimarySelectorGroupName;
 
 /// 链式代理的持久化（shared_preferences）。
 ///
@@ -26,9 +27,7 @@ class ProxyChainStore {
 
   static Future<void> save(List<ProxyChain> chains) async {
     final prefs = await preferences.sharedPreferencesCompleter.future;
-    final raw = json.encode([
-      for (final chain in chains) chain.toJson(),
-    ]);
+    final raw = json.encode([for (final chain in chains) chain.toJson()]);
     await prefs?.setString(key, raw);
   }
 
@@ -51,16 +50,10 @@ class ProxyChainStore {
     final chains = [...await load()];
     var finalName = name;
     if (autoNumber) {
-      final number = nextChainNumber(
-        chains: chains,
-        defaultName: defaultName,
-      );
+      final number = nextChainNumber(chains: chains, defaultName: defaultName);
       finalName = '$defaultName$number';
     }
-    final taken = {
-      ...takenNames,
-      for (final chain in chains) chain.name,
-    };
+    final taken = {...takenNames, for (final chain in chains) chain.name};
     var suffix = 2;
     while (taken.contains(finalName)) {
       finalName = '$name-$suffix';

@@ -419,7 +419,7 @@ class SetupAction extends _$SetupAction {
         // 配置层固定名（不走 l10n，理由见 kProxyChainGroupName 的文档）。
         groupName: kProxyChainGroupName,
         autoGroupName: '自动选择',
-        selectorGroupName: '节点选择',
+        selectorGroupName: kPrimarySelectorGroupName,
         // 自定义覆写模式会整体替换 proxy-groups，rawConfig 里的组活不到
         // 最后 —— 组前置的有效性按覆写列表判，不然 dialer-proxy 悬空。
         finalGroupNames:
@@ -471,7 +471,8 @@ class SetupAction extends _$SetupAction {
       if (chainNames.isNotEmpty) {
         for (var i = 0; i < proxyGroups.length; i++) {
           final group = proxyGroups[i];
-          if (group.name != '节点选择' || group.type != GroupType.Selector) {
+          if (group.name != kPrimarySelectorGroupName ||
+              group.type != GroupType.Selector) {
             continue;
           }
           final members = [...?group.proxies];

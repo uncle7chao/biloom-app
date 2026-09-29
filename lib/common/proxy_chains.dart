@@ -31,6 +31,12 @@ import 'dart:convert';
 /// 与「自动选择」「节点选择」两个硬编码锚点名同一处理。
 const kProxyChainGroupName = '链式代理';
 
+/// 规则模式下链名并入的**主选择器**组名（与内核 subscription_defaults.go 的
+/// 锚点常量同名，刻意不走 l10n，理由同 [kProxyChainGroupName]）。
+/// 链式代理页签的卡片选中态与点击都改道到这里（全局模式则改道 GLOBAL），
+/// 保证全应用「选中 = 生效」只有一份 —— 链组自己的选中记录不产生流量效果。
+const kPrimarySelectorGroupName = '节点选择';
+
 /// 一条链式代理 —— 全局索引记录，**没有配置归属**。
 class ProxyChain {
   const ProxyChain({
