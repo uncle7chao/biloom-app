@@ -81,6 +81,10 @@ class _HomeShell extends ConsumerWidget {
               ),
             ),
           ),
+          // Android Banner 广告位（M3 批 2）：只认 adsBannerPlacementProvider，
+          // 平台/开关/ID 的裁决全在 provider 与远程 JSON —— 非 Android 恒
+          // SizedBox.shrink，不占布局。
+          const AdsBanner(),
           AnimatedVisibility.bottomNavigation(
             visible: isMobile,
             child: MediaQuery.removePadding(

@@ -27,6 +27,10 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+    <!-- wifi_ssid 插件自带后台定位，App 只需前台读 SSID —— 显式剔除 -->
+    <uses-permission
+        android:name="android.permission.ACCESS_BACKGROUND_LOCATION"
+        tools:node="remove" />
 
     <application
         android:name=".BiLoomApplication"
@@ -116,5 +120,10 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+
+        <!-- AdMob App ID（缺失会在 SDK 初始化时直接崩溃）。BiLoom 正式 App ID -->
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-6951233552506947~4687852839" />
     </application>
 </manifest>

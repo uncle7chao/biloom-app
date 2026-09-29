@@ -48,13 +48,12 @@ enum AdPlatform { android, windows, macos, linux }
 
 /// 当前**真正接了广告 SDK** 的平台。
 ///
-/// AdMob 只有 Android/iOS，而 Android 侧的 google_mobile_ads 尚未接入
-/// （Android 全线押后中）—— 所以现在是空集：任何平台都不展示，但拉取/
-/// 缓存/判定全链路照常运转，改 biloom.top 的 JSON 就能在 Windows 上完整
-/// 验证开关行为（看日志与 provider 状态）。Android 集成时把
-/// [AdPlatform.android] 加进来，此处之外零改动。公开成常量而非私有：
-/// state 层的平台裁决要先查它（跨库可见性），它本来就是公开的接缝。
-const kAdSdkPlatforms = <AdPlatform>{};
+/// AdMob 只有 Android/iOS。Android 已接 google_mobile_ads（2026-09-29 批 2，
+/// App ID 与广告位 ID 见 AndroidManifest 注释与 biloom.top/ads.json）——
+/// 把 [AdPlatform.android] 加进本集合即点亮整条链路，配置层零改动。
+/// Windows/macOS/Linux 依旧没有 SDK，配置可先在远程 JSON 预置、接缝打开
+/// 即生效。公开成常量而非私有：state 层的平台裁决要先查它（跨库可见性）。
+const kAdSdkPlatforms = <AdPlatform>{AdPlatform.android};
 
 /// 活动页 url 的**域白名单**：只允许 https 与 biloom.top 及其子域。
 ///
@@ -133,7 +132,11 @@ class AdsRemoteConfig {
     required this.enabled,
     required this.bannerAndroid,
     required this.bannerWindows,
-    this.promoWindows = const PromoWindowProps(enabled: false, url: '', badge: ''),
+    this.promoWindows = const PromoWindowProps(
+      enabled: false,
+      url: '',
+      badge: '',
+    ),
   });
 
   final int v;
@@ -202,7 +205,10 @@ bool adsConfigIsStale(int? fetchedAtMs, int nowMs) {
 ///
 /// 这里只做配置层判定；「平台有没有 SDK」是运行时事实（`_adSdkPlatforms`），
 /// 由 state 层先查再进来 —— 两层分开，配置判定才能独立测试。
-AdPlacementProps? adsBannerPropsFor(AdsRemoteConfig? config, AdPlatform platform) {
+AdPlacementProps? adsBannerPropsFor(
+  AdsRemoteConfig? config,
+  AdPlatform platform,
+) {
   if (config == null || !config.enabled) {
     return null;
   }
