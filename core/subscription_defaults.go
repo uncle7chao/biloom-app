@@ -23,7 +23,6 @@ const (
 	defaultGroupAuto     = "自动选择"
 	defaultGroupFallback = "故障转移"
 	defaultGroupDirect   = "全球直连"
-	defaultGroupAdBlock  = "广告拦截"
 	defaultGroupFinal    = "漏网之鱼"
 )
 
@@ -33,12 +32,19 @@ const (
 // 不生效」，而是内核加载配置直接报错、用户看到的是导入失败。所以这里只挑三种情况：
 //   - GEOIP,LAN —— 内核在 rules/common/geoip.go 里对 country=="lan" 有专门分支，
 //     直接用 iputil 判断，连 geodata 都不查；
-//   - GEOIP,CN 与 GEOSITE,CATEGORY-ADS-ALL —— 已在随包发布的 assets/data/*.dat
+//   - GEOIP,CN —— 已在随包发布的 assets/data/*.dat
 //     里逐条核对过（core/subscription_defaults_test.go 会持续守着）。
 //
 // 顺带记一笔踩过的坑：最初这里写的是 GEOIP,PRIVATE。GEOIP.dat 里确实有 PRIVATE
 // 这一条，但那只在 geodata-mode 下生效；默认走的是 GEOIP.metadb，PRIVATE 未必查得到。
 // 而 LAN 是代码级特例，与用哪套数据无关 —— 这也是机场普遍写 LAN 而不是 PRIVATE 的原因。
+//
+// 历史注记（2026-09-29 用户拍板删除）：这里曾注入过一条
+// `GEOSITE,CATEGORY-ADS-ALL,广告拦截`（组默认 REJECT 且 hidden）。AdMob/AdSense
+// 的域名（admob.com、googlesyndication.com、doubleclick.net 等）全在
+// CATEGORY-ADS-ALL 里，用户访问 AdMob 后台被本机规则直接 REJECT，表象是「断链」；
+// 更致命的是 BiLoom 自己的变现就是 AdMob/AdSense，Android 版 TUN 模式下会把自家
+// 广告 SDK 流量也拦掉 —— 自己拦自己的广告。故整条规则与分组删除，不留开关。
 func defaultSubscriptionGroups(proxies []map[string]any) ([]map[string]any, []string) {
 	names := make([]string, 0, len(proxies))
 	for _, proxy := range proxies {
@@ -71,7 +77,6 @@ func defaultSubscriptionGroups(proxies []map[string]any) ([]map[string]any, []st
 	auto := unique(defaultGroupAuto)
 	fallback := unique(defaultGroupFallback)
 	direct := unique(defaultGroupDirect)
-	adBlock := unique(defaultGroupAdBlock)
 	final := unique(defaultGroupFinal)
 
 	// 节点列表会被多个分组引用，每处都拷一份：这些切片最终会一起进 YAML，
@@ -89,7 +94,7 @@ func defaultSubscriptionGroups(proxies []map[string]any) ([]map[string]any, []st
 	//
 	//	① 给用户点的 —— selector（选哪个节点）与 auto（让它自己挑最快的），各占一个
 	//	   「代理」页签；
-	//	② 给规则用的 —— 下面四个。规则里必须写一个目标名（`GEOSITE,CN,全球直连` 里的
+	//	② 给规则用的 —— 下面三个。规则里必须写一个目标名（`GEOSITE,CN,全球直连` 里的
 	//	   那个名字），所以它们得存在，但不必各占一个页签。标 hidden。
 	//
 	// 标 hidden 的前提（都核过，缺一条这个做法就不成立）：
@@ -119,12 +124,6 @@ func defaultSubscriptionGroups(proxies []map[string]any) ([]map[string]any, []st
 			"hidden":  true,
 		},
 		{
-			"name":    adBlock,
-			"type":    "select",
-			"proxies": []string{"REJECT", "DIRECT"},
-			"hidden":  true,
-		},
-		{
 			"name":    final,
 			"type":    "select",
 			"proxies": []string{selector, auto, "DIRECT"},
@@ -138,7 +137,6 @@ func defaultSubscriptionGroups(proxies []map[string]any) ([]map[string]any, []st
 		// 所以它在任何 geodata 模式下都成立，也正是各家机场的通行写法。
 		// no-resolve：域名连接不该为了判断内网归属先去做一次解析。
 		"GEOIP,LAN," + direct + ",no-resolve",
-		"GEOSITE,CATEGORY-ADS-ALL," + adBlock,
 		// GEOSITE,CN 必须排在 GEOIP,CN 前面。它是域名类规则，命中不需要先解析；
 		// 而 fake-ip 模式下 GEOIP,CN 得先 ResolveIP 拿到真 IP 才判断得了
 		// （见下面那条的注释），每条新连接都要等一次同步 DNS 解析。

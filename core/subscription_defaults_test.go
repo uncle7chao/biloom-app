@@ -70,8 +70,8 @@ func TestConvertSubscriptionInjectsUsableDefaults(t *testing.T) {
 		}
 		groupNames[name] = true
 	}
-	if len(groupNames) != 6 {
-		t.Fatalf("expected 6 default groups, got %d (%v)", len(groupNames), groupNames)
+	if len(groupNames) != 5 {
+		t.Fatalf("expected 5 default groups, got %d (%v)", len(groupNames), groupNames)
 	}
 
 	if first, _ := shape.ProxyGroups[0]["name"].(string); first != defaultGroupProxies {
@@ -194,7 +194,6 @@ func TestDefaultSubscriptionGroupsHidePlumbingOnly(t *testing.T) {
 	wantHidden := []string{
 		defaultGroupFallback,
 		defaultGroupDirect,
-		defaultGroupAdBlock,
 		defaultGroupFinal,
 	}
 
@@ -225,9 +224,11 @@ func TestDefaultSubscriptionGroupsHidePlumbingOnly(t *testing.T) {
 	}
 
 	// 隐藏的分组必须仍然被规则引用 —— 否则「藏」就退化成了「删」，
-	// 国内分流与广告拦截会一起失效，而且界面上没有任何提示。
+	// 国内分流会失效，而且界面上没有任何提示。（广告拦截组已随 2026-09-29
+	// 的规则删除一并移除 —— 它会 REJECT 掉 AdMob/AdSense 全家，包括我们
+	// 自己的广告变现流量。）
 	joined := strings.Join(shape.Rules, "\n")
-	for _, name := range []string{defaultGroupDirect, defaultGroupAdBlock} {
+	for _, name := range []string{defaultGroupDirect} {
 		if !strings.Contains(joined, ","+name) {
 			t.Errorf("没有任何规则指向隐藏分组 %q：它要么成了死重量，要么分流已经断了", name)
 		}
@@ -276,6 +277,23 @@ func TestDefaultSubscriptionRulesMatchBundledGeodata(t *testing.T) {
 	}
 	if checked == 0 {
 		t.Fatal("默认规则完全没有用到 geodata，这条用例失去了意义")
+	}
+}
+
+// 广告拦截规则必须保持删除状态（2026-09-29 用户拍板）。CATEGORY-ADS-ALL 收录了
+// admob.com / googlesyndication.com / doubleclick.net 等 —— BiLoom 自己的变现就是
+// AdMob/AdSense，这条规则等于默认把用户访问广告后台、乃至 Android 版自家广告 SDK
+// 的流量全部 REJECT。谁要是把它加回来，这条用例会拦住。
+func TestDefaultSubscriptionRulesMustNotBlockAds(t *testing.T) {
+	_, rules := defaultSubscriptionGroups([]map[string]any{{"name": "HK-1"}})
+	joined := strings.Join(rules, "\n")
+	if strings.Contains(joined, "CATEGORY-ADS-ALL") {
+		t.Fatalf("默认规则里出现了广告拦截（CATEGORY-ADS-ALL），会 REJECT 掉 AdMob/AdSense 流量：\n%s", joined)
+	}
+	for _, rule := range rules {
+		if strings.Contains(rule, "REJECT") {
+			t.Fatalf("默认规则里出现了 REJECT 出站：%s", rule)
+		}
 	}
 }
 
