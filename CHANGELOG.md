@@ -1,5 +1,17 @@
 # Changelog
 
+## v01.00.27 (2026-09-29)
+
+**Features**
+
+- **backup** Backup and sync parity: proxy chains and favorite stars are now part of every backup and come back on a full restore, profiles can be backed up automatically on add/remove with a rolling local history (the remote WebDAV copy is never overwritten), and a backup zip can be shared to another device over the LAN via a QR code or a plain address (0ec7072)
+- **Android** AdMob banner integration: the application ID ships in the manifest, the home shell mounts the banner slot, and placement/switch decisions stay in the remote config - plus the build-time NDK clang lookup works on Windows hosts and the stray background-location permission is stripped (88a5b3d)
+
+**Bug Fixes**
+
+- **core** The injected default rules no longer carry an ad-block rule: GEOSITE CATEGORY-ADS-ALL previously routed AdMob, googlesyndication and doubleclick into a hidden REJECT group, so AdMob itself was unreachable while connected - a regression test now forbids ad-block rules in defaults (9fddbe7)
+- **scan** Scanning a QR code now returns any non-empty content: custom-scheme share links decoded as plain text used to close the scanner with no result (569b0ce)
+
 ## v01.00.26 (2026-09-29)
 
 **Bug Fixes**
