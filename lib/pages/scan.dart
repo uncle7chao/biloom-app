@@ -39,12 +39,15 @@ class _ScanPageState extends ConsumerState<ScanPage>
     if (!mounted) {
       return;
     }
+    // 任何非空内容都带回去（订阅链接 / ss/vmess/hysteria2 等节点分享链接 /
+    // 纯文本都交给调用方判断）。原实现只认 ML Kit 的 URL 类型，自定义协议
+    // 分享码被判成 TEXT 后不带结果关页，扫码像没扫。
     final barcode = barcodeCapture.barcodes.first;
-    if (barcode.type == BarcodeType.url) {
-      Navigator.pop<String>(context, barcode.rawValue);
-    } else {
-      Navigator.pop(context);
+    final raw = barcode.rawValue;
+    if (raw == null || raw.trim().isEmpty) {
+      return;
     }
+    Navigator.pop<String>(context, raw);
   }
 
   void _listenBarcodes() {
