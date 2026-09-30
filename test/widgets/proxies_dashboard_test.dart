@@ -6,6 +6,7 @@ import 'package:fl_clash/providers/config.dart';
 import 'package:fl_clash/providers/database.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/views/proxies/dashboard.dart';
+import 'package:fl_clash/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -63,9 +64,10 @@ void main() {
     await pumpDashboard(tester);
 
     // 出口大卡亮出来：名字 + 协议胶囊都能找到。
+    // 名字用 EmojiText 渲染（内部是 RichText），必须 findRichText 找得到。
     expect(find.byType(ProxyExitDashboard), findsOneWidget);
-    expect(find.text('HK-01'), findsOneWidget);
-    expect(find.text('Trojan'), findsOneWidget);
+    expect(find.text('HK-01', findRichText: true), findsOneWidget);
+    expect(find.text('Trojan', findRichText: true), findsOneWidget);
   });
 
   testWidgets('hides when the effective selector does not exist', (
@@ -84,6 +86,9 @@ void main() {
     await pumpDashboard(tester);
 
     // 没有生效选择器（没有配置）就整卡隐藏，不显示半截信息。
-    expect(find.byType(ProxyExitDashboard), findsNothing);
+    // 注意：SizedBox.shrink 只是渲染为空，ProxyExitDashboard 这个 widget
+    // 仍挂在树上，find.byType 永远找得到 —— 所以这里断言「没有卡片内容」。
+    expect(find.byType(CommonCard), findsNothing);
+    expect(find.text('HK-01', findRichText: true), findsNothing);
   });
 }
