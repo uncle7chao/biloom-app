@@ -762,5 +762,6 @@
   "connectionsFilterProcess": "Процесс",
   "connectionsFilterChain": "Узел",
   "connectionsFilterRule": "Правило",
-  "connectionsCloseFiltered": "Закрыть отфильтрованные"
+  "connectionsCloseFiltered": "Закрыть отфильтрованные",
+  "currentExit": "Текущий выход"
 }

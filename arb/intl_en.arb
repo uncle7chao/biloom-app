@@ -762,5 +762,6 @@
   "connectionsFilterProcess": "Process",
   "connectionsFilterChain": "Node",
   "connectionsFilterRule": "Rule",
-  "connectionsCloseFiltered": "Close filtered"
+  "connectionsCloseFiltered": "Close filtered",
+  "currentExit": "Current exit"
 }

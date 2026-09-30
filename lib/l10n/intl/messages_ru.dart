@@ -1572,5 +1572,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "connectionsFilterChain": MessageLookupByLibrary.simpleMessage("Узел"),
     "connectionsFilterRule": MessageLookupByLibrary.simpleMessage("Правило"),
     "connectionsCloseFiltered": MessageLookupByLibrary.simpleMessage("Закрыть отфильтрованные"),
+    "currentExit": MessageLookupByLibrary.simpleMessage("Текущий выход"),
   };
 }

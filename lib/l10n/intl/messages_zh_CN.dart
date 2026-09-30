@@ -1086,5 +1086,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "connectionsFilterChain": MessageLookupByLibrary.simpleMessage("节点"),
     "connectionsFilterRule": MessageLookupByLibrary.simpleMessage("规则"),
     "connectionsCloseFiltered": MessageLookupByLibrary.simpleMessage("断开筛选结果"),
+    "currentExit": MessageLookupByLibrary.simpleMessage("当前出口"),
   };
 }

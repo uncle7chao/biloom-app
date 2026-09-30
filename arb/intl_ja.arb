@@ -762,5 +762,6 @@
   "connectionsFilterProcess": "プロセス",
   "connectionsFilterChain": "ノード",
   "connectionsFilterRule": "ルール",
-  "connectionsCloseFiltered": "絞り込み結果を切断"
+  "connectionsCloseFiltered": "絞り込み結果を切断",
+  "currentExit": "現在の出口"
 }

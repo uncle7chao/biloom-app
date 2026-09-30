@@ -12,6 +12,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'card.dart';
 import 'common.dart';
+import 'dashboard.dart';
 import 'region_bar.dart';
 
 typedef ProxyGroupViewKeyMap =
@@ -276,6 +277,10 @@ class ProxiesTabViewState extends ConsumerState<ProxiesTabView>
               ),
             ),
           ),
+          // 「当前出口」仪表卡（2026-09-30 改版 A 档）：固定在页签与地区筛选
+          // 之间，不随页签切换 —— 翻到任何页签都先看到现在走的是谁。没配置 /
+          // 找不到生效选择器时组件自己隐藏，这里无需判空。
+          const ProxyExitDashboard(),
           // 地区筛选栏：把当前页签的节点按出口地区归好，一次点选收窄列表。
           // 它贴在页签底下、列表之上 —— 换页签换内容，不用回来重新点。
           if (currentGroup != null)

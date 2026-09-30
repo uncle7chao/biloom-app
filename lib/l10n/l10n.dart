@@ -6435,6 +6435,11 @@ class AppLocalizations {
   String get connectionsCloseFiltered {
     return Intl.message('Close filtered', name: 'connectionsCloseFiltered', desc: '', args: []);
   }
+
+  /// `Current exit`
+  String get currentExit {
+    return Intl.message('Current exit', name: 'currentExit', desc: '', args: []);
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<AppLocalizations> {

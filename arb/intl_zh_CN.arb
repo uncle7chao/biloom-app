@@ -762,5 +762,6 @@
   "connectionsFilterProcess": "进程",
   "connectionsFilterChain": "节点",
   "connectionsFilterRule": "规则",
-  "connectionsCloseFiltered": "断开筛选结果"
+  "connectionsCloseFiltered": "断开筛选结果",
+  "currentExit": "当前出口"
 }

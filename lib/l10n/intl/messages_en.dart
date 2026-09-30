@@ -1492,5 +1492,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "connectionsFilterChain": MessageLookupByLibrary.simpleMessage("Node"),
     "connectionsFilterRule": MessageLookupByLibrary.simpleMessage("Rule"),
     "connectionsCloseFiltered": MessageLookupByLibrary.simpleMessage("Close filtered"),
+    "currentExit": MessageLookupByLibrary.simpleMessage("Current exit"),
   };
 }

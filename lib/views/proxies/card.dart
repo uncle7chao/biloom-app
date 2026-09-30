@@ -238,16 +238,20 @@ class ProxyCard extends ConsumerWidget {
                   child: child!,
                 );
               },
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: Row(
-                  children: [
-                    _ProxyStatusDot(proxyName: proxy.name, testUrl: testUrl),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: Row(
+              // stretch 让左侧延迟色条自动长到与内容列同高（名称 + 第二行），
+              // 不用自己算高度 —— 也就不用碰 getItemHeight。
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _ProxyDelayBar(proxyName: proxy.name, testUrl: testUrl),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           proxyNameText,
                           const SizedBox(height: 6),
@@ -280,7 +284,7 @@ class ProxyCard extends ConsumerWidget {
                                             // 那 6px 间距留在行里。
                                             if (!region.isUnknown) ...[
                                               Flexible(
-                                                child: _ProxyRegionChip(
+                                                child: ProxyRegionChip(
                                                   region: region,
                                                 ),
                                               ),
@@ -290,7 +294,7 @@ class ProxyCard extends ConsumerWidget {
                                               child:
                                                   type == ProxyCardType.expand
                                                   ? _ProxyDescChip(proxy: proxy)
-                                                  : _ProxyTypeChip(
+                                                  : ProxyTypeChip(
                                                       label: proxy.type,
                                                     ),
                                             ),
@@ -299,12 +303,12 @@ class ProxyCard extends ConsumerWidget {
                                       ),
                                     ),
                                     const SizedBox(width: 8),
-                                    _ProxyExitButton(
+                                    ProxyExitButton(
                                       proxyName: proxy.name,
                                       compact: isCompact,
                                     ),
                                     const SizedBox(width: 6),
-                                    _ProxyDelayButton(
+                                    ProxyDelayButton(
                                       proxyName: proxy.name,
                                       testUrl: testUrl,
                                       onTest: () =>
@@ -343,48 +347,46 @@ class ProxyCard extends ConsumerWidget {
   }
 }
 
-/// 卡片左侧的状态点：实心有色 = 这个节点测过速，颜色即 `getDelayColor`；
-/// 空心灰 = 还没测过。**不猜颜色** —— 没测就画空心，不假装它通。
-class _ProxyStatusDot extends ConsumerWidget {
-  static const double _size = 8;
+/// 卡片左侧的延迟色条：实心有色 = 这个节点测过速，颜色即 `getDelayColor`；
+/// 中性灰 = 还没测过。**不猜颜色** —— 没测就画灰条，不假装它通。
+///
+/// 前身是 8px 状态点（2026-09-30 改版 B 档换竖条）：点是零散的装饰，条是
+/// 卡片自己的视觉骨架 —— 扫一列卡片时色条连成一条「延迟图谱」，通不通一眼
+/// 扫出来。外层 Row 用 stretch，条高自动等于内容列高，`getItemHeight` 不受影响。
+class _ProxyDelayBar extends ConsumerWidget {
+  static const double _width = 3;
 
   final String proxyName;
   final String? testUrl;
 
-  const _ProxyStatusDot({required this.proxyName, this.testUrl});
+  const _ProxyDelayBar({required this.proxyName, this.testUrl});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final value = ref.watch(
       delayProvider(proxyName: proxyName, testUrl: testUrl),
     );
-    final color = getDelayColor(value);
-    final dot = Container(
-      width: _size,
-      height: _size,
+    final color =
+        getDelayColor(value) ?? context.colorScheme.outlineVariant;
+    final bar = Container(
+      width: _width,
       decoration: BoxDecoration(
-        shape: BoxShape.circle,
         color: color,
-        border: color == null
-            ? Border.all(
-                color: context.colorScheme.onSurfaceVariant.opacity38,
-                width: 1.5,
-              )
-            : null,
+        borderRadius: BorderRadius.circular(_width / 2),
       ),
     );
     if (value == null) {
-      return dot;
+      return bar;
     }
-    return Tooltip(message: value > 0 ? '$value ms' : 'Timeout', child: dot);
+    return Tooltip(message: value > 0 ? '$value ms' : 'Timeout', child: bar);
   }
 }
 
 /// 协议类型胶囊。中性色 + 一档浅底 + 一圈描边 —— 与策略组页的类型徽章同一套。
-class _ProxyTypeChip extends StatelessWidget {
+class ProxyTypeChip extends StatelessWidget {
   final String label;
 
-  const _ProxyTypeChip({required this.label});
+  const ProxyTypeChip({required this.label});
 
   @override
   Widget build(BuildContext context) {
@@ -417,17 +419,17 @@ class _ProxyTypeChip extends StatelessWidget {
 /// 认不出地区的节点由调用方整块跳过（`ProxyRegionKind.unknown`），这里不做兜底：
 /// 一个写着「其他」的胶囊对挑节点毫无帮助，只是噪音。
 ///
-/// ⛔ 高度必须继续走 `proxyCardMetaHeight`（就是 [_ProxyTypeChip] 自身的高度）——
+/// ⛔ 高度必须继续走 `proxyCardMetaHeight`（就是 [ProxyTypeChip] 自身的高度）——
 /// `getItemHeight` 是按那个数字算的，这里要是自己有内边距，实机立刻
 /// 「A RenderFlex overflowed」。
-class _ProxyRegionChip extends StatelessWidget {
+class ProxyRegionChip extends StatelessWidget {
   final ProxyRegion region;
 
-  const _ProxyRegionChip({required this.region});
+  const ProxyRegionChip({required this.region});
 
   @override
   Widget build(BuildContext context) {
-    return _ProxyTypeChip(label: '${region.emoji} ${region.label}');
+    return ProxyTypeChip(label: '${region.emoji} ${region.label}');
   }
 }
 
@@ -440,12 +442,12 @@ class _ProxyRegionChip extends StatelessWidget {
 ///
 /// 外层的 `Tooltip` 是给鼠标/读屏用的：这个控件不是 `IconButton`，所以
 /// `icon_button_tooltip_test` 覆盖不到它，得自己带上说明。
-class _ProxyDelayButton extends ConsumerWidget {
+class ProxyDelayButton extends ConsumerWidget {
   final String proxyName;
   final String? testUrl;
   final VoidCallback onTest;
 
-  const _ProxyDelayButton({
+  const ProxyDelayButton({
     required this.proxyName,
     required this.onTest,
     this.testUrl,
@@ -517,7 +519,7 @@ class _ProxyDelayButton extends ConsumerWidget {
 ///
 /// 名字里的地区是机场随手写的（实测本订阅 `US-*` 落在吉隆坡、`SG-*` 落在
 /// 马尼拉），要知道真实落地只有把请求从节点里发出去看出口 IP。与
-/// [_ProxyDelayButton] 同一套语言：没测过显示「测落地」带文字入口，测完
+/// [ProxyDelayButton] 同一套语言：没测过显示「测落地」带文字入口，测完
 /// 显示 `→ 🇲🇾`；**实测地区与名字标注不一致时整颗按钮变警示色** —— 这正是
 /// 用户点它的理由，不一致不该藏进 tooltip 里。
 ///
@@ -526,14 +528,14 @@ class _ProxyDelayButton extends ConsumerWidget {
 /// 所以重进页面、重启应用之后，测过的节点依然显示 `→ 🇲🇾` 而不是回到入口态。
 /// 不一致的比较对象始终是**名字认出的地区** —— 卡片标签本身已跟随落地，
 /// 拿标签比就永远一致，警示就永远不亮了。
-class _ProxyExitButton extends ConsumerWidget {
+class ProxyExitButton extends ConsumerWidget {
   final String proxyName;
 
   /// 窄卡模式：只显示图标，不显示文字标签。测试中仍显示转圈，
   /// 失败/不一致的警示色不变 —— 语义由 tooltip 兜底。
   final bool compact;
 
-  const _ProxyExitButton({required this.proxyName, this.compact = false});
+  const ProxyExitButton({required this.proxyName, this.compact = false});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -651,7 +653,7 @@ class _ProxyDescChip extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return _ProxyTypeChip(label: ref.watch(proxyDescProvider(proxy)));
+    return ProxyTypeChip(label: ref.watch(proxyDescProvider(proxy)));
   }
 }
 
@@ -676,9 +678,16 @@ class _ProxyComputedMark extends ConsumerWidget {
         padding: const EdgeInsets.all(4),
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: Theme.of(context).colorScheme.secondaryContainer,
+          // 选中勾走品牌色实心圆（2026-09-30 改版 B 档）：原来的
+          // secondaryContainer 底 + inversePrimary 勾在深色主题下对比太弱，
+          // 「选中了没有」要一眼可辨 —— 选中语言统一到 primary 上。
+          color: Theme.of(context).colorScheme.primary,
         ),
-        child: const SelectIcon(),
+        child: Icon(
+          Icons.check,
+          size: 14,
+          color: Theme.of(context).colorScheme.onPrimary,
+        ),
       ),
     );
   }

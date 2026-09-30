@@ -11,6 +11,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'card.dart';
 import 'common.dart';
+import 'dashboard.dart';
 
 typedef GroupNameProxiesMap = Map<String, List<Proxy>>;
 
@@ -326,6 +327,9 @@ class _ProxiesListViewState extends ConsumerState<ProxiesListView> {
                       key: proxiesListStoreKey,
                       controller: _controller,
                       slivers: [
+                        // 「当前出口」仪表卡（2026-09-30 改版 A 档）：列表布局
+                        // 下作为首张卡随内容滚动，与页签布局同一套数据源。
+                        const SliverToBoxAdapter(child: ProxyExitDashboard()),
                         for (final group in state.groups)
                           _buildGroup(
                             context,

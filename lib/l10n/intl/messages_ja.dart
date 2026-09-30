@@ -1236,5 +1236,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "connectionsFilterChain": MessageLookupByLibrary.simpleMessage("ノード"),
     "connectionsFilterRule": MessageLookupByLibrary.simpleMessage("ルール"),
     "connectionsCloseFiltered": MessageLookupByLibrary.simpleMessage("絞り込み結果を切断"),
+    "currentExit": MessageLookupByLibrary.simpleMessage("現在の出口"),
   };
 }
