@@ -102,9 +102,11 @@ void main() {
   tearDownAll(() {
     // The shared system temp dir is not exclusively ours; another suite running
     // alongside this one can take the tree out from under the teardown.
-    if (root.existsSync()) {
-      root.deleteSync(recursive: true);
-    }
+    try {
+      if (root.existsSync()) {
+        root.deleteSync(recursive: true);
+      }
+    } catch (_) {}
   });
 
   setUp(() {

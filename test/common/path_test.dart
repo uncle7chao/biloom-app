@@ -33,9 +33,13 @@ void main() {
   });
 
   tearDownAll(() {
-    if (root.existsSync()) {
-      root.deleteSync(recursive: true);
-    }
+    // 同款防护：读 provider 目录可能连带打开 drift 数据库，句柄未释放时
+    // Windows 上 deleteSync 会失败 —— 清理尽力而为，不让 tearDownAll 报错。
+    try {
+      if (root.existsSync()) {
+        root.deleteSync(recursive: true);
+      }
+    } catch (_) {}
   });
 
   test('provider directories match the paths handed to the core', () async {

@@ -57,9 +57,13 @@ void main() {
   });
 
   tearDownAll(() {
-    if (pathRoot.existsSync()) {
-      pathRoot.deleteSync(recursive: true);
-    }
+    // updateMode 触发的 drift LazyDatabase 可能还没释放 SQLite 文件句柄，
+    // Windows 上 deleteSync 会因文件占用失败 —— 临时目录清理尽力而为即可。
+    try {
+      if (pathRoot.existsSync()) {
+        pathRoot.deleteSync(recursive: true);
+      }
+    } catch (_) {}
   });
 
   setUp(() => reset(core));
