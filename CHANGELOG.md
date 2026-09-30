@@ -1,5 +1,16 @@
 # Changelog
 
+## v01.00.28 (2026-09-30)
+
+**Features**
+
+- **proxies** Chain proxy nodes now appear only in the chain proxy tab: they no longer show up in GLOBAL, the node-selection group or region and include-all tabs, while the kernel member lists stay untouched and picking a chain from the chain tab still routes through the effective selector (b60e5e6)
+
+**Bug Fixes**
+
+- **scan** QR scanning works again: the scan window computed screen coordinates inside a constrained preview and drifted off the viewfinder, so detection now covers the full preview; the share-page QR gains a proper quiet zone, the LAN-sync address dialog gains a scan button, and the manifest declares the camera permission (06cfc06)
+- **Android** Release build configuration: R8 no longer strips Room and WorkManager classes, the Tencent maven mirror unblocks dependency resolution, and the settings plugin repositories fit the release toolchain (3a8b1a2)
+
 ## v01.00.27 (2026-09-29)
 
 **Features**
