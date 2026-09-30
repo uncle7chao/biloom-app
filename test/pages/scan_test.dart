@@ -180,8 +180,8 @@ void main() {
       expect(result, 'https://sub.example/x');
     });
 
-    testWidgets('a non-url barcode pops without a value', (tester) async {
-      String? result = 'unset';
+    testWidgets('a non-url barcode pops with its raw value', (tester) async {
+      String? result;
       var popped = false;
       await pumpScanPage(
         tester,
@@ -194,8 +194,10 @@ void main() {
       platform.emit(_capture(type: BarcodeType.text, rawValue: 'plain text'));
       await tester.pumpAndSettle();
 
+      // 2026-09-27 拍板：任何非空内容都带原值返回 —— 自定义协议分享码
+      // （ML Kit 判成 TEXT）也要能交给调用方（局域网导入等）判断。
       expect(popped, isTrue);
-      expect(result, isNull);
+      expect(result, 'plain text');
     });
   });
 

@@ -30,13 +30,15 @@ void main() {
   });
 
   test('group derivation sanitizes runtime state and respects clash mode', () {
+    // 成员用真实节点类型：内置出站（DIRECT 等）自 2026-09-27 起不再显示为
+    // 组页签卡片（filterGroupMemberCards），拿 Direct 当成员会断言落空。
     final groups = [
       const Group(
         name: 'Visible',
         type: GroupType.Selector,
         now: 'Selected',
         hidden: false,
-        all: [Proxy(name: 'Selected', type: 'Direct', now: 'runtime')],
+        all: [Proxy(name: 'Selected', type: 'Trojan', now: 'runtime')],
       ),
       const Group(name: 'Hidden', type: GroupType.Selector, hidden: true),
       Group(name: GroupName.GLOBAL.name, type: GroupType.Selector),
@@ -139,8 +141,9 @@ void main() {
           type: GroupType.Selector,
           hidden: false,
           all: [
-            Proxy(name: 'Alpha', type: 'Direct'),
-            Proxy(name: 'Beta', type: 'Direct'),
+            // 真实节点类型：内置出站不显示为卡片（2026-09-27 拍板）。
+            Proxy(name: 'Alpha', type: 'Trojan'),
+            Proxy(name: 'Beta', type: 'Trojan'),
           ],
         ),
         const Group(
@@ -148,7 +151,7 @@ void main() {
           type: GroupType.URLTest,
           hidden: false,
           testUrl: 'https://group.test',
-          all: [Proxy(name: 'Gamma', type: 'Direct')],
+          all: [Proxy(name: 'Gamma', type: 'Trojan')],
         ),
       ];
       _profiles(container).replace([profile]);

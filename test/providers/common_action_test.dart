@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:fl_clash/core/controller.dart';
 import 'package:fl_clash/core/interface.dart';
@@ -12,9 +13,28 @@ import 'package:fl_clash/state.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:path_provider_platform_interface/path_provider_platform_interface.dart';
 import 'package:riverpod/riverpod.dart';
 
 class MockCoreHandlerInterface extends Mock implements CoreHandlerInterface {}
+
+/// updateMode 会连带触发 profiles 流（drift LazyDatabase 打开），
+/// 测试环境没有平台通道 —— 挂一个内存目录的 fake，路径请求全部落到
+/// 系统临时目录（与 test/common/path_test.dart 同款做法）。
+class _FakePathProvider extends PathProviderPlatform {
+  _FakePathProvider(this.root);
+
+  final String root;
+
+  @override
+  Future<String?> getTemporaryPath() async => root;
+
+  @override
+  Future<String?> getApplicationSupportPath() async => root;
+
+  @override
+  Future<String?> getApplicationCachePath() async => root;
+}
 
 const runningVersion = '0.8.96';
 
@@ -22,6 +42,7 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   late MockCoreHandlerInterface core;
+  late Directory pathRoot;
 
   setUpAll(() {
     core = MockCoreHandlerInterface();
@@ -31,6 +52,14 @@ void main() {
       version: runningVersion,
       buildNumber: '1',
     );
+    pathRoot = Directory.systemTemp.createTempSync('common_action_test');
+    PathProviderPlatform.instance = _FakePathProvider(pathRoot.path);
+  });
+
+  tearDownAll(() {
+    if (pathRoot.existsSync()) {
+      pathRoot.deleteSync(recursive: true);
+    }
   });
 
   setUp(() => reset(core));

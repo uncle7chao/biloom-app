@@ -243,7 +243,7 @@ void main() {
       windows = AppTray.forPlatform(isMacOS: false, isWindows: true);
     });
 
-    test('gets a plain icon, no group submenus and no speed toggle', () async {
+    test('gets a plain icon, group submenus and no speed toggle', () async {
       await update(
         _trayState(
           isStart: true,
@@ -260,10 +260,14 @@ void main() {
 
       final arguments = showCall()!.arguments as Map;
       expect((arguments['icon'] as Map)['isTemplate'], isFalse);
-      expect(
-        _items(showCall()).where((item) => item['type'] == 'submenu'),
-        isEmpty,
-      );
+      // Windows 托盘也有分组子菜单（切节点高频动作，桌面端放开；
+      // windows 端 tray_plugin.cpp 的 RebuildMenu 递归建 HMENU）。
+      final submenu = _items(
+        showCall(),
+      ).firstWhere((item) => item['type'] == 'submenu');
+      expect(submenu['label'], 'Proxy');
+      final children = (submenu['items'] as List).cast<Map<Object?, Object?>>();
+      expect(children.map((item) => item['label']), contains('A'));
       expect(
         _labels(showCall()),
         isNot(contains(currentAppLocalizations.speedStatistics)),
@@ -275,5 +279,28 @@ void main() {
 
       expect(calls.where((call) => call.method == 'setTitle'), isEmpty);
     });
+  });
+
+  test('a platform without submenu support (Linux) gets no group submenus', () async {
+    final linux = AppTray.forPlatform(isMacOS: false, isWindows: false);
+    await update(
+      _trayState(
+        isStart: true,
+        groups: [
+          const Group(
+            name: 'Proxy',
+            type: GroupType.Selector,
+            all: [Proxy(name: 'A', type: 'Direct')],
+          ),
+        ],
+      ),
+      on: linux,
+    );
+
+    expect(
+      _items(showCall()).where((item) => item['type'] == 'submenu'),
+      isEmpty,
+      reason: 'Linux tray plugin has no submenu implementation',
+    );
   });
 }
