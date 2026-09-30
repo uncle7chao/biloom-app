@@ -1,5 +1,7 @@
 allprojects {
     repositories {
+        // 国内镜像置顶直连（命中即不再走代理），google()/mavenCentral() 兜底
+        maven("https://mirrors.cloud.tencent.com/nexus/repository/maven-public")
         google()
         mavenCentral()
     }
