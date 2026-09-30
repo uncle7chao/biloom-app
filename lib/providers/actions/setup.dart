@@ -360,9 +360,13 @@ class SetupAction extends _$SetupAction {
   }) async {
     final profileId = setupState.profileId;
     if (profileId == null) {
-      // 没有生效配置就没有链注入，GLOBAL 展示过滤的名单必须清空，
+      // 没有生效配置就没有链注入，展示过滤的名单必须清空，
       // 不然换配置后旧名单还挂着，会把新配置里的同名节点藏掉。
-      ref.read(chainInjectedNamesProvider.notifier).set(const {});
+      ref.read(chainInjectedNamesProvider.notifier).set((
+        dialers: const {},
+        chains: const {},
+        groupName: '',
+      ));
       return (yaml: '', md5: '');
     }
     final defaultUA = globalState.packageInfo.ua;
@@ -404,9 +408,9 @@ class SetupAction extends _$SetupAction {
     // 智能抗检测之前（链节点与快照注入的前置节点同样被补齐指纹）。
     var chainGroupName = '';
     var chainNames = const <String>[];
-    // GLOBAL 页签展示层过滤的名单只跟**当前生效**的配置走：预览其他配置也走
-    // getProfile，但那条路径不能动名单 —— 不然预览完 A 配置的链节点会从
-    // B 配置的 GLOBAL 里消失（或 B 的链漏进 A），直到下次切换配置才恢复。
+    // 展示层过滤名单只跟**当前生效**的配置走：预览其他配置也走 getProfile，
+    // 但那条路径不能动名单 —— 不然预览完 A 配置的过滤名单会漏进 B 配置
+    // （A 的链从 B 的页签里消失，或 B 的链漏进 A），直到下次切换配置才恢复。
     final isActiveProfile = profileId == ref.read(currentProfileIdProvider);
     try {
       // 全局索引模型（2026-09-27 定稿）：链不属于任何配置，全部链在每份配置
@@ -430,19 +434,26 @@ class SetupAction extends _$SetupAction {
       );
       chainGroupName = injected.groupName;
       chainNames = injected.chainNames;
-      // GLOBAL 页签展示层过滤的名单 = 快照注入的前置节点。链节点**不在**
-      // 过滤名单里（2026-09-28 用户拍板「不管什么模式只能选一个，选中的生效」
-      // 的另一半）：全局模式的流量入口是 GLOBAL，链节点必须留在 GLOBAL 成员里
-      // 才能直接选链。前置节点是纯技术性存在（家在「链式代理」页签），继续藏。
+      // 展示层过滤名单（2026-09-30 用户拍板）：链节点只在「链式代理」页签
+      // 展示，不再落到出口所在的任何其他页签（GLOBAL / 节点选择 / 地区组）。
+      // 内核成员数据不动 —— 规则 7 并进「节点选择」的链名照旧，链卡片点击
+      // 改道生效选择器，选中照常生效；这份名单只让卡片不在别的页签露面。
+      // 快照前置节点（dialers）维持原样：纯技术性存在，从 GLOBAL 摘掉。
       if (isActiveProfile) {
-        ref.read(chainInjectedNamesProvider.notifier).set({
-          ...injected.injectedDialerNames,
-        });
+        ref.read(chainInjectedNamesProvider.notifier).set((
+          dialers: {...injected.injectedDialerNames},
+          chains: {...injected.chainNames},
+          groupName: injected.groupName,
+        ));
       }
     } catch (_) {
       // 存储读挂了不能拖垮整份配置的组装 —— 没有链式代理，应用照常能跑。
       if (isActiveProfile) {
-        ref.read(chainInjectedNamesProvider.notifier).set(const {});
+        ref.read(chainInjectedNamesProvider.notifier).set((
+          dialers: const {},
+          chains: const {},
+          groupName: '',
+        ));
       }
     }
     // 自定义覆写模式会在 makeRealProfileTask 里**整体替换** proxy-groups ——

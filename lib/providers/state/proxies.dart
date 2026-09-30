@@ -1,23 +1,47 @@
 part of '../state.dart';
 
-/// 链式代理注入进运行时配置的**快照前置节点**名集合（见
-/// `common/proxy_chains.dart` 的 injectProxyChains）。GLOBAL 页签的展示层用它
-/// 把这些纯技术性节点从成员列表里摘掉 —— 它们的家在「链式代理」页签。
-/// ⛔ 链节点本体**不在**本集合（2026-09-28 用户拍板「不管什么模式只能选一个，
-/// 选中的生效」）：全局模式的流量入口是 GLOBAL，链节点必须显示在 GLOBAL 成员里
-/// 才能直接选链。配置组装（setup.dart）在每次应用配置时重写本集合。
+/// 链式代理注入进运行时配置的**展示层过滤名单**（见
+/// `common/proxy_chains.dart` 的 injectProxyChains）。配置组装（setup.dart）
+/// 在每次应用配置时整体重写本状态，三个字段各有分工：
+///
+/// - [dialers]：快照注入的**前置节点**名。纯技术性存在，从 GLOBAL 成员里
+///   摘掉（它们的家在「链式代理」页签）。
+/// - [chains]：**链节点**名（出口参数副本 + dialer-proxy）。2026-09-30
+///   用户拍板：链节点**只在「链式代理」页签展示**，不再落到出口所在的任何
+///   其他页签（GLOBAL / 节点选择 / 地区组 / include-all 组收编的都算）。
+///   内核成员数据不动，选中照常生效 —— 链卡片的点击本来就改道到生效选择器
+///   （见 `views/proxies/card.dart` 的 `_effectiveChainSelectorName`），
+///   2026-09-28「链节点留在 GLOBAL 才能选链」的前提因此不再成立，被本决策
+///   覆盖。
+/// - [groupName]：「链式代理」分组的**实际**组名（撞名让位后可能是
+///   「链式代理-2」）—— 展示过滤要豁免它，否则链页签自己先空了。
+///
+/// 预览其他配置也走 getProfile，但那条路径不能动名单 —— 不然预览完 A 配置
+/// 的过滤名单会漏进 B 配置（见 setup.dart 的 isActiveProfile 门）。
 ///
 /// 手写 Notifier 不走代码生成：本文件里 ProxyRegionFilter 等同款处理（生成器
 /// 在环境故障期跑不动，而这里必须在组装配置的主隔离同步写入）。
-class ChainInjectedNames extends Notifier<Set<String>> {
-  @override
-  Set<String> build() => const {};
+typedef ChainInjectedNamesState = ({
+  Set<String> dialers,
+  Set<String> chains,
+  String groupName,
+});
 
-  void set(Set<String> names) => state = names;
+class ChainInjectedNames extends Notifier<ChainInjectedNamesState> {
+  @override
+  ChainInjectedNamesState build() => (
+    dialers: const {},
+    chains: const {},
+    groupName: '',
+  );
+
+  void set(ChainInjectedNamesState value) => state = value;
 }
 
 final chainInjectedNamesProvider =
-    NotifierProvider<ChainInjectedNames, Set<String>>(ChainInjectedNames.new);
+    NotifierProvider<ChainInjectedNames, ChainInjectedNamesState>(
+      ChainInjectedNames.new,
+    );
 
 /// GLOBAL 组的展示层过滤：传入名单里的名字不出现在 GLOBAL 成员里。内核数据
 /// 不动，仅展示层过滤。抽成顶层纯函数便于测试。
@@ -33,6 +57,18 @@ List<Proxy> filterGlobalGroupMembers(
   return all
       .where((proxy) => !injectedChainNames.contains(proxy.name))
       .toList();
+}
+
+/// 链节点的展示层过滤：名单里的名字不出现在组成员卡片里。「链式代理」组
+/// 自己是链节点唯一的家，由调用方豁免，本函数不做例外。内核成员数据不动，
+/// 仅展示层过滤 —— 选中记录仍可指向链名（链页签点击改道生效选择器），
+/// 与 [filterGroupMemberCards] 隐藏组/内置出站同一哲学。抽成顶层纯函数便于
+/// 测试。
+List<Proxy> filterChainNodeCards(List<Proxy> all, Set<String> chainNames) {
+  if (chainNames.isEmpty) {
+    return all;
+  }
+  return all.where((proxy) => !chainNames.contains(proxy.name)).toList();
 }
 
 /// 内核内置出站的 type 值（mihomo adapter 侧的 Type() 串）。它们不是订阅节点。
@@ -64,13 +100,20 @@ GroupsState currentGroupsState(Ref ref) {
   final mode = ref.watch(
     patchClashConfigProvider.select((state) => state.mode),
   );
-  final injectedChainNames = ref.watch(chainInjectedNamesProvider);
+  final injectedChains = ref.watch(chainInjectedNamesProvider);
   final groups = ref.watch(
     groupsProvider.select(
       (state) => state.map((item) {
-        final all = item.name == GroupName.GLOBAL.name
-            ? filterGlobalGroupMembers(item.all, injectedChainNames)
+        var all = item.name == GroupName.GLOBAL.name
+            ? filterGlobalGroupMembers(item.all, injectedChains.dialers)
             : filterGroupMemberCards(item.all);
+        // 链节点只在「链式代理」页签展示（2026-09-30 用户拍板）：其余页签
+        // （GLOBAL / 节点选择 / 地区组 / include-all 组收编）一律过滤。
+        // 内核成员数据不动，选中照常生效；豁免的是「链式代理」组的实际
+        // 组名（撞名让位后可能带 -N 后缀）。
+        if (item.name != injectedChains.groupName) {
+          all = filterChainNodeCards(all, injectedChains.chains);
+        }
         return item.copyWith(
           now: '',
           all: all.map((proxy) => proxy.copyWith(now: '')).toList(),

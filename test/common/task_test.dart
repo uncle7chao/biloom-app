@@ -780,4 +780,20 @@ void main() {
       everyElement(isA<Proxy>()),
     );
   });
+
+  test('filterChainNodeCards hides only chain node cards', () {
+    final all = const [
+      Proxy(name: '出口节点', type: 'Shadowsocks'),
+      Proxy(name: '链式代理1', type: 'Shadowsocks'),
+      Proxy(name: '链式代理2', type: 'Shadowsocks'),
+    ];
+    final chains = {'链式代理1', '链式代理2'};
+
+    final filtered = filterChainNodeCards(all, chains);
+    expect(filtered.map((proxy) => proxy.name), ['出口节点']);
+
+    // 空名单直通，且不改变原列表（无链配置零开销）。
+    expect(filterChainNodeCards(all, const {}), same(all));
+    expect(filterChainNodeCards(const [], chains), isEmpty);
+  });
 }
