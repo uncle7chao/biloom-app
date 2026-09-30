@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/enum/enum.dart';
+import 'package:fl_clash/pages/scan.dart';
 import 'package:fl_clash/providers/action.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/views/backup_and_restore.dart'
@@ -223,14 +224,22 @@ class _QrPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final paint = Paint()..color = Colors.black;
     canvas.drawPaint(Paint()..color = Colors.white);
-    final count = qr.moduleCount;
+    // QR 规范要求四周各留 4 个模块的静区（quiet zone），否则大量识别器
+    // 直接拒读 —— 之前模块顶着画布边画，手机对着屏幕经常扫不出来。
+    const quietZone = 4;
+    final count = qr.moduleCount + quietZone * 2;
     final cell = size.width / count;
-    for (var row = 0; row < count; row++) {
-      for (var col = 0; col < count; col++) {
+    for (var row = 0; row < qr.moduleCount; row++) {
+      for (var col = 0; col < qr.moduleCount; col++) {
         if (!qr.isDark(row, col)) continue;
         canvas.drawRRect(
           RRect.fromRectAndRadius(
-            Rect.fromLTWH(col * cell, row * cell, cell, cell),
+            Rect.fromLTWH(
+              (col + quietZone) * cell,
+              (row + quietZone) * cell,
+              cell,
+              cell,
+            ),
             const Radius.circular(0.5),
           ),
           paint,
@@ -313,6 +322,18 @@ class _AddressInputDialogState extends State<_AddressInputDialog> {
   final _controller = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
+  /// 只有带相机的平台才显示扫码入口；桌面端保持纯手填。
+  bool get _canScan => Platform.isAndroid || Platform.isIOS;
+
+  /// 扫码直填：扫到任何非空内容都原样带回（对方分享页画的就是完整
+  /// http 地址），由外层 [importFromLan] 统一做协议补全与格式校验。
+  Future<void> _scan() async {
+    final text = await BaseNavigator.push<String>(context, const ScanPage());
+    if (!mounted) return;
+    if (text == null || text.trim().isEmpty) return;
+    Navigator.of(context).pop(text.trim());
+  }
+
   void _submit() {
     if (!_formKey.currentState!.validate()) return;
     Navigator.of(context).pop(_controller.text.trim());
@@ -345,10 +366,17 @@ class _AddressInputDialogState extends State<_AddressInputDialog> {
               autofocus: true,
               keyboardType: TextInputType.url,
               onFieldSubmitted: (_) => _submit(),
-              decoration: const InputDecoration(
-                prefixIcon: Icon(Icons.lan),
+              decoration: InputDecoration(
+                prefixIcon: const Icon(Icons.lan),
                 labelText: '对方分享页显示的地址',
                 helperText: '例如 192.168.1.5:41234，或完整 http:// 地址',
+                suffixIcon: _canScan
+                    ? IconButton(
+                        tooltip: '扫码导入',
+                        icon: const Icon(Icons.qr_code_scanner),
+                        onPressed: _scan,
+                      )
+                    : null,
               ),
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {

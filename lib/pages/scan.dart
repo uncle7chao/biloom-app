@@ -85,10 +85,11 @@ class _ScanPageState extends ConsumerState<ScanPage>
       body: Stack(
         children: [
           Center(
-            child: MobileScanner(
-              controller: controller,
-              scanWindow: scanWindow,
-            ),
+            // ⛔ 不给 scanWindow：坐标必须按本组件自身 constraints 换算，
+            // 而这里的框是按全屏 MediaQuery 算的，组件又套在 Center 里，
+            // 检测区整体错位 —— 表现就是相机能开但永远扫不到（2026-09-30
+            // 用户装机实测）。全画幅检测最稳；下方取景框只是视觉装饰。
+            child: MobileScanner(controller: controller),
           ),
           CustomPaint(painter: ScannerOverlay(scanWindow: scanWindow)),
           AppBar(

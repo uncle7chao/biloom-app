@@ -16,6 +16,10 @@
         android:required="false" />
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- 扫码（mobile_scanner）：运行时权限由插件自行请求，清单里必须显式
+         声明——靠插件 manifest 合并虽也能进包，但显式写明避免被裁剪工具
+         或合并顺序问题悄悄弄丢（扫码黑屏排查过一轮）。 -->
+    <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
