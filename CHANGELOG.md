@@ -6,6 +6,10 @@
 
 - **proxies** Proxy page UI rework: a persistent exit dashboard card above the node list always shows the currently effective exit (the node-selection group in rule mode, GLOBAL in global mode) with region and type chips plus exit-test and delay-test buttons; node cards swap the status dot for a stretch delay color bar and the selected card checkmark becomes a filled primary badge (252073b)
 
+**Bug Fixes**
+
+- **proxies** Exit-probe batches no longer crash after the page or the core goes away mid-run: the batch re-checks its provider state after every async gap and before each pooled probe, so a disposed container cannot throw from pending work (4afc57c)
+
 ## v01.00.28 (2026-09-30)
 
 **Features**
