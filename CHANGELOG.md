@@ -1,5 +1,11 @@
 # Changelog
 
+## v01.00.29 (2026-09-30)
+
+**Features**
+
+- **proxies** Proxy page UI rework: a persistent exit dashboard card above the node list always shows the currently effective exit (the node-selection group in rule mode, GLOBAL in global mode) with region and type chips plus exit-test and delay-test buttons; node cards swap the status dot for a stretch delay color bar and the selected card checkmark becomes a filled primary badge (252073b)
+
 ## v01.00.28 (2026-09-30)
 
 **Features**

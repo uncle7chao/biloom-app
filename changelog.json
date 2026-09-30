@@ -2,6 +2,24 @@
   "schemaVersion": 2,
   "versions": [
     {
+      "version": "01.00.29",
+      "tag": "v01.00.29",
+      "date": "2026-09-30",
+      "prerelease": false,
+      "groups": [
+        {
+          "type": "feat",
+          "entries": [
+            {
+              "id": "252073b",
+              "scope": "proxies",
+              "text": "Proxy page UI rework: a persistent exit dashboard card above the node list always shows the currently effective exit (the node-selection group in rule mode, GLOBAL in global mode) with region and type chips plus exit-test and delay-test buttons; node cards swap the status dot for a stretch delay color bar and the selected card checkmark becomes a filled primary badge"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "version": "01.00.28",
       "tag": "v01.00.28",
       "date": "2026-09-30",
