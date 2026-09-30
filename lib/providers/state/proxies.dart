@@ -707,9 +707,18 @@ class ProxyExit extends Notifier<ProxyExitState> {
       );
       return;
     }
+    // 计费网络判定有网络插件 await —— 间隙里 provider 可能已被销毁
+    // （riverpod 3 对销毁后的 ref 读取直接抛异常）。
+    if (!ref.mounted) {
+      return;
+    }
     // 等 store 的初始加载完成再取新鲜记录：刚启动时 store 还在 AsyncLoading，
     // 直接读 .value 拿到的是空表 —— 会把库里已有新鲜记录的节点全部重测一遍。
     final fresh = await ref.read(proxyExitStoreProvider.future);
+    // store 加载也可能横跨容器销毁（切页/断内核），同样要守。
+    if (!ref.mounted) {
+      return;
+    }
     final queue = proxyNames.where((name) => !fresh.containsKey(name)).toList();
     if (queue.isEmpty) {
       return;
@@ -717,7 +726,17 @@ class ProxyExit extends Notifier<ProxyExitState> {
     _batchRunning = true;
     try {
       final pool = TaskPool(_batchConcurrency);
-      await Future.wait(queue.map((name) => pool.run(() => test(name))));
+      await Future.wait(
+        queue.map(
+          (name) => pool.run(() async {
+            // 批测是长活（两三百节点几分钟），池子里轮到谁时容器可能已经没了。
+            if (!ref.mounted) {
+              return;
+            }
+            await test(name);
+          }),
+        ),
+      );
     } finally {
       _batchRunning = false;
     }
