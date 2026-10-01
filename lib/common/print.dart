@@ -8,9 +8,13 @@ import 'package:material_ui/material_ui.dart';
 String compactError(Object error) {
   if (error is DioException) {
     final statusCode = error.response?.statusCode;
-    return statusCode != null
-        ? 'DioException(${error.type.name}, HTTP $statusCode)'
-        : 'DioException(${error.type.name})';
+    final code = statusCode != null ? ', HTTP $statusCode' : '';
+    // 底层原因（SocketException: Failed host lookup / Connection timed out
+    // 这类）必须带上 —— 只打 type 名没法区分「DNS 挂了」和「连不上」。
+    final inner = error.error ?? error.message;
+    return inner != null && inner.toString().isNotEmpty
+        ? 'DioException(${error.type.name}$code: $inner)'
+        : 'DioException(${error.type.name}$code)';
   }
   return error.toString();
 }
