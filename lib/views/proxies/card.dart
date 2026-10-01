@@ -348,38 +348,18 @@ class ProxyCard extends ConsumerWidget {
                                 final isCompact = constraints.maxWidth < 240;
                                 return Row(
                                   children: [
-                                    // 左边这一块（地区 + 协议）共用一层 `Align`：它负责把
-                                    // 整块顶到行首，同时把右侧剩余空间吃掉 —— 右下角的
-                                    // 测速按钮才能贴住卡片右边（`Row` 不会自动把最后一
-                                    // 个子项推到行尾）。
-                                    Flexible(
-                                      child: Align(
-                                        alignment:
-                                            AlignmentDirectional.centerStart,
-                                        child: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            // 地区认不出就整块跳过。这里用 collection-if
-                                            // 而不是让胶囊自己返回空盒子 —— 后者会把后面
-                                            // 那 6px 间距留在行里。
-                                            if (!region.isUnknown) ...[
-                                              Flexible(
-                                                child: ProxyRegionChip(
-                                                  region: region,
-                                                ),
-                                              ),
-                                              const SizedBox(width: 6),
-                                            ],
-                                            Flexible(
-                                              child:
-                                                  type == ProxyCardType.expand
-                                                  ? _ProxyDescChip(proxy: proxy)
-                                                  : ProxyTypeChip(
-                                                      label: proxy.type,
-                                                    ),
-                                            ),
-                                          ],
-                                        ),
+                                    // 左边胶囊块用 Expanded 吃掉按钮之外的剩余
+                                    // 宽度：测落地/测速按钮先按自然宽度落位，胶囊
+                                    // 块拿到的是**真实余量**，再在 [_ProxyMetaChips]
+                                    // 里按预算降级。早年两个胶囊直接挂 Flexible，
+                                    // 窄卡上被对半挤成两个空框，看起来像卡片坏了
+                                    // （用户以为地区标签被删了）—— 空盒子比不显示
+                                    // 更糟。
+                                    Expanded(
+                                      child: _ProxyMetaChips(
+                                        region: region,
+                                        proxy: proxy,
+                                        isExpand: type == ProxyCardType.expand,
                                       ),
                                     ),
                                     const SizedBox(width: 8),
@@ -723,17 +703,93 @@ class ProxyExitButton extends ConsumerWidget {
   }
 }
 
-/// 展开卡片的协议胶囊：标签用 `proxyDesc` —— 对普通节点就是协议名（`vless`），
-/// 对策略组成员是 `Selector(香港01)` 这种带子节点的形式。所以它比 `proxy.type`
-/// 多带一层信息，但仍旧用一个中性胶囊装下，不额外占行。
-class _ProxyDescChip extends ConsumerWidget {
+/// 第二行左侧的「地区胶囊 + 协议胶囊」块。
+///
+/// 预算来自外层 `Expanded`：测落地/测速按钮先按自然宽度落位，这里拿到的是
+/// **真实剩余宽度**，再按预算给地区胶囊降级 ——
+///
+/// 1. 全名放得下（连协议胶囊一起）→ `🇭🇰 中国香港`；
+/// 2. 放不下 → 只留旗子 `🇭🇰`（tooltip 补全名）；
+/// 3. 连旗子都放不下 → 地区整块让位，信息在筛选栏/右键菜单仍可达。
+///
+/// 协议胶囊始终保留，用省略号收尾。**任何一档都不允许把胶囊压成空盒子**
+/// —— 01.00.31 实机翻过车：两个 Flexible 胶囊在窄卡上被对半挤空，卡片第二行
+/// 只剩两个空白占位框，用户以为地区标签被删了。
+class _ProxyMetaChips extends ConsumerWidget {
+  final ProxyRegion region;
   final Proxy proxy;
 
-  const _ProxyDescChip({required this.proxy});
+  /// 展开卡片的协议标签用 `proxyDesc` —— 对普通节点就是协议名（`vless`），
+  /// 对策略组成员是 `Selector(香港01)` 这种带子节点的形式。所以它比
+  /// `proxy.type` 多带一层信息，但仍用一个中性胶囊装下。
+  final bool isExpand;
+
+  const _ProxyMetaChips({
+    required this.region,
+    required this.proxy,
+    required this.isExpand,
+  });
+
+  /// 协议胶囊在极端窄的卡片上仍要保住的最小宽度：低于它渲染出来就是一个
+  /// 空框，宁可整个不画。
+  static const double _minVisibleWidth = 32;
+
+  /// 量一段胶囊文字的实宽。胶囊自身横向 padding 12 + 描边 2，再留 2px
+  /// 量测余量 —— 宁可早一档降级，也不能让自然宽度超出预算重新触发挤压。
+  double _chipWidthOf(BuildContext context, String text) {
+    return globalState.measure
+            .computeTextSize(Text(text, style: context.textTheme.labelSmall))
+            .width +
+        16;
+  }
+
+  Widget _startAligned(List<Widget> children) {
+    return Align(
+      alignment: AlignmentDirectional.centerStart,
+      child: Row(mainAxisSize: MainAxisSize.min, children: children),
+    );
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return ProxyTypeChip(label: ref.watch(proxyDescProvider(proxy)));
+    final typeLabel = isExpand ? ref.watch(proxyDescProvider(proxy)) : proxy.type;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final budget = constraints.maxWidth;
+        if (budget < _minVisibleWidth) {
+          return const SizedBox.shrink();
+        }
+        final typeChip = Flexible(child: ProxyTypeChip(label: typeLabel));
+        // 地区认不出就不画（沿用 collection-if 的老规矩：不留 6px 死间距）。
+        if (region.isUnknown) {
+          return _startAligned([typeChip]);
+        }
+        final fullLabel = '${region.emoji} ${region.label}';
+        final typeWidth = _chipWidthOf(context, typeLabel);
+        // 第一档：地区全名 + 协议胶囊都放得下，全量显示。
+        if (_chipWidthOf(context, fullLabel) + 6 + typeWidth <= budget) {
+          return _startAligned([
+            ProxyRegionChip(region: region),
+            const SizedBox(width: 6),
+            typeChip,
+          ]);
+        }
+        // 第二档：只留旗子，全名进 tooltip；协议胶囊至少保住最小可读宽度。
+        if (_chipWidthOf(context, region.emoji) + 6 + _minVisibleWidth <=
+            budget) {
+          return _startAligned([
+            Tooltip(
+              message: fullLabel,
+              child: ProxyTypeChip(label: region.emoji),
+            ),
+            const SizedBox(width: 6),
+            typeChip,
+          ]);
+        }
+        // 第三档：连旗子都放不下，地区整块让位。
+        return _startAligned([typeChip]);
+      },
+    );
   }
 }
 
