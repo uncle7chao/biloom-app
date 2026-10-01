@@ -1,5 +1,11 @@
 # Changelog
 
+## v01.00.31 (2026-10-01)
+
+**Features**
+
+- **proxies** Node cards gain "copy share link" and "copy node" actions: the encoder rebuilds standard URIs from the profile entry — ss (SIP002), vmess (v2 json), vless (incl. reality), trojan, hysteria2 (incl. obfs) and socks5/http. Unsupported types fall back to copying the raw node entry, which the add-node paste box accepts directly (799f291)
+
 ## v01.00.30 (2026-10-01)
 
 **Bug Fixes**
