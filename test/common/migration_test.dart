@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:fl_clash/common/migration.dart';
+import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -37,7 +38,13 @@ void main() {
         );
         final davProps = configMap['davProps']! as Map<String, Object?>;
         davProps['password'] = 'secret';
-        final store = _FakeMigrationStore(configMap: configMap, version: 1);
+        // 密码混淆是「不升版本号」的幂等变换，用当前版本存储验证 —— v1 存储
+        // 现在会额外触发一次性的排序默认值迁移（见「Migration proxies sort
+        // upgrade」组）。
+        final store = _FakeMigrationStore(
+          configMap: configMap,
+          version: Migration.currentVersion,
+        );
 
         final config = await Migration(store: store).run();
 
@@ -566,6 +573,68 @@ void main() {
       expect(store.events, ['getConfigMap', 'getVersion']);
     });
   });
+
+  group('Migration proxies sort upgrade', () {
+    // v1 → v2 的一次性迁移：出厂排序从「默认(none)」切到「按延迟(delay)」。
+    // 与 DNS 那组幂等变换不同，`none` 是用户随时可主动选回的有效值，所以
+    // 判据不能是「读回来还是默认值」（那会把用户后来的选择反复改掉），
+    // 必须靠版本号保证只跑一次。
+    test('migrates a stored legacy default once (v1 → v2)', () async {
+      final store = _FakeMigrationStore(
+        configMap: _createConfigMapWithSort(ProxiesSortType.none),
+        version: 1,
+      );
+
+      final config = await Migration(store: store).run();
+
+      expect(config.proxiesStyleProps.sortType, ProxiesSortType.delay);
+      expect(
+        store.savedConfig?.proxiesStyleProps.sortType,
+        ProxiesSortType.delay,
+      );
+      expect(store.version, Migration.currentVersion);
+      expect(store.events, [
+        'getConfigMap',
+        'getVersion',
+        'saveConfig',
+        'setVersion',
+      ]);
+    });
+
+    test('does not rewrite a v1 store that already picked a sort', () async {
+      // 用户在旧版里就选过「名称」→ 迁移只升版本号，不碰他的选择。
+      final store = _FakeMigrationStore(
+        configMap: _createConfigMapWithSort(ProxiesSortType.name),
+        version: 1,
+      );
+
+      final config = await Migration(store: store).run();
+
+      expect(config.proxiesStyleProps.sortType, ProxiesSortType.name);
+      expect(store.savedConfig, isNull);
+      expect(store.version, Migration.currentVersion);
+      expect(store.events, ['getConfigMap', 'getVersion', 'setVersion']);
+    });
+
+    test('leaves an explicit default alone on the current version', () async {
+      // v2 里主动选回「默认」的配置 → 版本号已是当前值，永远不再被改写。
+      final store = _FakeMigrationStore(
+        configMap: _createConfigMapWithSort(ProxiesSortType.none),
+        version: Migration.currentVersion,
+      );
+
+      final config = await Migration(store: store).run();
+
+      expect(config.proxiesStyleProps.sortType, ProxiesSortType.none);
+      expect(store.savedConfig, isNull);
+      expect(store.version, Migration.currentVersion);
+      expect(store.events, ['getConfigMap', 'getVersion']);
+    });
+
+    test('ships delay as the factory default sort', () {
+      expect(defaultProxiesStyleProps.sortType, ProxiesSortType.delay);
+    });
+  });
 }
 
 /// 造一份「存下来的配置」。没显式给的那部分取**当前**默认值 —— 所以要模拟存量
@@ -613,6 +682,18 @@ Map<String, Object?> _createConfigMapWithNameserver(List<String> nameserver) {
 Map<String, Object?> _createConfigMap({DAVProps? davProps}) {
   return jsonDecode(
         jsonEncode(Config(themeProps: defaultThemeProps, davProps: davProps)),
+      )
+      as Map<String, Object?>;
+}
+
+Map<String, Object?> _createConfigMapWithSort(ProxiesSortType sortType) {
+  return jsonDecode(
+        jsonEncode(
+          Config(
+            themeProps: defaultThemeProps,
+            proxiesStyleProps: ProxiesStyleProps(sortType: sortType),
+          ),
+        ),
       )
       as Map<String, Object?>;
 }

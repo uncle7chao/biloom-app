@@ -40,6 +40,12 @@ class _ProxiesViewState extends ConsumerState<ProxiesView> {
     final currentProfile = currentProfileId == null
         ? null
         : ref.watch(profileProvider(currentProfileId));
+    // 排序入口直接摆在顶栏明面上（2026-10-01 用户要求）：三选一弹出菜单，
+    // 当前项打勾。数据源与「设置」面板里的排序分区完全相同
+    // （proxiesStyleSettingProvider.sortType），选择落盘后测速结果自动重排。
+    final sortType = ref.watch(
+      proxiesStyleSettingProvider.select((state) => state.sortType),
+    );
     return [
       if (currentProfile != null)
         IconButton(
@@ -57,6 +63,37 @@ class _ProxiesViewState extends ConsumerState<ProxiesView> {
           },
           icon: const Icon(Icons.adjust, weight: 1),
         ),
+      CommonPopupBox(
+        targetBuilder: (open) {
+          return IconButton(
+            tooltip: appLocalizations.sort,
+            onPressed: () {
+              final isMobile = ref.read(isMobileViewProvider);
+              open(offset: Offset(0, isMobile ? 0 : 20));
+            },
+            icon: const Icon(Icons.sort, size: 20),
+          );
+        },
+        popupBuilder: (_) => CommonPopupMenu(
+          items: [
+            for (final item in ProxiesSortType.values)
+              CommonPopupMenuItem(
+                // 当前项用对勾图标标出，其余项用各自的类型图标。
+                icon: item == sortType
+                    ? Icons.check
+                    : _proxiesSortIcon(item),
+                label: _proxiesSortLabel(context, item),
+                onPressed: () {
+                  ref
+                      .read(proxiesStyleSettingProvider.notifier)
+                      .update((state) {
+                        return state.copyWith(sortType: item);
+                      });
+                },
+              ),
+          ],
+        ),
+      ),
       CommonPopupBox(
         targetBuilder: (open) {
           return IconButton(
@@ -350,4 +387,24 @@ class _ProxiesViewState extends ConsumerState<ProxiesView> {
       },
     );
   }
+}
+
+/// 顶栏排序菜单的图标映射 —— 与「设置」面板排序分区保持一致，
+/// 用户在两处看到的是同一套视觉语言。
+IconData _proxiesSortIcon(ProxiesSortType type) {
+  return switch (type) {
+    ProxiesSortType.none => Icons.sort,
+    ProxiesSortType.delay => Icons.network_ping,
+    ProxiesSortType.name => Icons.sort_by_alpha,
+  };
+}
+
+/// 顶栏排序菜单的文案映射 —— 复用既有 l10n 键，四语言零新增。
+String _proxiesSortLabel(BuildContext context, ProxiesSortType type) {
+  final appLocalizations = context.appLocalizations;
+  return switch (type) {
+    ProxiesSortType.none => appLocalizations.defaultText,
+    ProxiesSortType.delay => appLocalizations.delay,
+    ProxiesSortType.name => appLocalizations.name,
+  };
 }

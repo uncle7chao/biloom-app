@@ -295,7 +295,8 @@ void main() {
     test('default values', () {
       const props = ProxiesStyleProps();
       expect(props.type, ProxiesType.tab);
-      expect(props.sortType, ProxiesSortType.none);
+      // 出厂默认排序 = 按延迟（2026-10-01 起，见 common/migration.dart v1→v2）。
+      expect(props.sortType, ProxiesSortType.delay);
       expect(props.layout, ProxiesLayout.standard);
     });
 

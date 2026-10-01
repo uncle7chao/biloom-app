@@ -1,4 +1,5 @@
 import 'package:fl_clash/database/database.dart';
+import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/models/models.dart';
 
 import 'preferences.dart';
@@ -72,7 +73,11 @@ class Migration {
     : _store = store,
       _migrateV0 = migrateV0 ?? oldToNowTask;
 
-  static const currentVersion = 1;
+  /// - v2（当前）：出厂默认排序从「默认」切到「按延迟」，存量仍是 `none` 的
+  ///   配置一次性迁到 `delay`。**不能**套用下方 DNS 那类「不升版本号的幂等
+  ///   变换」—— `none` 是用户随时可以主动选回的有效值，靠「读回来还是默认值」
+  ///   做判据会把用户后来的选择反复改掉；所以必须升版本号、只跑一次。
+  static const currentVersion = 2;
 
   Future<Config> run() async {
     final configMap = await _store.getConfigMap();
@@ -83,7 +88,11 @@ class Migration {
         'Local data version $oldVersion is newer than $currentVersion.',
       );
     }
-    if (oldVersion == currentVersion) {
+    // v1 存量走同一条「当前版本」快速路径，但额外做一次性的排序默认值迁移
+    // 并把版本号补写到 currentVersion（见 currentVersion 上的注释，为什么
+    // 这里必须升版本号而不是做幂等变换）。
+    final needsSortMigration = oldVersion >= 1 && oldVersion < currentVersion;
+    if (needsSortMigration || oldVersion == currentVersion) {
       try {
         config = Config.realFromJson(configMap);
       } catch (_) {
@@ -102,7 +111,7 @@ class Migration {
         // 与 WebDAV 密码混淆同样的处理方式：**不升版本号**的幂等变换，
         // 每次启动都跑一遍。这类变换的判据必须是「读回来的东西还是老的默认值」，
         // 换句话说它是自限的 —— 一旦写过一次就不再成立，不会反复写盘。
-        final migrated = config
+        var migrated = config
             .migrateLegacyDnsNameservers()
             // 同一套「不升版本号的幂等变换」：主上游换了之后，上游那套**围绕
             // 「主上游 = 国内 DoH」设计**的 fallback-filter 就全变成了「架空主上游」
@@ -113,12 +122,25 @@ class Migration {
           if (hasPlainTextDavPassword) 'webdav password obfuscation',
           if (!identical(migrated, config)) 'dns defaults upgrade',
         ];
+        // 排序默认值迁移：只认「还是出厂 none」的存量（v1 → v2，只跑一次）。
+        if (needsSortMigration &&
+            migrated.proxiesStyleProps.sortType == ProxiesSortType.none) {
+          migrated = migrated.copyWith(
+            proxiesStyleProps: migrated.proxiesStyleProps.copyWith(
+              sortType: ProxiesSortType.delay,
+            ),
+          );
+          reasons.add('proxies sort default upgrade');
+        }
         if (reasons.isNotEmpty) {
           if (!await _store.saveConfig(migrated)) {
             throw StateError(
               'Failed to save migrated preferences (${reasons.join(', ')})',
             );
           }
+        }
+        if (needsSortMigration) {
+          await _store.setVersion(currentVersion);
         }
         return migrated;
       }

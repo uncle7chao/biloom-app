@@ -215,7 +215,9 @@ abstract class NetworkProps with _$NetworkProps {
 abstract class ProxiesStyleProps with _$ProxiesStyleProps {
   const factory ProxiesStyleProps({
     @Default(ProxiesType.tab) ProxiesType type,
-    @Default(ProxiesSortType.none) ProxiesSortType sortType,
+    // 出厂默认「按延迟」：节点列表一测速就自动把快节点顶上去（2026-10-01 用户
+    // 要求）。存量配置靠 Migration v1→v2 一次性迁移，见 common/migration.dart。
+    @Default(ProxiesSortType.delay) ProxiesSortType sortType,
     @Default(ProxiesLayout.standard) ProxiesLayout layout,
     @Default(ProxiesIconStyle.standard) ProxiesIconStyle iconStyle,
     @Default(ProxyCardType.expand) ProxyCardType cardType,

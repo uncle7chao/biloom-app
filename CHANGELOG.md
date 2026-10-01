@@ -1,5 +1,15 @@
 # Changelog
 
+## v01.00.32 (2026-10-01)
+
+**Features**
+
+- **proxies** Delay sorting becomes the factory default and moves to the page header: a new sort button in the proxies app bar opens a three-way menu (default / delay / name) with the active option checked, sharing the same data source as the settings panel. A one-time migration (config v1 → v2) moves stored configs that never changed the old default to delay sorting; a later manual choice is never rewritten (migration.dart)
+
+**Bug Fixes**
+
+- **proxies** Node cards no longer show empty chip boxes on narrow grids: the region and protocol chips shared the remaining row width as loose flexibles and could be squeezed down to padding-only outlines that looked like broken cards. The exit-test and delay-test buttons now settle at natural width first, and the chips degrade by measured width budget - full region label, then flag only (full name in the tooltip), then hidden - while the protocol chip always stays with an ellipsis (0d32fec)
+
 ## v01.00.31 (2026-10-01)
 
 **Features**
