@@ -1,5 +1,11 @@
 # Changelog
 
+## v01.00.30 (2026-10-01)
+
+**Bug Fixes**
+
+- **proxies** The proxies page no longer renders blank on release builds: the exit dashboard card forced an infinite layout height when mounted under the tab column, crashing every frame and wiping the group tabs and node grid. The card now sizes to its content, and a populated regression suite (162 nodes / 6 groups) covers the tab layout, the update-subscription round trip and rapid group replacement (5f849fb)
+
 ## v01.00.29 (2026-09-30)
 
 **Features**
