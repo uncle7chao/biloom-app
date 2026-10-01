@@ -14,6 +14,14 @@
     <uses-feature
         android:name="android.hardware.wifi"
         android:required="false" />
+    <!-- BiLoom: wifi_ssid 插件 manifest 会合并进 android.hardware.location
+         (required=true)，Fire TV 无定位硬件、Fire 平板 Fire OS 不上报该
+         feature，导致亚马逊商店判定 0 设备兼容。此处显式声明 required=false
+         覆盖合并结果（App 只用网络定位，无硬件也需可装）。 -->
+    <uses-feature
+        android:name="android.hardware.location"
+        android:required="false"
+        tools:node="replace" />
 
     <uses-permission android:name="android.permission.INTERNET" />
     <!-- 扫码（mobile_scanner）：运行时权限由插件自行请求，清单里必须显式
