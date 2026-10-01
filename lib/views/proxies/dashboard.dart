@@ -68,104 +68,125 @@ class ProxyExitDashboard extends ConsumerWidget {
         radius: AppCorner.xl,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+          // ⛔ 这里不能用 `Row + CrossAxisAlignment.stretch`：本卡挂在页面的
+          // Column 下，Column 给子项的是**无界高度**，stretch 会把子项约束
+          // 成 h=Infinity 直接炸掉整页布局（release 下表现为代理页整页空白，
+          // 01.00.29 实锤）。改用 Stack：高度由内容行（非 Positioned 子项）
+          // 自然决定，竖条用 Positioned 上下贴满 —— 不依赖外部约束有界。
+          child: Stack(
             children: [
               // 品牌色竖条：这张卡的「当前生效」标记，与选中节点卡的
               // primary 描边同一套语言。
-              Container(
-                width: 4,
-                decoration: BoxDecoration(
-                  color: colorScheme.primary,
-                  borderRadius: BorderRadius.circular(2),
+              Positioned(
+                left: 0,
+                top: 0,
+                bottom: 0,
+                child: Container(
+                  width: 4,
+                  decoration: BoxDecoration(
+                    color: colorScheme.primary,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
                 ),
               ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
+              Padding(
+                padding: const EdgeInsets.only(left: 18),
+                child: Row(
                   children: [
-                    Text(
-                      context.appLocalizations.currentExit,
-                      style: context.textTheme.labelSmall?.toLight,
-                    ),
-                    const SizedBox(height: 2),
-                    EmojiText(
-                      exitProxy.name,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: context.textTheme.titleMedium,
-                    ),
-                    const SizedBox(height: 8),
-                    // 元信息行与节点卡第二行同一套胶囊语言：地区 + 协议在左，
-                    // 测落地 / 测速两个按钮贴右。窄屏放不下时地区块自动让位。
-                    SizedBox(
-                      height: proxyCardMetaHeight,
-                      child: LayoutBuilder(
-                        builder: (context, constraints) {
-                          final isCompact = constraints.maxWidth < 300;
-                          return Row(
-                            children: [
-                              Flexible(
-                                child: Align(
-                                  alignment: AlignmentDirectional.centerStart,
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      if (!region.isUnknown) ...[
-                                        Flexible(
-                                          child: ProxyRegionChip(
-                                            region: region,
-                                          ),
-                                        ),
-                                        const SizedBox(width: 6),
-                                      ],
-                                      Flexible(
-                                        child: ProxyTypeChip(
-                                          label: exitProxy.type,
+                    Expanded(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            context.appLocalizations.currentExit,
+                            style: context.textTheme.labelSmall?.toLight,
+                          ),
+                          const SizedBox(height: 2),
+                          EmojiText(
+                            exitProxy.name,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: context.textTheme.titleMedium,
+                          ),
+                          const SizedBox(height: 8),
+                          // 元信息行与节点卡第二行同一套胶囊语言：地区 + 协议在左，
+                          // 测落地 / 测速两个按钮贴右。窄屏放不下时地区块自动让位。
+                          SizedBox(
+                            height: proxyCardMetaHeight,
+                            child: LayoutBuilder(
+                              builder: (context, constraints) {
+                                final isCompact = constraints.maxWidth < 300;
+                                return Row(
+                                  children: [
+                                    Flexible(
+                                      child: Align(
+                                        alignment:
+                                            AlignmentDirectional.centerStart,
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            if (!region.isUnknown) ...[
+                                              Flexible(
+                                                child: ProxyRegionChip(
+                                                  region: region,
+                                                ),
+                                              ),
+                                              const SizedBox(width: 6),
+                                            ],
+                                            Flexible(
+                                              child: ProxyTypeChip(
+                                                label: exitProxy.type,
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    if (!isCompact) ...[
+                                      ProxyExitButton(
+                                        proxyName: exitProxy.name,
+                                      ),
+                                      const SizedBox(width: 6),
                                     ],
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              if (!isCompact) ...[
-                                ProxyExitButton(proxyName: exitProxy.name),
-                                const SizedBox(width: 6),
-                              ],
-                              ProxyDelayButton(
-                                proxyName: exitProxy.name,
-                                testUrl: group.testUrl,
-                                onTest: () {
-                                  ref
-                                      .read(proxiesActionProvider.notifier)
-                                      .proxyDelayTest(exitProxy, group.testUrl);
-                                },
-                              ),
-                            ],
-                          );
-                        },
+                                    ProxyDelayButton(
+                                      proxyName: exitProxy.name,
+                                      testUrl: group.testUrl,
+                                      onTest: () {
+                                        ref
+                                            .read(proxiesActionProvider.notifier)
+                                            .proxyDelayTest(
+                                              exitProxy,
+                                              group.testUrl,
+                                            );
+                                      },
+                                    ),
+                                  ],
+                                );
+                              },
+                            ),
+                          ),
+                        ],
                       ),
+                    ),
+                    const SizedBox(width: 8),
+                    // 整卡唯一的显式动作：重测当前出口的延迟。图标按钮带 tooltip。
+                    IconButton(
+                      tooltip: context.appLocalizations.delayTest,
+                      visualDensity: VisualDensity.compact,
+                      padding: const EdgeInsets.all(2),
+                      iconSize: 20,
+                      onPressed: () {
+                        ref
+                            .read(proxiesActionProvider.notifier)
+                            .proxyDelayTest(exitProxy, group.testUrl);
+                      },
+                      icon: const Icon(Icons.network_ping),
                     ),
                   ],
                 ),
-              ),
-              const SizedBox(width: 8),
-              // 整卡唯一的显式动作：重测当前出口的延迟。图标按钮带 tooltip。
-              IconButton(
-                tooltip: context.appLocalizations.delayTest,
-                visualDensity: VisualDensity.compact,
-                padding: const EdgeInsets.all(2),
-                iconSize: 20,
-                onPressed: () {
-                  ref
-                      .read(proxiesActionProvider.notifier)
-                      .proxyDelayTest(exitProxy, group.testUrl);
-                },
-                icon: const Icon(Icons.network_ping),
               ),
             ],
           ),

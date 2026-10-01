@@ -70,6 +70,48 @@ void main() {
     expect(find.text('Trojan', findRichText: true), findsOneWidget);
   });
 
+  testWidgets('lays out inside a page Column (unbounded height)', (
+    tester,
+  ) async {
+    // 01.00.29 实锤回归：仪表卡挂在 ProxiesTabView 的 Column 下，Column 给
+    // 子项无界高度 —— 当年 Row + CrossAxisAlignment.stretch 在这里直接炸
+    // 「BoxConstraints forces an infinite height」，release 下整页空白。
+    // Scaffold body 是有界高度，测不出这个坑，必须按页面真实挂法测。
+    final profile = Profile.normal();
+    container = ProviderContainer(
+      overrides: [
+        currentProfileIdProvider.overrideWithBuild((_, _) => profile.id),
+        profilesProvider.overrideWith(() => TestProfiles([profile])),
+        groupsProvider.overrideWithValue([
+          selectorGroup(
+            [Proxy(name: 'HK-01', type: 'Trojan')],
+            now: 'HK-01',
+          ),
+        ]),
+      ],
+    );
+    globalState.container = container;
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: TestApp(
+          child: Column(
+            children: [
+              const ProxyExitDashboard(),
+              const Expanded(child: SizedBox.shrink()),
+            ],
+          ),
+          homeBuilder: (child) => Scaffold(body: child),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(tester.takeException(), isNull);
+    expect(find.text('HK-01', findRichText: true), findsOneWidget);
+  });
+
   testWidgets('hides when the effective selector does not exist', (
     tester,
   ) async {
