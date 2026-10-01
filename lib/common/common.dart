@@ -46,6 +46,7 @@ export 'auto_backup_store.dart';
 export 'proxy_favorites.dart';
 export 'proxy_chains_store.dart';
 export 'proxy_region.dart';
+export 'proxy_share.dart';
 export 'render.dart';
 export 'request.dart';
 export 'scroll.dart';

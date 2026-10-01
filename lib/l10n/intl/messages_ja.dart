@@ -1237,5 +1237,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "connectionsFilterRule": MessageLookupByLibrary.simpleMessage("ルール"),
     "connectionsCloseFiltered": MessageLookupByLibrary.simpleMessage("絞り込み結果を切断"),
     "currentExit": MessageLookupByLibrary.simpleMessage("現在の出口"),
+    "copyShareLink": MessageLookupByLibrary.simpleMessage("共有リンクをコピー"),
+    "copyNode": MessageLookupByLibrary.simpleMessage("ノードをコピー"),
+    "shareLinkFallback": MessageLookupByLibrary.simpleMessage("このノードタイプはまだ共有リンクに対応していません。ノード内容をコピーしました"),
   };
 }

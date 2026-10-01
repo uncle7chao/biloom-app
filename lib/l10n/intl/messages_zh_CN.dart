@@ -1087,5 +1087,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "connectionsFilterRule": MessageLookupByLibrary.simpleMessage("规则"),
     "connectionsCloseFiltered": MessageLookupByLibrary.simpleMessage("断开筛选结果"),
     "currentExit": MessageLookupByLibrary.simpleMessage("当前出口"),
+    "copyShareLink": MessageLookupByLibrary.simpleMessage("复制分享链接"),
+    "copyNode": MessageLookupByLibrary.simpleMessage("复制节点"),
+    "shareLinkFallback": MessageLookupByLibrary.simpleMessage("该节点类型暂不支持生成分享链接，已复制节点内容"),
   };
 }

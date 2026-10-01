@@ -763,5 +763,8 @@
   "connectionsFilterChain": "Узел",
   "connectionsFilterRule": "Правило",
   "connectionsCloseFiltered": "Закрыть отфильтрованные",
-  "currentExit": "Текущий выход"
+  "currentExit": "Текущий выход",
+  "copyShareLink": "Копировать ссылку",
+  "copyNode": "Копировать узел",
+  "shareLinkFallback": "Для этого типа узла ссылка пока не поддерживается; содержимое узла скопировано"
 }

@@ -763,5 +763,8 @@
   "connectionsFilterChain": "Node",
   "connectionsFilterRule": "Rule",
   "connectionsCloseFiltered": "Close filtered",
-  "currentExit": "Current exit"
+  "currentExit": "Current exit",
+  "copyShareLink": "Copy share link",
+  "copyNode": "Copy node",
+  "shareLinkFallback": "Share links are not supported for this node type yet; node details copied instead"
 }

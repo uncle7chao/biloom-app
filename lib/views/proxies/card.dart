@@ -4,6 +4,7 @@ import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/widgets/widgets.dart';
+import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -40,6 +41,73 @@ class ProxyCard extends ConsumerWidget {
 
   void _handleTestCurrentDelay(WidgetRef ref) {
     ref.read(proxiesActionProvider.notifier).proxyDelayTest(proxy, testUrl);
+  }
+
+  /// 读出该节点的完整参数（profile YAML 的原始条目，编码分享链接用）。
+  ///
+  /// 名单来自 [profilesActionProvider] 的 readProfileTargets —— 内核解析
+  /// profile 得到的完整参数，不是运行时 API（那里只有 name/type）。
+  /// 节点可能在别的配置里（跨配置挑的链式出口），所以当前配置找不到时
+  /// 逐份兜底；都找不到（已被更新订阅冲掉等）就返回 null，动作静默收场。
+  Future<Map<String, dynamic>?> _readNodeDetail(WidgetRef ref) async {
+    final profilesAction = ref.read(profilesActionProvider.notifier);
+    final currentId = ref.read(currentProfileIdProvider);
+    final foreignIds = ref
+        .read(profilesProvider)
+        .map((profile) => profile.id)
+        .where((id) => id != currentId);
+    for (final id in [if (currentId != null) currentId, ...foreignIds]) {
+      try {
+        final targets = await profilesAction.readProfileTargets(id);
+        for (final node in targets.nodes) {
+          if (node['name'] == proxy.name) {
+            return node;
+          }
+        }
+      } catch (_) {
+        // 这份配置暂时读不了（更新中/已损坏），换下一份。
+      }
+    }
+    return null;
+  }
+
+  /// 复制分享链接：vless/vmess/ss/trojan/hysteria2 等标准 URI。
+  /// 协议不支持时退回复制节点内容，动作不落空。
+  Future<void> _handleCopyShareLink(BuildContext context, WidgetRef ref) async {
+    final node = await _readNodeDetail(ref);
+    if (node == null || !context.mounted) return;
+    final appLocalizations = context.appLocalizations;
+    final link = proxyToShareLink(node);
+    if (link != null) {
+      await Clipboard.setData(ClipboardData(text: link));
+      if (context.mounted) {
+        context.showNotifier(
+          appLocalizations.copySuccess,
+          level: MessageLevel.success,
+        );
+      }
+      return;
+    }
+    await Clipboard.setData(ClipboardData(text: Yaml().encode(node)));
+    if (context.mounted) {
+      context.showNotifier(
+        appLocalizations.shareLinkFallback,
+        level: MessageLevel.warning,
+      );
+    }
+  }
+
+  /// 复制节点：YAML 片段，「添加节点」的粘贴框直接认。
+  Future<void> _handleCopyNode(BuildContext context, WidgetRef ref) async {
+    final node = await _readNodeDetail(ref);
+    if (node == null || !context.mounted) return;
+    await Clipboard.setData(ClipboardData(text: Yaml().encode(node)));
+    if (context.mounted) {
+      context.showNotifier(
+        context.appLocalizations.copySuccess,
+        level: MessageLevel.success,
+      );
+    }
   }
 
   Widget _buildProxyNameText(BuildContext context) {
@@ -135,7 +203,7 @@ class ProxyCard extends ConsumerWidget {
     );
   }
 
-  /// 节点卡片的右键/长按菜单：收藏、测速、测落地、删除。
+  /// 节点卡片的右键/长按菜单：收藏、测速、测落地、分享/导出、删除。
   ///
   /// 配置卡片一直有「⋯」菜单，节点卡片此前什么都没有 —— 删除做完之后入口却
   /// 只有「配置卡片 → 管理节点」一条路，对着要删的卡片反而没有动作。这里补上
@@ -171,6 +239,18 @@ class ProxyCard extends ConsumerWidget {
         onPressed: () {
           ref.read(proxyExitProvider.notifier).test(proxy.name);
         },
+      ),
+      // 分享/导出：标准分享链接给其他客户端用；YAML 片段在 BiLoom 之间
+      // 互导（「添加节点」的粘贴框直接认）。
+      CommonPopupMenuItem(
+        icon: Icons.ios_share,
+        label: appLocalizations.copyShareLink,
+        onPressed: () => _handleCopyShareLink(context, ref),
+      ),
+      CommonPopupMenuItem(
+        icon: Icons.content_copy,
+        label: appLocalizations.copyNode,
+        onPressed: () => _handleCopyNode(context, ref),
       ),
       CommonPopupMenuItem(
         danger: true,

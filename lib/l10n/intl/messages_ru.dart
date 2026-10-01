@@ -1573,5 +1573,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "connectionsFilterRule": MessageLookupByLibrary.simpleMessage("Правило"),
     "connectionsCloseFiltered": MessageLookupByLibrary.simpleMessage("Закрыть отфильтрованные"),
     "currentExit": MessageLookupByLibrary.simpleMessage("Текущий выход"),
+    "copyShareLink": MessageLookupByLibrary.simpleMessage("Копировать ссылку"),
+    "copyNode": MessageLookupByLibrary.simpleMessage("Копировать узел"),
+    "shareLinkFallback": MessageLookupByLibrary.simpleMessage("Для этого типа узла ссылка пока не поддерживается; содержимое узла скопировано"),
   };
 }

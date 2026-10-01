@@ -6440,6 +6440,21 @@ class AppLocalizations {
   String get currentExit {
     return Intl.message('Current exit', name: 'currentExit', desc: '', args: []);
   }
+
+  /// `Copy share link`
+  String get copyShareLink {
+    return Intl.message('Copy share link', name: 'copyShareLink', desc: '', args: []);
+  }
+
+  /// `Copy node`
+  String get copyNode {
+    return Intl.message('Copy node', name: 'copyNode', desc: '', args: []);
+  }
+
+  /// `Share links are not supported for this node type yet; node details copied instead`
+  String get shareLinkFallback {
+    return Intl.message('Share links are not supported for this node type yet; node details copied instead', name: 'shareLinkFallback', desc: '', args: []);
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<AppLocalizations> {
