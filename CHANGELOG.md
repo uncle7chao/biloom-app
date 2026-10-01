@@ -1,5 +1,11 @@
 # Changelog
 
+## v01.00.33 (2026-10-01)
+
+**Bug Fixes**
+
+- **android** Fire tablets, Fire TV and automotive profiles are visible again on Amazon Appstore: the wifi_ssid plugin manifest merged a required android.hardware.location hardware feature into the APK, so devices without location hardware were reported as incompatible (zero supported devices). The app manifest now declares the feature as not required and overrides the merged value (59c5f4a)
+
 ## v01.00.32 (2026-10-01)
 
 **Features**
