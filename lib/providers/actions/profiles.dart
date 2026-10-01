@@ -252,6 +252,25 @@ class ProfilesAction extends _$ProfilesAction {
   }
 
   Future<void> addProfileFormURL(String url) async {
+    // 去重拦截：同一订阅链接重复导入是高频误操作（扫码扫了两遍、粘贴两次、
+    // 分享链接点了两回），而 URL 导入的语义是「新建一份完整配置」—— 每来一次
+    // 就下载 + 校验 + 落盘一轮，配置列表很快堆满一模一样的条目。这里在建新档
+    // 之前先按 URL 原文（trim 后精确比对）查一遍已有配置，命中就弹窗拦下。
+    // 更新已有配置请走配置卡片的「更新」，那个动作才是幂等的。
+    final normalized = url.trim();
+    final existing = ref
+        .read(profilesProvider)
+        .where((profile) => profile.url.trim() == normalized)
+        .toList();
+    if (existing.isNotEmpty) {
+      await dialogs.showMessage(
+        message: TextSpan(
+          text: '该订阅已添加为配置「${existing.first.realLabel}」。\n\n'
+              '如需刷新节点，请在「配置」页选中它后点「更新」。',
+        ),
+      );
+      return;
+    }
     if (globalState.navigatorKey.currentState?.canPop() ?? false) {
       globalState.navigatorKey.currentState?.popUntil((route) => route.isFirst);
     }
@@ -259,7 +278,7 @@ class ProfilesAction extends _$ProfilesAction {
     final profile = await globalState.loadingRun(
       tag: LoadingTag.profiles,
       () async {
-        return Profile.normal(url: url).update(
+        return Profile.normal(url: normalized).update(
           validate: (path) => _core.validateConfig(path),
           convert: convertSubscription,
         );

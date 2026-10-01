@@ -5,6 +5,8 @@
 **Features**
 
 - **proxies** Delay sorting becomes the factory default and moves to the page header: a new sort button in the proxies app bar opens a three-way menu (default / delay / name) with the active option checked, sharing the same data source as the settings panel. A one-time migration (config v1 → v2) moves stored configs that never changed the old default to delay sorting; a later manual choice is never rewritten (migration.dart)
+- **profiles** Network error dialogs for profile import now carry the underlying reason (DNS lookup failure / connection timeout / refusal) instead of a single generic message, in both the dialog and the app log (app_localizations.dart, print.dart)
+- **profiles** Importing a subscription URL or QR code that already exists in the profile list now shows a dialog pointing to the existing profile instead of silently creating yet another full copy; updates belong to the existing card's refresh action (profiles.dart)
 
 **Bug Fixes**
 
