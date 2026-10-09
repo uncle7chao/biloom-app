@@ -127,24 +127,34 @@ class _ProfilesViewState extends ConsumerState<ProfilesView> {
           title: appLocalizations.profiles,
           floatingActionButton: _buildFAB(),
           actions: _buildActions(state.profiles),
-          body: NullStatusSwitcher(
-            isEmpty: state.profiles.isEmpty,
-            nullStatus: NullStatus(
-              label: appLocalizations.nullProfileDesc,
-              illustration: NullStatusIllustration.profile,
-              // 这是全 App 最关键的首次引导页，却只给一句话、不给按钮 —— 用户
-              // 得自己去猜右下角那个「+」。把入口直接摆到他面前，少一次猜测。
-              action: FilledButton.tonalIcon(
-                onPressed: _handleShowAddExtendPage,
-                icon: const Icon(Icons.add),
-                label: Text(appLocalizations.addProfile),
+          // v5 安卓变现：配置页底部固定 Banner（AdsBanner 内部自裁决，非
+          // Android / 位关闭时零高度 shrink）。主视图 Expanded 撑起，不用
+          // stretch（01.00.30 教训：Column 下 stretch 会整页布局崩溃）。
+          body: Column(
+            children: [
+              Expanded(
+                child: NullStatusSwitcher(
+                  isEmpty: state.profiles.isEmpty,
+                  nullStatus: NullStatus(
+                    label: appLocalizations.nullProfileDesc,
+                    illustration: NullStatusIllustration.profile,
+                    // 这是全 App 最关键的首次引导页，却只给一句话、不给按钮 —— 用户
+                    // 得自己去猜右下角那个「+」。把入口直接摆到他面前，少一次猜测。
+                    action: FilledButton.tonalIcon(
+                      onPressed: _handleShowAddExtendPage,
+                      icon: const Icon(Icons.add),
+                      label: Text(appLocalizations.addProfile),
+                    ),
+                  ),
+                  child: _ProfilesGrid(
+                    profiles: state.profiles,
+                    currentProfileId: state.currentProfileId,
+                    spacing: spacing,
+                  ),
+                ),
               ),
-            ),
-            child: _ProfilesGrid(
-              profiles: state.profiles,
-              currentProfileId: state.currentProfileId,
-              spacing: spacing,
-            ),
+              const AdsBanner(placement: AdsBannerPlacement.profiles),
+            ],
           ),
         );
       },

@@ -130,6 +130,10 @@ class AdPlacementProps {
 /// v4（2026-10-09）：新增 [bannerProxiesAndroid]（代理页底部自适应
 /// Banner）与 [nativeProxiesAndroid]（代理页列表内原生卡片）。旧 JSON
 /// （v2/v3）缺这两键时取安全默认值=关，旧配置零影响。
+///
+/// v5（2026-10-09）：新增 [bannerProfilesAndroid]（配置页底部 Banner）与
+/// [bannerToolsAndroid]（工具页底部 Banner）。广告单元 ID 允许复用现有位
+/// （AdMob 允许同一单元多处投放）；各页开关仍然独立。旧版缺键=关。
 class AdsRemoteConfig {
   const AdsRemoteConfig({
     required this.v,
@@ -141,6 +145,14 @@ class AdsRemoteConfig {
       adUnitId: '',
     ),
     this.nativeProxiesAndroid = const AdPlacementProps(
+      enabled: false,
+      adUnitId: '',
+    ),
+    this.bannerProfilesAndroid = const AdPlacementProps(
+      enabled: false,
+      adUnitId: '',
+    ),
+    this.bannerToolsAndroid = const AdPlacementProps(
       enabled: false,
       adUnitId: '',
     ),
@@ -167,6 +179,13 @@ class AdsRemoteConfig {
   /// Android 代理页列表内嵌的原生广告卡片（NativeAd，模板由平台侧工厂
   /// 绘制）。原生与 Banner 相互独立：任一关掉不影响另一个。
   final AdPlacementProps nativeProxiesAndroid;
+
+  /// Android 配置页底部的固定 Banner。开关独立于首页/代理页；ID 允许与
+  /// 其他位复用同一广告单元。
+  final AdPlacementProps bannerProfilesAndroid;
+
+  /// Android 工具页底部的固定 Banner。开关独立；ID 允许复用。
+  final AdPlacementProps bannerToolsAndroid;
 
   /// Windows 端「活动」页入口（引流位，见 [isValidPromoUrl] 的白名单说明）。
   final PromoWindowProps promoWindows;
@@ -205,11 +224,21 @@ class AdsRemoteConfig {
             ? decoded['bannerProxiesAndroid'] as Map
             : const {},
       ),
-      nativeProxiesAndroid: AdPlacementProps.fromMap(
-        decoded['nativeProxiesAndroid'] is Map
-            ? decoded['nativeProxiesAndroid'] as Map
-            : const {},
-      ),
+    nativeProxiesAndroid: AdPlacementProps.fromMap(
+      decoded['nativeProxiesAndroid'] is Map
+          ? decoded['nativeProxiesAndroid'] as Map
+          : const {},
+    ),
+    bannerProfilesAndroid: AdPlacementProps.fromMap(
+      decoded['bannerProfilesAndroid'] is Map
+          ? decoded['bannerProfilesAndroid'] as Map
+          : const {},
+    ),
+    bannerToolsAndroid: AdPlacementProps.fromMap(
+      decoded['bannerToolsAndroid'] is Map
+          ? decoded['bannerToolsAndroid'] as Map
+          : const {},
+    ),
       promoWindows: PromoWindowProps.fromMap(
         decoded['promoWindows'] is Map
             ? decoded['promoWindows'] as Map
@@ -305,4 +334,24 @@ AdPlacementProps? adsNativePropsFor(
   config,
   platform,
   (config) => config.nativeProxiesAndroid,
+);
+
+/// 配置页底部 Banner 的配置判定。
+AdPlacementProps? adsProfilesBannerPropsFor(
+  AdsRemoteConfig? config,
+  AdPlatform platform,
+) => _androidPlacementPropsFor(
+  config,
+  platform,
+  (config) => config.bannerProfilesAndroid,
+);
+
+/// 工具页底部 Banner 的配置判定。
+AdPlacementProps? adsToolsBannerPropsFor(
+  AdsRemoteConfig? config,
+  AdPlatform platform,
+) => _androidPlacementPropsFor(
+  config,
+  platform,
+  (config) => config.bannerToolsAndroid,
 );

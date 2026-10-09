@@ -140,6 +140,27 @@ final adsNativePlacementProvider = Provider<AdPlacementProps?>((ref) {
   return adsNativePropsFor(config, platform);
 });
 
+/// 配置页底部 Banner 的生效配置；null = 不展示。与代理页位同一套裁决链，
+/// 开关互相独立（远程 JSON v5 的 bannerProfilesAndroid 键）。
+final adsProfilesBannerPlacementProvider = Provider<AdPlacementProps?>((ref) {
+  final platform = _currentAdPlatform();
+  if (!kAdSdkPlatforms.contains(platform)) {
+    return null;
+  }
+  final config = ref.watch(adsConfigStoreProvider).value;
+  return adsProfilesBannerPropsFor(config, platform);
+});
+
+/// 工具页底部 Banner 的生效配置；null = 不展示。同上（bannerToolsAndroid）。
+final adsToolsBannerPlacementProvider = Provider<AdPlacementProps?>((ref) {
+  final platform = _currentAdPlatform();
+  if (!kAdSdkPlatforms.contains(platform)) {
+    return null;
+  }
+  final config = ref.watch(adsConfigStoreProvider).value;
+  return adsToolsBannerPropsFor(config, platform);
+});
+
 /// 当前平台「活动」入口的生效配置；null = 不渲染入口（非 Windows /
 /// 总开关关 / 从未拉到配置 / url 无效）。
 ///

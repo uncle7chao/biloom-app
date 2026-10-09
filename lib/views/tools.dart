@@ -110,11 +110,21 @@ class _ToolViewState extends ConsumerState<ToolsView> {
     ];
     return CommonScaffold(
       title: context.appLocalizations.tools,
-      body: ListView.builder(
-        key: toolsStoreKey,
-        itemCount: items.length,
-        itemBuilder: (_, index) => items[index],
-        padding: const EdgeInsets.only(bottom: 20),
+      // v5 安卓变现：工具页底部固定 Banner（AdsBanner 内部自裁决，非
+      // Android / 位关闭时零高度 shrink）。列表 Expanded 撑起，不用
+      // stretch（01.00.30 教训：Column 下 stretch 会整页布局崩溃）。
+      body: Column(
+        children: [
+          Expanded(
+            child: ListView.builder(
+              key: toolsStoreKey,
+              itemCount: items.length,
+              itemBuilder: (_, index) => items[index],
+              padding: const EdgeInsets.only(bottom: 20),
+            ),
+          ),
+          const AdsBanner(placement: AdsBannerPlacement.tools),
+        ],
       ),
     );
   }

@@ -384,6 +384,9 @@ class _ProxiesViewState extends ConsumerState<ProxiesView> {
       // v4 安卓变现：代理页底部自适应 Banner（AdsBanner 内部自裁决，非
       // Android / 位关闭时是零高度 shrink）。Expanded 撑起主视图，禁用
       // stretch（01.00.30 教训：Column 下的 stretch 会整页布局崩溃）。
+      // v4 补挂（2026-10-09）：原生广告卡片在此前版本只落了组件没落挂载，
+      // 全仓无使用点 = 死代码；按拍板挂在自适应 Banner 正上方、列表之外，
+      // 不扰动节点列表本身。两位各自独立开关，加载失败都静默缩 0。
       body: Column(
         children: [
           Expanded(
@@ -392,6 +395,7 @@ class _ProxiesViewState extends ConsumerState<ProxiesView> {
               ProxiesType.list => const ProxiesListView(),
             },
           ),
+          const AdsNativeCard(),
           const AdsBanner(placement: AdsBannerPlacement.proxies),
         ],
       ),

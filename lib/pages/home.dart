@@ -63,6 +63,18 @@ class _HomeShell extends ConsumerWidget {
     final state = ref.watch(navigationStateProvider);
     final isMobile = state.viewMode == ViewMode.mobile;
     final navigationItems = state.navigationItems;
+    // v5 去重：全局 Banner（home 位）挂在壳层，所有页签底部都带；但代理/
+    // 配置/工具三页有自己的页面级 Banner（各自独立开关）。当前页若自带
+    // Banner 就把全局位收起（保持状态不销毁，切回来不用重新加载广告），
+    // 任何时刻底部只有一条广告，不做双条叠加。
+    final pageLabel = ref.watch(currentPageLabelProvider);
+    final hasPageBanner = switch (pageLabel) {
+      PageLabel.proxies => ref.watch(adsProxiesBannerPlacementProvider) != null,
+      PageLabel.profiles =>
+        ref.watch(adsProfilesBannerPlacementProvider) != null,
+      PageLabel.tools => ref.watch(adsToolsBannerPlacementProvider) != null,
+      _ => false,
+    };
     return Material(
       color: context.colorScheme.surface,
       child: Column(
@@ -84,7 +96,11 @@ class _HomeShell extends ConsumerWidget {
           // Android Banner 广告位（M3 批 2）：只认 adsBannerPlacementProvider，
           // 平台/开关/ID 的裁决全在 provider 与远程 JSON —— 非 Android 恒
           // SizedBox.shrink，不占布局。
-          const AdsBanner(),
+          Visibility(
+            visible: !hasPageBanner,
+            maintainState: true,
+            child: const AdsBanner(),
+          ),
           AnimatedVisibility.bottomNavigation(
             visible: isMobile,
             child: MediaQuery.removePadding(

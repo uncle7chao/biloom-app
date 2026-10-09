@@ -7,10 +7,12 @@ import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/providers/providers.dart';
 
-/// Banner 挂载位置。每个位置对应远程 JSON 里独立的一个键（v4）：
-/// - [home]：`bannerAndroid`，固定尺寸（320×50 标准位）
+/// Banner 挂载位置。每个位置对应远程 JSON 里独立的一个键（v4/v5）：
+/// - [home]：`bannerAndroid`，固定尺寸（320×50 标准位），挂在全局壳层
 /// - [proxies]：`bannerProxiesAndroid`，锚定自适应（宽度随屏幕）
-enum AdsBannerPlacement { home, proxies }
+/// - [profiles]：`bannerProfilesAndroid`（v5），配置页底部固定位
+/// - [tools]：`bannerToolsAndroid`（v5），工具页底部固定位
+enum AdsBannerPlacement { home, proxies, profiles, tools }
 
 /// Android Banner 广告位（M3 批 2；v4 起多挂载点）。
 ///
@@ -40,7 +42,7 @@ class _AdsBannerState extends ConsumerState<AdsBanner> {
   bool _loaded = false;
   bool _sdkInitialized = false;
 
-  /// 自适应位是否按宽度定尺寸。
+  /// 自适应位是否按宽度定尺寸。只有代理页是自适应；其余均为固定位。
   bool get _isAdaptive => widget.placement == AdsBannerPlacement.proxies;
 
   @override
@@ -60,6 +62,8 @@ class _AdsBannerState extends ConsumerState<AdsBanner> {
   Provider<AdPlacementProps?> _placementProvider() => switch (widget.placement) {
     AdsBannerPlacement.home => adsBannerPlacementProvider,
     AdsBannerPlacement.proxies => adsProxiesBannerPlacementProvider,
+    AdsBannerPlacement.profiles => adsProfilesBannerPlacementProvider,
+    AdsBannerPlacement.tools => adsToolsBannerPlacementProvider,
   };
 
   void _syncAd(AdPlacementProps? props, [int? width]) {

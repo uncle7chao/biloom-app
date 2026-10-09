@@ -114,4 +114,89 @@ void main() {
       expect(AdsRemoteConfig.parse(''), isNull);
     });
   });
+
+  group('AdsRemoteConfig v5 解析（配置页 / 工具页 Banner）', () {
+    test('v5 完整 JSON：新键正确解析，ID 允许复用现有单元', () {
+      const raw = '''
+{
+  "v": 5,
+  "enabled": true,
+  "bannerAndroid": {"enabled": true, "adUnitId": "ca-app-pub-x/1"},
+  "bannerProfilesAndroid": {"enabled": true, "adUnitId": "ca-app-pub-x/2"},
+  "bannerToolsAndroid": {"enabled": true, "adUnitId": "ca-app-pub-x/2"}
+}
+''';
+      final config = AdsRemoteConfig.parse(raw);
+      expect(config, isNotNull);
+      expect(config!.v, 5);
+      expect(config.bannerProfilesAndroid.enabled, isTrue);
+      expect(config.bannerProfilesAndroid.adUnitId, 'ca-app-pub-x/2');
+      expect(config.bannerToolsAndroid.enabled, isTrue);
+      // 复用同一广告单元是合法形态，两层各存各的值。
+      expect(config.bannerToolsAndroid.adUnitId, 'ca-app-pub-x/2');
+    });
+
+    test('v4 旧 JSON 缺 v5 键：配置页/工具页取安全默认值=关', () {
+      const raw = '''
+{
+  "v": 4,
+  "enabled": true,
+  "bannerAndroid": {"enabled": true, "adUnitId": "ca-app-pub-x/1"},
+  "bannerProxiesAndroid": {"enabled": true, "adUnitId": "ca-app-pub-x/2"},
+  "nativeProxiesAndroid": {"enabled": true, "adUnitId": "ca-app-pub-x/3"}
+}
+''';
+      final config = AdsRemoteConfig.parse(raw);
+      expect(config, isNotNull);
+      expect(config!.bannerProfilesAndroid.enabled, isFalse);
+      expect(config.bannerProfilesAndroid.adUnitId, isEmpty);
+      expect(config.bannerToolsAndroid.enabled, isFalse);
+      expect(config.bannerToolsAndroid.adUnitId, isEmpty);
+    });
+
+    test('v5 判定函数：Android 放行、总开关关 null、桌面恒 null', () {
+      const rawOn = '''
+{
+  "v": 5,
+  "enabled": true,
+  "bannerProfilesAndroid": {"enabled": true, "adUnitId": "ca-app-pub-x/2"},
+  "bannerToolsAndroid": {"enabled": true, "adUnitId": "ca-app-pub-x/2"}
+}
+''';
+      final on = AdsRemoteConfig.parse(rawOn);
+      expect(
+        adsProfilesBannerPropsFor(on, AdPlatform.android),
+        isNotNull,
+      );
+      expect(adsToolsBannerPropsFor(on, AdPlatform.android), isNotNull);
+      for (final platform in AdPlatform.values) {
+        if (platform == AdPlatform.android) continue;
+        expect(
+          adsProfilesBannerPropsFor(on, platform),
+          isNull,
+          reason: '$platform 不应拿到配置页 Banner',
+        );
+        expect(
+          adsToolsBannerPropsFor(on, platform),
+          isNull,
+          reason: '$platform 不应拿到工具页 Banner',
+        );
+      }
+
+      const rawOff = '''
+{
+  "v": 5,
+  "enabled": false,
+  "bannerProfilesAndroid": {"enabled": true, "adUnitId": "ca-app-pub-x/2"},
+  "bannerToolsAndroid": {"enabled": true, "adUnitId": "ca-app-pub-x/2"}
+}
+''';
+      final off = AdsRemoteConfig.parse(rawOff);
+      expect(adsProfilesBannerPropsFor(off, AdPlatform.android), isNull);
+      expect(adsToolsBannerPropsFor(off, AdPlatform.android), isNull);
+
+      expect(adsProfilesBannerPropsFor(null, AdPlatform.android), isNull);
+      expect(adsToolsBannerPropsFor(null, AdPlatform.android), isNull);
+    });
+  });
 }
