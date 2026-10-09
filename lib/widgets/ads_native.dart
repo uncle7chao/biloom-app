@@ -15,9 +15,10 @@ import 'package:fl_clash/providers/providers.dart';
 /// **唯一的 UI 挂载规则**：只认 [adsNativePlacementProvider] —— null 即不
 /// 渲染，挂载处不写任何平台判断。
 ///
-/// 生命周期与 [AdsBanner] 同一套（01.00.35 统一）：load 前等 SDK 初始化
-/// 完成；失败指数退避重试（封顶 5 次，防请求风暴）；配置热更新（换 ID）
-/// 才重置失败计数；dispose 释放。加载失败静默缩回 0 高度。
+/// 生命周期与 [AdsBanner] 同一套（01.00.35 统一，01.00.36 加前台重武装）：
+/// load 前等 SDK 初始化完成；失败指数退避重试（封顶 5 次，防请求风暴）；
+/// 放弃后 App 切回前台时重置失败计数再试一轮；配置热更新（换 ID）才重置
+/// 失败计数；dispose 释放。加载失败静默缩回 0 高度。
 class AdsNativeCard extends ConsumerStatefulWidget {
   const AdsNativeCard({super.key});
 
@@ -25,7 +26,8 @@ class AdsNativeCard extends ConsumerStatefulWidget {
   ConsumerState<AdsNativeCard> createState() => _AdsNativeCardState();
 }
 
-class _AdsNativeCardState extends ConsumerState<AdsNativeCard> {
+class _AdsNativeCardState extends ConsumerState<AdsNativeCard>
+    with WidgetsBindingObserver {
   NativeAd? _ad;
   String? _loadedId;
   bool _loaded = false;
@@ -41,11 +43,34 @@ class _AdsNativeCardState extends ConsumerState<AdsNativeCard> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     ref.listenManual(
       adsNativePlacementProvider,
       (_, next) => _syncAd(next),
       fireImmediately: true,
     );
+  }
+
+  /// 与 AdsBanner 同策略（01.00.36）：App 切回前台时重新武装已放弃的
+  /// 广告位，给填充爬坡期更多机会，也避免整场会话永久躺平。
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state != AppLifecycleState.resumed || !mounted) {
+      return;
+    }
+    if (_loaded || _failures <= _maxRetries) {
+      return;
+    }
+    final props = _pendingProps;
+    if (props == null) {
+      return;
+    }
+    _failures = 0;
+    commonPrint.log(
+      'ads native re-armed on resume (id: ${props.adUnitId})',
+      logLevel: LogLevel.debug,
+    );
+    _createAd(props);
   }
 
   Future<void> _ensureSdkInitialized() =>
@@ -170,6 +195,7 @@ class _AdsNativeCardState extends ConsumerState<AdsNativeCard> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _cancelRetry();
     _ad?.dispose();
     _ad = null;

@@ -12,8 +12,8 @@ import 'package:fl_clash/providers/providers.dart';
 /// Banner 挂载位置。每个位置对应远程 JSON 里独立的一个键（v4/v5）：
 /// - [home]：`bannerAndroid`，固定尺寸（320×50 标准位），挂在全局壳层
 /// - [proxies]：`bannerProxiesAndroid`，锚定自适应（宽度随屏幕）
-/// - [profiles]：`bannerProfilesAndroid`（v5），配置页底部固定位
-/// - [tools]：`bannerToolsAndroid`（v5），工具页底部固定位
+/// - [profiles]：`bannerProfilesAndroid`（v5），配置页底部自适应
+/// - [tools]：`bannerToolsAndroid`（v5），工具页底部自适应
 enum AdsBannerPlacement { home, proxies, profiles, tools }
 
 /// Android Banner 广告位（M3 批 2；v4 起多挂载点；01.00.35 轮修生命周期）。
@@ -44,7 +44,8 @@ class AdsBanner extends ConsumerStatefulWidget {
   ConsumerState<AdsBanner> createState() => _AdsBannerState();
 }
 
-class _AdsBannerState extends ConsumerState<AdsBanner> {
+class _AdsBannerState extends ConsumerState<AdsBanner>
+    with WidgetsBindingObserver {
   BannerAd? _ad;
   String? _loadedId;
   int? _loadedWidth;
@@ -58,16 +59,21 @@ class _AdsBannerState extends ConsumerState<AdsBanner> {
   Timer? _retryTimer;
 
   /// 失败重试上限与退避序列（秒）。no-fill 冷启动通常在几分钟内自愈，
-  /// 5 次退避大约覆盖 2 分钟；之后保持暗置，等配置热更新或重建组件再试。
+  /// 5 次退避大约覆盖 2 分钟；放弃后不再自动重试，但 **App 切回前台时
+  /// 重新武装**（01.00.36）：用户每次回到 App 都给一轮全新的退避预算，
+  /// 避免填充爬坡期一页广告整场躺平。
   static const _maxRetries = 5;
   static const _retryDelays = [5, 15, 45, 60, 60];
 
-  /// 自适应位是否按宽度定尺寸。只有代理页是自适应；其余均为固定位。
-  bool get _isAdaptive => widget.placement == AdsBannerPlacement.proxies;
+  /// 自适应位是否按宽度定尺寸。01.00.36 起除首页（320×50 固定位，实测
+  /// 可填充）外全部自适应 —— 真机取证同单元固定尺寸长期 no-fill 而自适应
+  /// 稳定供量，配置/工具页随之改自适应。
+  bool get _isAdaptive => widget.placement != AdsBannerPlacement.home;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     // placement provider 是同步 provider，但它 watch 的配置 store 是异步
     // 的 —— 用 listenManual(fireImmediately) 跟随「无配置 → 有配置」与
     // 「换 ID」两种跳变，不在 build 里做副作用。自适应位此时还没有布局
@@ -77,6 +83,30 @@ class _AdsBannerState extends ConsumerState<AdsBanner> {
       (_, AdPlacementProps? next) => _syncAd(next),
       fireImmediately: true,
     );
+  }
+
+  /// App 切回前台时重新武装已放弃的广告位（01.00.36）：重置失败计数后
+  /// 立即重试一轮。只在「已放弃且当前没有可展示广告」时动作，正常展示中
+  /// 或退避排队中的位置不受影响。
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state != AppLifecycleState.resumed || !mounted) {
+      return;
+    }
+    if (_loaded || _failures <= _maxRetries) {
+      return;
+    }
+    final props = _pendingProps;
+    final size = _pendingSize;
+    if (props == null || size == null) {
+      return;
+    }
+    _failures = 0;
+    commonPrint.log(
+      'ads banner re-armed on resume (id: ${props.adUnitId})',
+      logLevel: LogLevel.debug,
+    );
+    _createAd(props, size);
   }
 
   Provider<AdPlacementProps?> _placementProvider() => switch (widget.placement) {
@@ -240,6 +270,7 @@ class _AdsBannerState extends ConsumerState<AdsBanner> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _cancelRetry();
     _ad?.dispose();
     _ad = null;
