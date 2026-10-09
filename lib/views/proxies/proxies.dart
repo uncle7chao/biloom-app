@@ -381,10 +381,20 @@ class _ProxiesViewState extends ConsumerState<ProxiesView> {
       actions: _buildActions(context),
       title: context.appLocalizations.proxies,
       searchState: AppBarSearchState(onSearch: _onSearch),
-      body: switch (proxiesType) {
-        ProxiesType.tab => ProxiesTabView(key: _proxiesTabKey),
-        ProxiesType.list => const ProxiesListView(),
-      },
+      // v4 安卓变现：代理页底部自适应 Banner（AdsBanner 内部自裁决，非
+      // Android / 位关闭时是零高度 shrink）。Expanded 撑起主视图，禁用
+      // stretch（01.00.30 教训：Column 下的 stretch 会整页布局崩溃）。
+      body: Column(
+        children: [
+          Expanded(
+            child: switch (proxiesType) {
+              ProxiesType.tab => ProxiesTabView(key: _proxiesTabKey),
+              ProxiesType.list => const ProxiesListView(),
+            },
+          ),
+          const AdsBanner(placement: AdsBannerPlacement.proxies),
+        ],
+      ),
     );
   }
 }

@@ -104,6 +104,42 @@ final adsBannerPlacementProvider = Provider<AdPlacementProps?>((ref) {
   return adsBannerPropsFor(config, platform);
 });
 
+/// 平台枚举的公共裁决：Android 优先，桌面逐个认领，兜底 linux。
+/// v4 新增的 Android 专属位与 home Banner 用同一套平台识别。
+AdPlatform _currentAdPlatform() {
+  if (system.isAndroid) {
+    return AdPlatform.android;
+  } else if (system.isWindows) {
+    return AdPlatform.windows;
+  } else if (system.isMacOS) {
+    return AdPlatform.macos;
+  } else {
+    return AdPlatform.linux;
+  }
+}
+
+/// 代理页底部自适应 Banner 的生效配置；null = 不展示。与 home Banner
+/// 同一套裁决链（SDK 平台集合 → 总开关 → 位开关 → ID 非空），两键互相
+/// 独立：关掉代理页位不影响首页位。
+final adsProxiesBannerPlacementProvider = Provider<AdPlacementProps?>((ref) {
+  final platform = _currentAdPlatform();
+  if (!kAdSdkPlatforms.contains(platform)) {
+    return null;
+  }
+  final config = ref.watch(adsConfigStoreProvider).value;
+  return adsProxiesBannerPropsFor(config, platform);
+});
+
+/// 代理页原生卡片（列表内嵌）的生效配置；null = 不展示。裁决链同上。
+final adsNativePlacementProvider = Provider<AdPlacementProps?>((ref) {
+  final platform = _currentAdPlatform();
+  if (!kAdSdkPlatforms.contains(platform)) {
+    return null;
+  }
+  final config = ref.watch(adsConfigStoreProvider).value;
+  return adsNativePropsFor(config, platform);
+});
+
 /// 当前平台「活动」入口的生效配置；null = 不渲染入口（非 Windows /
 /// 总开关关 / 从未拉到配置 / url 无效）。
 ///

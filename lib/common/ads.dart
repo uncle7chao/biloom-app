@@ -126,12 +126,24 @@ class AdPlacementProps {
 
 /// 一份远程广告开关配置。[v] 是格式版本号：将来字段语义变了的逃生口，
 /// 现在只透传不参与判定。
+///
+/// v4（2026-10-09）：新增 [bannerProxiesAndroid]（代理页底部自适应
+/// Banner）与 [nativeProxiesAndroid]（代理页列表内原生卡片）。旧 JSON
+/// （v2/v3）缺这两键时取安全默认值=关，旧配置零影响。
 class AdsRemoteConfig {
   const AdsRemoteConfig({
     required this.v,
     required this.enabled,
     required this.bannerAndroid,
     required this.bannerWindows,
+    this.bannerProxiesAndroid = const AdPlacementProps(
+      enabled: false,
+      adUnitId: '',
+    ),
+    this.nativeProxiesAndroid = const AdPlacementProps(
+      enabled: false,
+      adUnitId: '',
+    ),
     this.promoWindows = const PromoWindowProps(
       enabled: false,
       url: '',
@@ -148,6 +160,13 @@ class AdsRemoteConfig {
   /// Windows/macOS/Linux 共用：当前没有 SDK，永远不展示；预留字段让远程
   /// 端可以先配好，SDK 接缝打开即生效。
   final AdPlacementProps bannerWindows;
+
+  /// Android 代理页底部的自适应 Banner（anchored adaptive，宽度随屏幕）。
+  final AdPlacementProps bannerProxiesAndroid;
+
+  /// Android 代理页列表内嵌的原生广告卡片（NativeAd，模板由平台侧工厂
+  /// 绘制）。原生与 Banner 相互独立：任一关掉不影响另一个。
+  final AdPlacementProps nativeProxiesAndroid;
 
   /// Windows 端「活动」页入口（引流位，见 [isValidPromoUrl] 的白名单说明）。
   final PromoWindowProps promoWindows;
@@ -179,6 +198,16 @@ class AdsRemoteConfig {
       bannerWindows: AdPlacementProps.fromMap(
         decoded['bannerWindows'] is Map
             ? decoded['bannerWindows'] as Map
+            : const {},
+      ),
+      bannerProxiesAndroid: AdPlacementProps.fromMap(
+        decoded['bannerProxiesAndroid'] is Map
+            ? decoded['bannerProxiesAndroid'] as Map
+            : const {},
+      ),
+      nativeProxiesAndroid: AdPlacementProps.fromMap(
+        decoded['nativeProxiesAndroid'] is Map
+            ? decoded['nativeProxiesAndroid'] as Map
             : const {},
       ),
       promoWindows: PromoWindowProps.fromMap(
@@ -237,3 +266,43 @@ PromoWindowProps? adsPromoPropsFor(AdsRemoteConfig? config) {
   }
   return props;
 }
+
+/// Android 专属位的**配置层**判定（代理页 Banner / 原生卡片共用模板）：
+/// 总开关 → 位开关 → ID 非空。桌面平台传进来直接 null —— 这两位只在
+/// Android 有意义，state 层的 SDK 裁决在此之前已挡掉桌面，这里是双保险。
+AdPlacementProps? _androidPlacementPropsFor(
+  AdsRemoteConfig? config,
+  AdPlatform platform,
+  AdPlacementProps Function(AdsRemoteConfig config) pick,
+) {
+  if (config == null ||
+      !config.enabled ||
+      platform != AdPlatform.android) {
+    return null;
+  }
+  final props = pick(config);
+  if (!props.enabled || props.adUnitId.isEmpty) {
+    return null;
+  }
+  return props;
+}
+
+/// 代理页底部自适应 Banner 的配置判定。
+AdPlacementProps? adsProxiesBannerPropsFor(
+  AdsRemoteConfig? config,
+  AdPlatform platform,
+) => _androidPlacementPropsFor(
+  config,
+  platform,
+  (config) => config.bannerProxiesAndroid,
+);
+
+/// 代理页原生卡片（列表内嵌）的配置判定。
+AdPlacementProps? adsNativePropsFor(
+  AdsRemoteConfig? config,
+  AdPlatform platform,
+) => _androidPlacementPropsFor(
+  config,
+  platform,
+  (config) => config.nativeProxiesAndroid,
+);
