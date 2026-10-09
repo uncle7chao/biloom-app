@@ -1,5 +1,11 @@
 # Changelog
 
+## v01.00.34 (2026-10-09)
+
+**Features**
+
+- **ads** Two new Android ad placements on the proxies page, both remotely toggleable via the ads config (now v4): an anchored adaptive banner pinned below the node list that sizes itself to the screen width, and a native ad card inserted into the node list every 12 nodes, styled to blend with regular node cards. Existing configs without the new keys degrade to disabled, so older versions are unaffected (6ce6b97)
+
 ## v01.00.33 (2026-10-01)
 
 **Bug Fixes**
