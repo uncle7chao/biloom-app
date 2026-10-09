@@ -1,5 +1,15 @@
 # Changelog
 
+## v01.00.35 (2026-10-09)
+
+**Features**
+
+- **ads** Two more Android banner placements, each with its own remote switch in the ads config (now v5): a fixed banner at the bottom of the profiles page and one at the bottom of the tools page. The native ad card component shipped earlier now actually appears on the proxies page above the adaptive banner, and while a page carries its own banner the shell-level home banner steps aside (state preserved), so at most one ad strip is ever visible. Ad unit ids may be reused across placements and configs without the new keys degrade to disabled (378c5c3)
+
+**Bug Fixes**
+
+- **ads** The home banner never loaded - AdMob showed zero requests for the unit. It fired at app startup and called load() before the Mobile Ads SDK finished initializing, and a failure had no retry path, so the placement stayed dark forever; the proxies banner only triggers on page visit, after init has long completed, which is why it worked. Loading now waits for a memoized SDK-initialization future, failures retry with exponential backoff (5s/15s/45s/60s, capped at 5 attempts so transient no-fill cannot kill a placement while a retry guard prevents request storms), the failure counter resets when the remote config switches ad units, and the native card gets the same lifecycle (cd7c7dd)
+
 ## v01.00.34 (2026-10-09)
 
 **Features**
