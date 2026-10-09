@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
@@ -14,17 +16,24 @@ import 'package:fl_clash/providers/providers.dart';
 /// - [tools]：`bannerToolsAndroid`（v5），工具页底部固定位
 enum AdsBannerPlacement { home, proxies, profiles, tools }
 
-/// Android Banner 广告位（M3 批 2；v4 起多挂载点）。
+/// Android Banner 广告位（M3 批 2；v4 起多挂载点；01.00.35 轮修生命周期）。
 ///
 /// **唯一的 UI 挂载规则**：只认对应位置的 placement provider —— null 即不
 /// 渲染（平台没 SDK / 总开关关 / 位开关关 / 广告位 ID 空 / 从未拉到配置），
 /// 挂载处不写任何平台判断，开关全在远程 JSON 与接缝常量里。
 ///
-/// 生命周期：adUnitId 变化（远程换位）或自适应宽度变化（跨档）才重建
-/// [BannerAd]；加载失败静默缩回 0 高度（广告链路任何异常不允许打扰主
-/// 功能）；dispose 时释放。google_mobile_ads 只在 Android 注册插件，桌面
-/// 端不会走到任何 SDK 调用（provider 在桌面端恒 null），本文件被桌面端
-/// 编译仅是纯 Dart 符号引用。
+/// 生命周期（01.00.35 修复，教训来自首页位 34 版请求量恒 0）：
+/// - **load 前必须等 `MobileAds.instance.initialize()` 完成**。34 版在启动
+///   即触发（配置有 SP 缓存，listenManual fireImmediately 立刻建 ad），SDK
+///   尚未初始化就 load 必失败 —— 而自适应位是用户切页才触发，SDK 早已就绪，
+///   所以同一个包里代理位正常、首页位从未发出过请求。
+/// - **失败指数退避重试**。34 版失败一次就永久躺平且无任何再触发路径；
+///   现在失败后退避重试（5s/15s/45s/60s…封顶 [_maxRetries] 次），防止
+///   no-fill 之类瞬时故障把位置打死，也防止无限重试造成请求风暴。
+/// - dispose / 配置热更新（换 ID）时清空重试状态重新来过。
+///
+/// google_mobile_ads 只在 Android 注册插件，桌面端不会走到任何 SDK 调用
+/// （provider 在桌面端恒 null），本文件被桌面端编译仅是纯 Dart 符号引用。
 class AdsBanner extends ConsumerStatefulWidget {
   const AdsBanner({super.key, this.placement = AdsBannerPlacement.home});
 
@@ -40,7 +49,18 @@ class _AdsBannerState extends ConsumerState<AdsBanner> {
   String? _loadedId;
   int? _loadedWidth;
   bool _loaded = false;
-  bool _sdkInitialized = false;
+  Future<void>? _sdkInitFuture;
+
+  /// 最近一次想展示的配置与尺寸：重试定时器按它重建广告。
+  AdPlacementProps? _pendingProps;
+  AdSize? _pendingSize;
+  int _failures = 0;
+  Timer? _retryTimer;
+
+  /// 失败重试上限与退避序列（秒）。no-fill 冷启动通常在几分钟内自愈，
+  /// 5 次退避大约覆盖 2 分钟；之后保持暗置，等配置热更新或重建组件再试。
+  static const _maxRetries = 5;
+  static const _retryDelays = [5, 15, 45, 60, 60];
 
   /// 自适应位是否按宽度定尺寸。只有代理页是自适应；其余均为固定位。
   bool get _isAdaptive => widget.placement == AdsBannerPlacement.proxies;
@@ -66,12 +86,23 @@ class _AdsBannerState extends ConsumerState<AdsBanner> {
     AdsBannerPlacement.tools => adsToolsBannerPlacementProvider,
   };
 
+  /// SDK 初始化只发一次（MobileAds.initialize 幂等，这里再 memo 一层省
+  /// 重复平台通道调用），返回的 Future 完成后才允许 load。
+  Future<void> _ensureSdkInitialized() =>
+      _sdkInitFuture ??= MobileAds.instance.initialize();
+
   void _syncAd(AdPlacementProps? props, [int? width]) {
     final id = props?.adUnitId ?? '';
     if (props == null || id.isEmpty || !system.isAndroid) {
+      _cancelRetry();
       _disposeAd();
       return;
     }
+    // 换了广告单元 = 全新一轮，失败计数清零。
+    if (_loadedId != id) {
+      _failures = 0;
+    }
+    _pendingProps = props;
     if (!_isAdaptive) {
       _createAd(props, AdSize.banner);
       return;
@@ -97,8 +128,14 @@ class _AdsBannerState extends ConsumerState<AdsBanner> {
 
   void _createAd(AdPlacementProps props, AdSize size) {
     final id = props.adUnitId;
-    // 同 ID + 同尺寸（自适应的宽度跨档）不重建，避免每帧重建广告。
+    _pendingProps = props;
+    _pendingSize = size;
+    // 同 ID + 同尺寸（自适应的宽度跨档）且已有实例：正在加载或已加载，不动。
     if (_loadedId == id && _loadedWidth == size.width && _ad != null) {
+      return;
+    }
+    // 已有重试在排队：等定时器触发，不在 build 路径上叠加请求。
+    if (_retryTimer?.isActive ?? false) {
       return;
     }
     _disposeAd();
@@ -108,6 +145,10 @@ class _AdsBannerState extends ConsumerState<AdsBanner> {
       request: const AdRequest(),
       listener: BannerAdListener(
         onAdLoaded: (ad) {
+          commonPrint.log(
+            'ads banner loaded: $id (${size.width}x${size.height})',
+            logLevel: LogLevel.debug,
+          );
           if (mounted) {
             setState(() => _loaded = true);
           }
@@ -118,14 +159,8 @@ class _AdsBannerState extends ConsumerState<AdsBanner> {
             logLevel: LogLevel.debug,
           );
           ad.dispose();
-          if (mounted) {
-            setState(() {
-              _ad = null;
-              _loadedId = null;
-              _loadedWidth = null;
-              _loaded = false;
-            });
-          }
+          _clearAd();
+          _scheduleRetry();
         },
       ),
     );
@@ -133,15 +168,61 @@ class _AdsBannerState extends ConsumerState<AdsBanner> {
     _loadedId = id;
     _loadedWidth = size.width;
     _loaded = false;
-    if (!_sdkInitialized) {
-      _sdkInitialized = true;
-      MobileAds.instance.initialize();
-    }
-    ad.load();
+    _ensureSdkInitialized().then((_) {
+      if (!mounted) {
+        ad.dispose();
+        return;
+      }
+      // 本插件版本 load() 返回 void（结果走 listener 回调），这里只负责
+      // 等 SDK 就绪后发起；初始化异常走 catchError 退避。
+      ad.load();
+    }).catchError((Object e) {
+      commonPrint.log(
+        'ads banner load error: $e',
+        logLevel: LogLevel.debug,
+      );
+      _clearAd();
+      _scheduleRetry();
+    });
   }
 
-  void _disposeAd() {
-    _ad?.dispose();
+  /// 失败后按退避序列排一次重试。退避期间 build 里再怎么触发 _syncAd
+  /// 都被 _createAd 的重试 guard 拦住，不会产生请求风暴。
+  void _scheduleRetry() {
+    if (!mounted) {
+      return;
+    }
+    _failures++;
+    if (_failures > _maxRetries) {
+      commonPrint.log(
+        'ads banner give up after $_maxRetries failures '
+        '(id: ${_pendingProps?.adUnitId})',
+        logLevel: LogLevel.debug,
+      );
+      return;
+    }
+    final delay = _retryDelays[(_failures - 1).clamp(
+      0,
+      _retryDelays.length - 1,
+    )];
+    _retryTimer?.cancel();
+    _retryTimer = Timer(Duration(seconds: delay), () {
+      final props = _pendingProps;
+      final size = _pendingSize;
+      if (props == null || size == null || !mounted) {
+        return;
+      }
+      _createAd(props, size);
+    });
+  }
+
+  void _cancelRetry() {
+    _retryTimer?.cancel();
+    _retryTimer = null;
+  }
+
+  /// 只清广告实例状态，不动重试节奏。
+  void _clearAd() {
     _ad = null;
     _loadedId = null;
     _loadedWidth = null;
@@ -152,8 +233,14 @@ class _AdsBannerState extends ConsumerState<AdsBanner> {
     }
   }
 
+  void _disposeAd() {
+    _ad?.dispose();
+    _clearAd();
+  }
+
   @override
   void dispose() {
+    _cancelRetry();
     _ad?.dispose();
     _ad = null;
     super.dispose();
@@ -170,7 +257,8 @@ class _AdsBannerState extends ConsumerState<AdsBanner> {
       builder: (context, constraints) {
         if (_isAdaptive) {
           final width = constraints.maxWidth.floor();
-          // 只在拿到真实宽度（非无限）时触发同步；内部有同档 guard。
+          // 只在拿到真实宽度（非无限）时触发同步；内部有同档 guard 与
+          // 重试 guard，no-fill 不会在这里变成请求风暴。
           if (width > 0 && width < 10000) {
             _syncAd(props, width);
           }
