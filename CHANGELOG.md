@@ -1,5 +1,11 @@
 # Changelog
 
+## v01.00.36 (2026-10-09)
+
+**Bug Fixes**
+
+- **ads** The profiles and tools banners kept reporting no-fill on real devices while the adaptive request to the same ad unit filled every time, so both pages now use anchored adaptive banners (same proven request format as the proxies banner). Placements that exhausted their retry budget also stayed dark for the entire session; they now re-arm when the app returns to the foreground (failure counter reset, one fresh backoff round per resume), applied to the native ad card as well (e609c3c)
+
 ## v01.00.35 (2026-10-09)
 
 **Features**
