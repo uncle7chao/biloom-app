@@ -32,6 +32,7 @@ class UpdateCheckResult {
 class Request {
   late final Dio dio;
   late final Dio _clashDio;
+  late final Dio _directDio;
   String? userAgent;
 
   ProviderReader? _read;
@@ -65,13 +66,60 @@ class Request {
         return client;
       },
     );
+    // 内核端口拒连时的直连兜底：findProxy 是同步裁决，内核「宣称在跑」但端口
+    // 实际没监听（启动竞态/连接失败退出后状态未回退）时，订阅请求会撞
+    // Connection refused 且无法在 findProxy 层自救 —— 只能在请求层捕获后换
+    // 直连重试。订阅地址大多国内可直连，回退不改变正常路径的行为。
+    _directDio = Dio(
+      BaseOptions(
+        connectTimeout: const Duration(seconds: 15),
+        receiveTimeout: const Duration(seconds: 60),
+        headers: {'User-Agent': browserUa},
+      ),
+    );
+    _directDio.httpClientAdapter = IOHttpClientAdapter(
+      createHttpClient: () {
+        final client = HttpClient();
+        client.findProxy = (Uri uri) => 'DIRECT';
+        return client;
+      },
+    );
+  }
+
+  /// 内核内部端口的 Connection refused：findProxy 把请求指向了
+  /// `localhost:mixedPort` 但内核没在监听（状态不同步）。此时换直连重试。
+  bool _isLocalPortRefused(DioException e) {
+    final error = e.error;
+    if (error is! SocketException) {
+      return false;
+    }
+    final host = error.address?.host.toLowerCase();
+    return (host == 'localhost' || host == '127.0.0.1' || host == '::1');
+  }
+
+  Future<Response<T>> _getWithDirectFallback<T extends Object?>(
+    String url,
+    Options options,
+  ) async {
+    try {
+      return await _clashDio.get<T>(url, options: options);
+    } on DioException catch (e) {
+      if (!_isLocalPortRefused(e)) {
+        rethrow;
+      }
+      commonPrint.log(
+        'core port refused, falling back to direct fetch for $url',
+        logLevel: LogLevel.warning,
+      );
+      return _directDio.get<T>(url, options: options);
+    }
   }
 
   Future<Response<Uint8List>> getFileResponseForUrl(String url) async {
     try {
-      return await _clashDio.get<Uint8List>(
+      return await _getWithDirectFallback<Uint8List>(
         url,
-        options: Options(responseType: ResponseType.bytes),
+        Options(responseType: ResponseType.bytes),
       );
     } catch (e) {
       commonPrint.log(
@@ -84,9 +132,9 @@ class Request {
 
   Future<Response<String>> getTextResponseForUrl(String url) async {
     try {
-      return await _clashDio.get<String>(
+      return await _getWithDirectFallback<String>(
         url,
-        options: Options(responseType: ResponseType.plain),
+        Options(responseType: ResponseType.plain),
       );
     } catch (e) {
       commonPrint.log(
