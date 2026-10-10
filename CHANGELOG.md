@@ -1,5 +1,11 @@
 # Changelog
 
+## v01.00.37 (2026-10-10)
+
+**Bug Fixes**
+
+- **ui** The dashboard one-tap connect card looked the same whether connected or not - the state was only readable from the subtitle. The power icon and title are now red (#FF5252, same family as the latency timeout state) while disconnected, and the brand seed color lightened 30% while connected, so connectivity reads at a glance from across the room; the connecting state and muted subtitle are unchanged (dc8d2b9)
+
 ## v01.00.36 (2026-10-09)
 
 **Bug Fixes**
