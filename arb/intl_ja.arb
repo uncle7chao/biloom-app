@@ -766,5 +766,6 @@
   "currentExit": "現在の出口",
   "copyShareLink": "共有リンクをコピー",
   "copyNode": "ノードをコピー",
-  "shareLinkFallback": "このノードタイプはまだ共有リンクに対応していません。ノード内容をコピーしました"
+  "shareLinkFallback": "このノードタイプはまだ共有リンクに対応していません。ノード内容をコピーしました",
+  "noProxySet": "プロキシが未設定です"
 }

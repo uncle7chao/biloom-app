@@ -6455,6 +6455,11 @@ class AppLocalizations {
   String get shareLinkFallback {
     return Intl.message('Share links are not supported for this node type yet; node details copied instead', name: 'shareLinkFallback', desc: '', args: []);
   }
+
+  /// `No proxy configured`
+  String get noProxySet {
+    return Intl.message('No proxy configured', name: 'noProxySet', desc: '', args: []);
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<AppLocalizations> {

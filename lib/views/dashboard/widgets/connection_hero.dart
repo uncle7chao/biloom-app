@@ -19,6 +19,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 /// 状态指示色（2026-10-10 用户拍板）：已连接 = 浅绿、未连接 = 红。
 /// 浅绿由品牌种子色提亮派生（不引入第二套色板）；红与节点延迟测试的
 /// 状态红同族（redAccent），在深色卡面上清晰可辨且不刺眼。
+/// 「点按一键连接」只在有配置时显示：裸机（无订阅）状态点了只会弹
+/// 「请先添加配置文件」，喊人连接是条死路（2026-10-10 用户拍板去掉）。
 const _disconnectedColor = Color(0xFFFF5252);
 
 class ConnectionHero extends ConsumerWidget {
@@ -32,8 +34,14 @@ class ConnectionHero extends ConsumerWidget {
 
     final Widget leading;
     final String title;
-    final String subtitle;
+    final String? subtitle;
     Color? stateColor;
+    // 刚安装还没有任何配置时，「点按一键连接」是条死路 —— 点下去只会弹
+    // 「请先添加配置文件」。所以裸机状态不喊人连接（2026-10-10 用户拍板），
+    // 等有了订阅这条引导才有意义。
+    final hasProfile = ref.watch(
+      profilesProvider.select((state) => state.isNotEmpty),
+    );
     switch (phase) {
       case ConnectionPhase.connected:
         // ⚠️ 不要用 lighten()：它是 HSL 亮度直接 +amount%，深色主题的
@@ -67,7 +75,9 @@ class ConnectionHero extends ConsumerWidget {
           size: 28.ap,
         );
         title = appLocalizations.connectionStateDisconnected;
-        subtitle = appLocalizations.connectionHeroTapToConnect;
+        subtitle = hasProfile
+            ? appLocalizations.connectionHeroTapToConnect
+            : null;
     }
 
     return CommonCard(
@@ -122,15 +132,17 @@ class ConnectionHero extends ConsumerWidget {
                               color: stateColor,
                             ),
                           ),
-                          const SizedBox(height: 2),
-                          Text(
-                            subtitle,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: textTheme.bodyMedium?.copyWith(
-                              color: context.colorScheme.onSurfaceVariant,
+                          if (subtitle != null) ...[
+                            const SizedBox(height: 2),
+                            Text(
+                              subtitle,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: textTheme.bodyMedium?.copyWith(
+                                color: context.colorScheme.onSurfaceVariant,
+                              ),
                             ),
-                          ),
+                          ],
                         ],
                       ),
                     ),

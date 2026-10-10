@@ -1240,5 +1240,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "copyShareLink": MessageLookupByLibrary.simpleMessage("共有リンクをコピー"),
     "copyNode": MessageLookupByLibrary.simpleMessage("ノードをコピー"),
     "shareLinkFallback": MessageLookupByLibrary.simpleMessage("このノードタイプはまだ共有リンクに対応していません。ノード内容をコピーしました"),
+    "noProxySet": MessageLookupByLibrary.simpleMessage("プロキシが未設定です"),
   };
 }

@@ -14,13 +14,46 @@ class CommonAction extends _$CommonAction {
   /// 内核起来了却没有接管方式时流量照样直连，那不是用户要的「已连接」；
   /// 断开却把系统代理留在打开的位置，开关会和状态自相矛盾，而且下一次
   /// 任何一次开关变动都会把它重新拉起来，用户会觉得「关不掉」。
+  ///
+  /// 连接前的两道闸（2026-10-10 用户拍板）：
+  /// 1. 没有订阅（无任何可用代理）时「开始连接」不可运行，只弹提示 ——
+  ///    裸机点了连接也不会有任何代理生效，那是假动作；
+  /// 2. 首次连接时才弹「最佳设置」引导（首启不弹：裸机推荐接管方式没有意义）。
   void toggleRunning() {
     final systemAction = ref.read(systemActionProvider.notifier);
     if (ref.read(isStartProvider)) {
       systemAction.disconnect();
-    } else {
-      systemAction.connect();
+      return;
     }
+    if (ref.read(profilesProvider).isEmpty) {
+      dialogs.showNotifier(currentAppLocalizations.noProxySet);
+      return;
+    }
+    unawaited(_connectWithFirstRunGuide());
+  }
+
+  /// 首次连接时的一次性引导：按设备能力推荐接管方式，用户可选「一键应用」。
+  ///
+  /// 出现条件只有「从未出现过」（shared_preferences 的一次性标记，不复用
+  /// appSetting —— 那个模型加字段要跑代码生成器，为一个布尔值不值）。
+  /// 选「一键应用」则 [SystemAction.applyBestPreset] 内部会把运行态拉起来，
+  /// 等于这次连接顺势完成；跳过则按原逻辑继续连接。
+  /// 无论选什么都标记完成：这不是一个要反复纠缠的推销位。
+  Future<void> _connectWithFirstRunGuide() async {
+    final prefs = await preferences.sharedPreferencesCompleter.future;
+    if (prefs?.getBool('bestPresetGuideDone') != true) {
+      await prefs?.setBool('bestPresetGuideDone', true);
+      final confirmed = await dialogs.showMessage(
+        title: currentAppLocalizations.bestPresetTitle,
+        message: TextSpan(text: currentAppLocalizations.bestPresetFirstRunTip),
+        confirmText: currentAppLocalizations.bestPresetApply,
+      );
+      if (confirmed == true) {
+        await ref.read(systemActionProvider.notifier).applyBestPreset();
+        return;
+      }
+    }
+    ref.read(systemActionProvider.notifier).connect();
   }
 
   void updateSpeedStatistics() {
@@ -91,31 +124,8 @@ class CommonAction extends _$CommonAction {
     return res.status == UpdateCheckStatus.hasUpdate;
   }
 
-  /// 首启一次性引导：检测设备能力并推荐接管方式，用户可选「一键应用」。
-  ///
-  /// 出现条件只有「从未出现过」（shared_preferences 的一次性标记，不复用
-  /// appSetting —— 那个模型加字段要跑代码生成器，为一个布尔值不值）。
-  /// 无论用户选什么都标记完成：这不是一个要反复纠缠的推销位。
-  Future<void> maybeShowFirstRunGuide() async {
-    final prefs = await preferences.sharedPreferencesCompleter.future;
-    if (prefs?.getBool('bestPresetGuideDone') == true) {
-      return;
-    }
-    await prefs?.setBool('bestPresetGuideDone', true);
-    final context = globalState.navigatorKey.currentContext;
-    if (context == null) {
-      return;
-    }
-    final appLocalizations = currentAppLocalizations;
-    final confirmed = await dialogs.showMessage(
-      title: appLocalizations.bestPresetTitle,
-      message: TextSpan(text: appLocalizations.bestPresetFirstRunTip),
-      confirmText: appLocalizations.bestPresetApply,
-    );
-    if (confirmed == true) {
-      await ref.read(systemActionProvider.notifier).applyBestPreset();
-    }
-  }
+  /// 首启一次性引导已移除（2026-10-10 用户拍板）：引导挪到首次连接时弹
+  /// （见 [_connectWithFirstRunGuide]）—— 裸机首启推荐接管方式没有意义。
 
   TextSpan _releaseSpan(BuildContext context, String tagName, String? body) {
     final textTheme = context.textTheme;

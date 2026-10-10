@@ -766,5 +766,6 @@
   "currentExit": "Current exit",
   "copyShareLink": "Copy share link",
   "copyNode": "Copy node",
-  "shareLinkFallback": "Share links are not supported for this node type yet; node details copied instead"
+  "shareLinkFallback": "Share links are not supported for this node type yet; node details copied instead",
+  "noProxySet": "No proxy configured"
 }

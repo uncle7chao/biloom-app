@@ -1496,5 +1496,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "copyShareLink": MessageLookupByLibrary.simpleMessage("Copy share link"),
     "copyNode": MessageLookupByLibrary.simpleMessage("Copy node"),
     "shareLinkFallback": MessageLookupByLibrary.simpleMessage("Share links are not supported for this node type yet; node details copied instead"),
+    "noProxySet": MessageLookupByLibrary.simpleMessage("No proxy configured"),
   };
 }

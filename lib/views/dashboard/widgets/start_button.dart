@@ -213,10 +213,10 @@ class _StartButtonState extends ConsumerState<StartButton>
           heroTag: null,
           tooltip: hasProfile
               ? (isStart ? appLocalizations.stop : appLocalizations.start)
-              : appLocalizations.nullProfileDesc,
+              : appLocalizations.noProxySet,
           onPressed: hasProfile
               ? handleSwitchStart
-              : () => context.showNotifier(appLocalizations.nullProfileDesc),
+              : () => context.showNotifier(appLocalizations.noProxySet),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [

@@ -1090,5 +1090,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "copyShareLink": MessageLookupByLibrary.simpleMessage("复制分享链接"),
     "copyNode": MessageLookupByLibrary.simpleMessage("复制节点"),
     "shareLinkFallback": MessageLookupByLibrary.simpleMessage("该节点类型暂不支持生成分享链接，已复制节点内容"),
+    "noProxySet": MessageLookupByLibrary.simpleMessage("未设置代理"),
   };
 }

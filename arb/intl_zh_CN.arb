@@ -766,5 +766,6 @@
   "currentExit": "当前出口",
   "copyShareLink": "复制分享链接",
   "copyNode": "复制节点",
-  "shareLinkFallback": "该节点类型暂不支持生成分享链接，已复制节点内容"
+  "shareLinkFallback": "该节点类型暂不支持生成分享链接，已复制节点内容",
+  "noProxySet": "未设置代理"
 }

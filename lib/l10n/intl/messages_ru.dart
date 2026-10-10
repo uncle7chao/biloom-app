@@ -1576,5 +1576,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "copyShareLink": MessageLookupByLibrary.simpleMessage("Копировать ссылку"),
     "copyNode": MessageLookupByLibrary.simpleMessage("Копировать узел"),
     "shareLinkFallback": MessageLookupByLibrary.simpleMessage("Для этого типа узла ссылка пока не поддерживается; содержимое узла скопировано"),
+    "noProxySet": MessageLookupByLibrary.simpleMessage("Прокси не настроен"),
   };
 }
