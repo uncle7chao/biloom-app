@@ -13,8 +13,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 /// 要从悬浮球的形状、代理页的开关里猜自己连没连上；现在一张卡说清楚。
 ///
 /// 视觉跟着设计系统走：已连接 = `filled + selected`（secondaryContainer，
-/// 与「当前生效」在其他页面的表达一致），未连接/连接中用普通卡面。连接中
-/// 不可点 —— 连接动作本身已经在飞，再点一次只会叠加请求。
+/// 与「当前生效」在其他页面的表达一致）+ 品牌色提亮的浅绿指示；未连接 =
+/// 普通卡面 + 状态红指示。连接中不可点 —— 连接动作本身已经在飞，再点
+/// 一次只会叠加请求。
+/// 状态指示色（2026-10-10 用户拍板）：已连接 = 浅绿、未连接 = 红。
+/// 浅绿由品牌种子色提亮派生（不引入第二套色板）；红与节点延迟测试的
+/// 状态红同族（redAccent），在深色卡面上清晰可辨且不刺眼。
+const _disconnectedColor = Color(0xFFFF5252);
+
 class ConnectionHero extends ConsumerWidget {
   const ConnectionHero({super.key});
 
@@ -27,11 +33,13 @@ class ConnectionHero extends ConsumerWidget {
     final Widget leading;
     final String title;
     final String subtitle;
+    Color? stateColor;
     switch (phase) {
       case ConnectionPhase.connected:
+        stateColor = context.colorScheme.primary.lighten(30);
         leading = Icon(
           Icons.check_circle,
-          color: context.colorScheme.primary,
+          color: stateColor,
           size: 28.ap,
         );
         title = appLocalizations.connectionStateConnected;
@@ -45,9 +53,10 @@ class ConnectionHero extends ConsumerWidget {
         title = appLocalizations.connectionStateConnecting;
         subtitle = appLocalizations.connectionHeroTapToDisconnect;
       case ConnectionPhase.disconnected:
+        stateColor = _disconnectedColor;
         leading = Icon(
           Icons.power_settings_new,
-          color: context.colorScheme.onSurfaceVariant,
+          color: stateColor,
           size: 28.ap,
         );
         title = appLocalizations.connectionStateDisconnected;
@@ -102,7 +111,9 @@ class ConnectionHero extends ConsumerWidget {
                             title,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: textTheme.titleMedium?.toSoftBold,
+                            style: textTheme.titleMedium?.toSoftBold.copyWith(
+                              color: stateColor,
+                            ),
                           ),
                           const SizedBox(height: 2),
                           Text(
