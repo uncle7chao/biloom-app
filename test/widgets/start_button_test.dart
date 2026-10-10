@@ -5,10 +5,20 @@ import 'package:fl_clash/views/dashboard/widgets/start_button.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../helpers/test_app.dart';
 
+// 连接路径会读全局 preferences 单例（首连引导标记）。这个 completer 是
+// 进程级单例且只有首次触碰才初始化：mock 必须赶在首次触碰前铺好，否则
+// getInstance 在测试绑定下悬死/完成 null，时序随环境漂移。setUpAll 在本
+// 文件任何用例之前执行（每个测试文件独立 isolate，单例不会跨文件污染）。
+// 预置「引导已完成」让 connect 走纯同步裁决，不碰弹窗。
 void main() {
+  setUpAll(() {
+    SharedPreferences.setMockInitialValues({'bestPresetGuideDone': true});
+  });
+
   testWidgets('RunTimeText emphasizes the hundreds hour digit', (tester) async {
     const colorScheme = ColorScheme.light(
       primary: Color(0xFF6750A4),
@@ -186,6 +196,9 @@ void main() {
   testWidgets('dispatches each toggle through the shared running state', (
     tester,
   ) async {
+    // 双保险：即使本用例被单独 --plain-name 重跑，mock 也已在触碰
+    // preferences 之前就位。
+    SharedPreferences.setMockInitialValues({'bestPresetGuideDone': true});
     final container = ProviderContainer(
       overrides: [
         initProvider.overrideWithBuild((_, _) => true),
@@ -216,14 +229,15 @@ void main() {
     final button = find.byType(FloatingActionButton);
 
     await tester.tap(button);
-    // connect 路径在记录 setRunning 前要过一次 prefs 的微任务边界，
-    // pump 一拍让异步链落地再断言。
-    await tester.pump();
+    // disconnect 是同步裁决但 setRunning 走 unawaited 异步闭包；connect 还要
+    // 过 preferences 的微任务边界。pumpAndSettle 既 drain 微任务又走完按钮
+    // 200ms 动画，断言时序完全确定。
+    await tester.pumpAndSettle();
     expect(action.requests, [false]);
     expect(container.read(isStartProvider), isFalse);
 
     await tester.tap(button);
-    await tester.pump();
+    await tester.pumpAndSettle();
     expect(action.requests, [false, true]);
     expect(container.read(isStartProvider), isTrue);
   });
