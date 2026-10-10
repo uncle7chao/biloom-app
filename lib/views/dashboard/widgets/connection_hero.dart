@@ -36,7 +36,14 @@ class ConnectionHero extends ConsumerWidget {
     Color? stateColor;
     switch (phase) {
       case ConnectionPhase.connected:
-        stateColor = context.colorScheme.primary.lighten(30);
+        // ⚠️ 不要用 lighten()：它是 HSL 亮度直接 +amount%，深色主题的
+        // primary（tone 80）亮度已高，+30% 会顶到纯白（01.00.37 翻车：
+        // 图标标题全变白）。RGB 向白混 20% 才是「更浅但仍是绿」。
+        stateColor = Color.lerp(
+          context.colorScheme.primary,
+          Colors.white,
+          0.2,
+        );
         leading = Icon(
           Icons.check_circle,
           color: stateColor,
