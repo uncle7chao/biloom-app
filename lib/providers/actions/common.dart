@@ -41,8 +41,14 @@ class CommonAction extends _$CommonAction {
   /// 无论选什么都标记完成：这不是一个要反复纠缠的推销位。
   Future<void> _connectWithFirstRunGuide() async {
     final prefs = await preferences.sharedPreferencesCompleter.future;
-    if (prefs?.getBool('bestPresetGuideDone') != true) {
-      await prefs?.setBool('bestPresetGuideDone', true);
+    // 引导是增值项，绝不能变成连接的闸门：SharedPreferences 初始化失败
+    // （prefs == null）或根导航还不可用（弹窗没有落脚点）时直接连接。
+    if (prefs == null || rootNavigatorKey.currentContext == null) {
+      ref.read(systemActionProvider.notifier).connect();
+      return;
+    }
+    if (prefs.getBool('bestPresetGuideDone') != true) {
+      await prefs.setBool('bestPresetGuideDone', true);
       final confirmed = await dialogs.showMessage(
         title: currentAppLocalizations.bestPresetTitle,
         message: TextSpan(text: currentAppLocalizations.bestPresetFirstRunTip),

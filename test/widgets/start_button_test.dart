@@ -216,10 +216,14 @@ void main() {
     final button = find.byType(FloatingActionButton);
 
     await tester.tap(button);
+    // connect 路径在记录 setRunning 前要过一次 prefs 的微任务边界，
+    // pump 一拍让异步链落地再断言。
+    await tester.pump();
     expect(action.requests, [false]);
     expect(container.read(isStartProvider), isFalse);
 
     await tester.tap(button);
+    await tester.pump();
     expect(action.requests, [false, true]);
     expect(container.read(isStartProvider), isTrue);
   });
