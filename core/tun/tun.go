@@ -83,20 +83,8 @@ func Start(fd int, stack, address, dns, rawOptions string) *sing_tun.Listener {
 	defer func() { _ = syscall.Close(fd) }()
 
 	options := LC.Tun{
-<<<<<<< HEAD
-		Enable:              true,
-		Device:              "BiLoom",
-		Stack:               tunStack,
-		DNSHijack:           dnsHijack,
-		AutoRoute:           false,
-		AutoDetectInterface: false,
-		Inet4Address:        prefix4,
-		Inet6Address:        prefix6,
-		MTU:                 9000,
-		FileDescriptor:      dupFd,
-=======
 		Enable:               true,
-		Device:               "FlClash",
+		Device:               "BiLoom",
 		Stack:                tunStack,
 		DNSHijack:            dnsHijack,
 		AutoRoute:            false,
@@ -106,7 +94,6 @@ func Start(fd int, stack, address, dns, rawOptions string) *sing_tun.Listener {
 		MTU:                  settings.MTU,
 		CongestionController: settings.CongestionController,
 		FileDescriptor:       dupFd,
->>>>>>> _up/v0.9.2
 	}
 
 	listener, err := sing_tun.New(options, tunnel.Tunnel)
