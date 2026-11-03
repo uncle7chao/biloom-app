@@ -33,7 +33,6 @@ class BuildConfig {
     coreVersion: '',
     coreDir: 'core',
     coreName: 'BiLoomCore',
-    libName: 'libclash',
     outputDir: 'libclash',
     helperDir: 'services/helper',
     helperName: 'BiLoomHelperService',

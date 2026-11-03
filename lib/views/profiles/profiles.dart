@@ -103,9 +103,13 @@ const _infoGap = 4.0;
 
 double get _profileItemHeight {
   final measure = globalState.measure;
+  // 底部还有条件显示的「上次更新失败」红标行（top 4 + caption1 高）。
+  // mainAxisExtent 是全卡片统一高度，红标行无论显隐都要预留，否则被裁半行。
   return measure.textHeight(AppTextStyle.headline) +
       _infoGap +
       measure.textHeight(AppTextStyle.footnote) +
+      4 +
+      measure.textHeight(AppTextStyle.caption1) +
       2 * listRowVerticalPadding;
 }
 
