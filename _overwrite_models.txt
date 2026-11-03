@@ -1,0 +1,70 @@
+abstract class CustomOverwriteDate with _$CustomOverwriteDate {
+  const factory CustomOverwriteDate({
+    @Default(false) bool loaded,
+    @Default([]) List<String> proxyNames,
+    @Default({}) Map<String, String> proxyTypes,
+    @Default([]) List<ProxyGroup> proxyGroups,
+    @Default({}) Set<String> proxyProviders,
+    @Default({}) Set<String> ruleTargets,
+    @Default({}) Set<String> subRules,
+  }) = _CustomOverwriteDate;
+}
+
+@freezed
+abstract class CustomOverwriteSelectorState
+    with _$CustomOverwriteSelectorState {
+  const factory CustomOverwriteSelectorState({
+    required bool loaded,
+    required List<Proxy> proxies,
+    required List<String> subRules,
+    required List<String> proxyProviders,
+  }) = _CustomOverwriteSelectorState;
+}
+
+@freezed
+abstract class RuleTargetsSelectorState with _$RuleTargetsSelectorState {
+  const factory RuleTargetsSelectorState({
+    required bool loaded,
+    required Set<String> ruleTargets,
+    required Set<String> subRules,
+  }) = _RuleTargetsSelectorState;
+}
+
+@freezed
+abstract class OverwriteIncludeSelectorState
+    with _$OverwriteIncludeSelectorState {
+  const factory OverwriteIncludeSelectorState({
+    required bool includeAll,
+    required List<String> names,
+  }) = _OverwriteIncludeSelectorState;
+}
+
+@freezed
+abstract class RuleProvider with _$RuleProvider {
+  const factory RuleProvider({required String name}) = _RuleProvider;
+
+  factory RuleProvider.fromJson(Map<String, Object?> json) =>
+      _$RuleProviderFromJson(json);
+}
+
+@freezed
+abstract class ProxyProvider with _$ProxyProvider {
+  const factory ProxyProvider({required String name}) = _ProxyProvider;
+
+  factory ProxyProvider.fromJson(Map<String, Object?> json) =>
+      _$ProxyProviderFromJson(json);
+}
+
+@freezed
+abstract class Sniffer with _$Sniffer {
+  const factory Sniffer({
+    @Default(false) bool enable,
+    @Default(true) @JsonKey(name: 'override-destination') bool overrideDest,
+    @Default([]) List<String> sniffing,
+    @Default([]) @JsonKey(name: 'force-domain') List<String> forceDomain,
+    @Default([]) @JsonKey(name: 'skip-src-address') List<String> skipSrcAddress,
+    @Default([]) @JsonKey(name: 'skip-dst-address') List<String> skipDstAddress,
+    @Default([]) @JsonKey(name: 'skip-domain') List<String> skipDomain,
+    @Default([]) @JsonKey(name: 'port-whitelist') List<String> port,
+    @Default(true) @JsonKey(name: 'force-dns-mapping') bool forceDnsMapping,
+    @Default(true) @JsonKey(name: 'parse-pure-ip') bool parsePureIp,

@@ -341,7 +341,6 @@ class _AddOrEditRuleDialogState extends State<AddOrEditRuleDialog> {
                     onPressed: () async {
                       _ruleAction =
                           await dialogs.showCommonDialog<RuleAction>(
-                            filter: false,
                             child: OptionsDialog<RuleAction>(
                               title: appLocalizations.ruleName,
                               options: RuleAction.addedRuleActions,

@@ -1,45 +1,14 @@
-import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/manager/status_manager.dart';
+import 'package:fl_clash/ui/context.dart' as ui_ctx;
 import 'package:fl_clash/models/state.dart';
-import 'package:fl_clash/providers/app.dart';
-import 'package:fl_clash/widgets/inherited.dart';
-import 'package:fl_clash/widgets/scaffold.dart';
-import 'package:fl_clash/widgets/sheet.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-extension BuildContextExtension on BuildContext {
-  CommonScaffoldState? get commonScaffoldState {
-    return findAncestorStateOfType<CommonScaffoldState>();
-  }
-
-  bool get isMobileView {
-    return ProviderScope.containerOf(
-      this,
-      listen: false,
-    ).read(isMobileViewProvider);
-  }
-
-  void safeNestedPop<T extends Object?>([T? result]) {
-    final nestedPop = SheetProvider.of(this)?.nestedNavigatorPop;
-    if (nestedPop != null) {
-      return nestedPop(result);
-    } else {
-      return Navigator.of(this).pop(result);
-    }
-  }
-
-  double get sheetTopPadding {
-    final sheetType = SheetProvider.of(this)!.type;
-    if (sheetType == SheetType.bottomSheet) {
-      return sheetAppBarHeight;
-    } else {
-      return 10;
-    }
-  }
-
+/// fork 增量扩展：v0.9.2 上游把通用上下文扩展搬进了 ui/context.dart
+/// （commonScaffoldState / colorScheme / 排版系等），
+/// 这里只留 BiLoom 自己的成员，避免与上游扩展重名冲突。
+extension AppContextExtension on BuildContext {
   void showNotifier(
     String text, {
     MessageLevel level = MessageLevel.info,
@@ -52,31 +21,10 @@ extension BuildContextExtension on BuildContext {
     );
   }
 
-  void showSnackBar(String message, {SnackBarAction? action}) {
-    final width = MediaQuery.sizeOf(this).width;
-    EdgeInsets margin;
-    if (width < 600) {
-      margin = const EdgeInsets.only(bottom: 16, right: 16, left: 16);
-    } else {
-      margin = EdgeInsets.only(bottom: 16, left: 16, right: width - 316);
-    }
-    ScaffoldMessenger.of(this).showSnackBar(
-      SnackBar(
-        action: action,
-        content: Text(message),
-        behavior: SnackBarBehavior.floating,
-        duration: const Duration(milliseconds: 1500),
-        margin: margin,
-      ),
-    );
-  }
-
-  ColorScheme get colorScheme => Theme.of(this).colorScheme;
-
-  bool get disableAnimations => MediaQuery.disableAnimationsOf(this);
-
-  Duration motionDuration(Duration duration) =>
-      disableAnimations ? Duration.zero : duration;
+  /// 旧名兼容：上游新版叫 contentTopPadding（ui/context.dart），
+  /// 覆写编辑器各页还用着旧名，指过去即可。
+  double get sheetTopPadding =>
+      ui_ctx.BuildContextExtension(this).contentTopPadding;
 
   TextTheme get textTheme => Theme.of(this).textTheme;
 
@@ -97,7 +45,8 @@ extension BuildContextExtension on BuildContext {
       element.visitChildren(visitor);
     }
 
-    visitor(this as Element);
+    visitChildElements(visitor);
     return state;
   }
 }
+

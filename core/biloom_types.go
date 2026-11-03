@@ -1,0 +1,124 @@
+package core
+
+// BiLoom: 自定义内核方法的入参/回参类型。上游 v0.9.2 把旧 constant.go 拆分
+// 成多个职责文件，这些 fork 专属类型集中收在此处，避免与上游文件纠缠。
+
+// AddProxyNodesParams 是 addProxyNodes 的入参。
+//
+// Nodes 接受两种写法、由内核自行判断，用户不必先选类型：
+//   - 分享链接（vmess:// / vless:// / ss:// …），可多行批量粘贴；
+//   - 直接的 YAML 片段（`- name: …` 形式的代理条目列表）。
+type AddProxyNodesParams struct {
+	YAML  string `json:"yaml"`
+	Nodes string `json:"nodes"`
+}
+
+// AddProxyNodesResult 回传追加结果，供 Dart 提示「新增 3 个、跳过 1 个重名」——
+// 重名节点如果在 Clash 里同时存在，整份配置会直接加载失败，所以必须去重并如实告知。
+type AddProxyNodesResult struct {
+	YAML    string   `json:"yaml"`
+	Added   []string `json:"added"`
+	Skipped []string `json:"skipped"`
+}
+
+// RemoveProxyNodesParams 是 removeProxyNodes 的入参。Names 是要删除的节点名列表。
+type RemoveProxyNodesParams struct {
+	YAML  string   `json:"yaml"`
+	Names []string `json:"names"`
+}
+
+// RemoveProxyNodesResult 回传删除结果：Removed 是真删掉的，Missing 是配置里
+// 找不到的（多半是面板数据已过期）。引用清理（组员/规则/listeners）在内核同步做，
+// 调用方拿到的 YAML 一定是加载得动的。
+type RemoveProxyNodesResult struct {
+	YAML    string   `json:"yaml"`
+	Removed []string `json:"removed"`
+	Missing []string `json:"missing"`
+}
+
+// UpdateProxyNodeParams 是 updateProxyNodes 的入参。Name 是被编辑节点的
+// 当前名字（定位锚点），Node 是编辑后的单节点片段（JSON 或 YAML）。
+type UpdateProxyNodeParams struct {
+	YAML string `json:"yaml"`
+	Name string `json:"name"`
+	Node string `json:"node"`
+}
+
+// UpdateProxyNodeResult 回传更新结果。名字是策略组成员、规则出口、链式引用的
+// 共同锚点，本方法不允许改名 —— 想改名走「删除 + 重新添加」。
+type UpdateProxyNodeResult struct {
+	YAML    string `json:"yaml"`
+	Updated string `json:"updated"`
+}
+
+// ReadProfileTargetsParams 是 readProfileTargets 的入参。
+//
+// 链式代理的候选名单只能从**配置本身**读：节点名与策略组名共用 Clash 的命名空间，
+// 而覆写数据里并没有完整名单（它只有用户自定义的那几个组）。运行时那份 ClashConfig
+// 也不行 —— 它反映的是「当前已生效的配置」，用户正在编辑的这份未必是它。
+type ReadProfileTargetsParams struct {
+	YAML string `json:"yaml"`
+}
+
+// ProfileTarget 是链式代理能引用的一项：一个节点，或者一个策略组。
+//
+// Type 是给界面显示用的（ss / vmess / Selector …）；Dialer 仅对节点有意义 ——
+// 链是挂在**节点**上的（`dialer-proxy` 是 proxy 级选项，写在组上内核只记一条日志
+// 就忽略），所以组的 Dialer 恒为空。
+type ProfileTarget struct {
+	Name   string `json:"name"`
+	Type   string `json:"type"`
+	Dialer string `json:"dialer"`
+}
+
+type ProfileTargets struct {
+	Proxies []ProfileTarget `json:"proxies"`
+	Groups  []ProfileTarget `json:"groups"`
+	// Nodes 是 proxies 段的**完整参数**（与 Proxies 同序同名）。编辑节点要
+	// 预填表单，光有名字/类型不够 —— 把原样参数带回给界面。
+	Nodes []map[string]any `json:"nodes,omitempty"`
+}
+
+// SetProxyChainParams 是 setProxyChain 的入参。
+//
+// BiLoom: 链式代理的正确形态。Clash 早期的做法是 `type: relay` 的分组，但本内核
+// 已经把它删掉了 —— 写出来是**致命错误**（`adapter/outboundgroup/parser.go:216`，
+// 整份配置加载失败），改成代理级的 `dialer-proxy`。
+//
+// Dialer 为空表示**解除**链（把 dialer-proxy 从该节点上删掉），不是「退回直连」——
+// 删除字段与写明 DIRECT 是两件事，后者会让内核真去解析一个叫 DIRECT 的前跳。
+type SetProxyChainParams struct {
+	YAML   string `json:"yaml"`
+	Target string `json:"target"`
+	Dialer string `json:"dialer"`
+}
+
+type SetProxyChainResult struct {
+	YAML string `json:"yaml"`
+}
+
+// RequestProxyIPParams / RequestProxyIPResult 的语义说明在 proxy_ip.go ——
+// 参数结构放在这里是为了和 TestDelayParams 等其余入参保持一处。
+type RequestProxyIPParams struct {
+	Name    string `json:"name"`
+	Url     string `json:"url"`
+	Timeout int64  `json:"timeout"`
+}
+
+// IP 是节点真实出口的地址，Country 是本地 geoip 数据认出的两位国家码
+//（认不出为空串 —— 认不出就交回「未知」，不硬猜）。
+type RequestProxyIPResult struct {
+	IP      string `json:"ip"`
+	Country string `json:"country"`
+}
+
+// BiLoom: fork 专属内核方法名。
+const (
+	requestProxyIPMethod           CoreMethod = "requestProxyIP"
+	convertSubscriptionMethod      CoreMethod = "convertSubscription"
+	addProxyNodesMethod            CoreMethod = "addProxyNodes"
+	removeProxyNodesMethod         CoreMethod = "removeProxyNodes"
+	updateProxyNodeMethod          CoreMethod = "updateProxyNode"
+	readProfileTargetsMethod       CoreMethod = "readProfileTargets"
+	setProxyChainMethod            CoreMethod = "setProxyChain"
+)

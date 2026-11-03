@@ -1,12 +1,28 @@
 import 'dart:math';
-
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/models/common.dart';
 import 'package:fl_clash/state.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
+import 'package:intl/intl.dart' show NumberFormat;
 import 'package:material_ui/material_ui.dart';
 
+/// Pinned to English so every locale reads K and M, never 万 or тыс.
+final _compactFormat = NumberFormat.compact(locale: 'en');
+
 extension NumExt on num {
+
+  double get ap {
+    final scale = WidgetsBinding.instance.platformDispatcher.textScaleFactor;
+    return this * (1 + (scale - 1) * 0.5);
+  }
+
+  double get mAp {
+    final scale = WidgetsBinding.instance.platformDispatcher.textScaleFactor;
+    return this * min((1 + (scale - 1) * 0.5), 1);
+  }
+  String get compact => _compactFormat.format(this);
+
   String fixed({int decimals = 2}) {
     String formatted = toStringAsFixed(decimals);
     if (formatted.contains('.')) {
@@ -16,14 +32,6 @@ extension NumExt on num {
       }
     }
     return formatted;
-  }
-
-  double get ap {
-    return this * (1 + (globalState.theme.textScaleFactor - 1) * 0.5);
-  }
-
-  double get mAp {
-    return this * min((1 + (globalState.theme.textScaleFactor - 1) * 0.5), 1);
   }
 
   TrafficShow get traffic {

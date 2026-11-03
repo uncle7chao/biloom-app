@@ -3,28 +3,129 @@ import 'dart:async';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/core/controller.dart';
 import 'package:fl_clash/core/method.dart';
+import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/features/features.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/providers.dart';
-import 'package:fl_clash/widgets/widgets.dart';
+import 'package:fl_clash/ui/icons/icons.dart';
+import 'package:fl_clash/widgets/widgets.dart' hide
+      ActivateBox,
+      AdaptiveSizeExt,
+      AnimatedVisibility,
+      AppBarSearchStateBuilder,
+      BackLayerScope,
+      BaseScaffold,
+      BottomInsetScope,
+      CloseContainerActionCallback,
+      CloseContainerBuilder,
+      ClosedCallback,
+      CommonCard,
+      CommonCheckBox,
+      CommonChip,
+      CommonCircleLoading,
+      CommonDialog,
+      CommonExpandIcon,
+      CommonMinFilledButtonTheme,
+      CommonMinIconButtonTheme,
+      CommonPopScope,
+      CommonPopupBox,
+      CommonPopupMenu,
+      CommonPopupMenuItem,
+      CommonPopupRoute,
+      CommonScaffold,
+      CommonScaffoldState,
+      CommonScrollBar,
+      DecorationListItem,
+      DisabledMask,
+      EmojiText,
+      ExtendProps,
+      FadeBox,
+      FadeScaleBox,
+      FadeScaleEnterBox,
+      FadeScaleEnterTransition,
+      FadeSlideEnterTransition,
+      FadeThroughBox,
+      FloatingScrollbar,
+      Info,
+      InfoHeader,
+      InputDialog,
+      ItemPositionProvider,
+      KeepScope,
+      KeyedAnimatedList,
+      LineChart,
+      ListHeader,
+      ListItem,
+      MetaChip,
+      ModalSideSheetRoute,
+      MoreActionButton,
+      NullStatus,
+      NullStatusIllustration,
+      NullStatusSwitcher,
+      OnKeywordsUpdateCallback,
+      OpenContainer,
+      OpenContainerBuilder,
+      PageActivityScope,
+      PageFocusScope,
+      PageTraversalPolicy,
+      PagedSheet,
+      PagedSheetRoute,
+      PopupAnchorResolver,
+      PopupOpen,
+      ProfileIdProvider,
+      ProxyDecoratorProvider,
+      ScrollToEndBox,
+      SelectedDecorationListItem,
+      SettingTextCard,
+      SheetProps,
+      SheetProvider,
+      SheetType,
+      SideSheet,
+      SliderDefaultsM3,
+      TooltipLabel,
+      TooltipText,
+      commonProxyDecorator,
+      genActions,
+      generateSection,
+      showExtend,
+      showModalSideSheet,
+      showSheet;
+import 'package:fl_clash/ui/ui.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class ConnectionsView extends ConsumerStatefulWidget {
+  final ScrollController? scrollController;
   final Future<List<TrackerInfo>> Function()? connectionsReader;
 
-  const ConnectionsView({super.key, @visibleForTesting this.connectionsReader});
+  const ConnectionsView({
+    super.key,
+    this.scrollController,
+    @visibleForTesting this.connectionsReader,
+  });
 
   @override
   ConsumerState<ConnectionsView> createState() => _ConnectionsViewState();
 }
 
 class _ConnectionsViewState extends ConsumerState<ConnectionsView>
-    with WidgetsBindingObserver, ActivePollingMixin<ConnectionsView> {
+    with
+        WidgetsBindingObserver,
+        ActivePollingMixin<ConnectionsView>,
+        RouteMotionHoldMixin<ConnectionsView> {
   CoreController get _core => ref.read(coreHandlerProvider);
 
   final _listController = TrackerInfoListController();
-  final ScrollController _scrollController = ScrollController();
+  final _speedRanker = TrackerSpeedRanker();
+  late final ScrollController _scrollController;
+  var _loaded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController =
+        widget.scrollController ?? sheetScrollController(context);
+  }
 
   /// 最近一次内核快照（未筛选）—— 结构化筛选的选项与筛选都基于它。
   List<TrackerInfo> _snapshot = const [];
@@ -38,15 +139,15 @@ class _ConnectionsViewState extends ConsumerState<ConnectionsView>
   @override
   Duration get pollInterval => const Duration(seconds: 1);
 
-  List<Widget> _buildActions() {
+  List<IconButtonData> _buildActions() {
     return [
-      IconButton(
+      IconButtonData(
+        glyph: AppGlyphs.clearAll,
         tooltip: context.appLocalizations.closeConnections,
         onPressed: () async {
           unawaited(_core.closeConnections());
           await _refreshConnections();
         },
-        icon: const Icon(Icons.delete_sweep_outlined),
       ),
     ];
   }
@@ -54,18 +155,18 @@ class _ConnectionsViewState extends ConsumerState<ConnectionsView>
   @override
   Future<void> poll(PollGuard isCurrent) async {
     final trackerInfos = await _readConnections();
-    if (trackerInfos == null || !isCurrent()) {
+    if (!isCurrent()) {
       return;
     }
-    _applyConnections(trackerInfos);
+    _showConnections(trackerInfos);
   }
 
   Future<void> _refreshConnections() async {
     final trackerInfos = await _readConnections();
-    if (trackerInfos == null || !mounted) {
+    if (!mounted) {
       return;
     }
-    _applyConnections(trackerInfos);
+    _showConnections(trackerInfos);
   }
 
   Future<List<TrackerInfo>?> _readConnections() async {
@@ -83,23 +184,21 @@ class _ConnectionsViewState extends ConsumerState<ConnectionsView>
     }
   }
 
-  void _applyConnections(List<TrackerInfo> trackerInfos) {
-    _snapshot = trackerInfos;
-    final filtered = _filteredConnections(trackerInfos);
-    // The core snapshot iterates a Go map, so its order is random per poll;
-    // sort by total traffic to keep the list stable between refreshes.
-    final sorted = List.of(filtered)
-      ..sort((a, b) {
-        final traffic = (b.upload + b.download).compareTo(
-          a.upload + a.download,
-        );
-        if (traffic != 0) {
-          return traffic;
-        }
-        final start = b.start.compareTo(a.start);
-        return start != 0 ? start : a.id.compareTo(b.id);
-      });
-    _listController.setTrackerInfos(sorted);
+  void _showConnections(List<TrackerInfo>? trackerInfos) {
+    final readAt = DateTime.now();
+    if (!_loaded) {
+      setState(() => _loaded = true);
+      _applyConnections(trackerInfos, readAt);
+      return;
+    }
+    updateWhenRouteSettled(() => _applyConnections(trackerInfos, readAt));
+  }
+
+  void _applyConnections(List<TrackerInfo>? trackerInfos, DateTime readAt) {
+    if (trackerInfos == null) {
+      return;
+    }
+    _listController.setTrackerInfos(_speedRanker.rank(_filteredConnections(trackerInfos), readAt));
   }
 
   List<TrackerInfo> _filteredConnections(List<TrackerInfo> trackerInfos) {
@@ -152,7 +251,7 @@ class _ConnectionsViewState extends ConsumerState<ConnectionsView>
   void _setFilter(void Function() updater) {
     setState(updater);
     // 立即按新筛选重放当前快照，不等下一秒的轮询。
-    _applyConnections(_snapshot);
+    _applyConnections(_snapshot, DateTime.now());
   }
 
   Future<void> _handleBlockFiltered() async {
@@ -172,7 +271,9 @@ class _ConnectionsViewState extends ConsumerState<ConnectionsView>
   @override
   void dispose() {
     _listController.dispose();
-    _scrollController.dispose();
+    if (widget.scrollController == null) {
+      _scrollController.dispose();
+    }
     super.dispose();
   }
 
@@ -305,46 +406,93 @@ class _ConnectionsViewState extends ConsumerState<ConnectionsView>
   Widget build(BuildContext context) {
     final appLocalizations = context.appLocalizations;
     return CommonScaffold(
-      title: appLocalizations.connections,
+      title: PageLabel.connections.label,
       onKeywordsUpdate: _listController.updateKeywords,
       searchState: AppBarSearchState(onSearch: _listController.search),
-      actions: _buildActions(),
+      iconActions: _buildActions(),
       body: ValueListenableBuilder<TrackerInfosState>(
         valueListenable: _listController,
         builder: (context, state, _) {
           final connections = state.list;
+          Widget buildAction(TrackerInfo trackerInfo) {
+            return _BlockConnectionButton(
+              onPressed: () {
+                _handleBlockConnection(trackerInfo.id);
+              },
+            );
+          }
+
           return Column(
             children: [
               _buildFilterBar(),
               Expanded(
                 child: NullStatusSwitcher(
-                  isEmpty: connections.isEmpty,
-                  nullStatus: NullStatus(
-                    label: appLocalizations.nullTip(
-                      appLocalizations.connections,
-                    ),
-                    illustration: NullStatusIllustration.connections,
-                  ),
-                  child: TrackerInfoAnimatedList(
-                    controller: _scrollController,
-                    trackerInfos: connections,
-                    detailTitle: appLocalizations.details(
-                      appLocalizations.connection,
-                    ),
-                    trailingBuilder: (trackerInfo) => IconButton(
-                      tooltip: appLocalizations.blockConnection,
-                      visualDensity: VisualDensity.compact,
-                      icon: const Icon(Icons.block, size: 20),
-                      onPressed: () {
-                        _handleBlockConnection(trackerInfo.id);
-                      },
-                    ),
-                  ),
-                ),
+            isLoading: !_loaded,
+            isEmpty: connections.isEmpty,
+            isSearching: state.isSearching,
+            nullStatus: NullStatus(
+              label: appLocalizations.nullTip(appLocalizations.connections),
+              illustration: NullStatusIllustration.connections,
+            ),
+            child: RecordTableFrame<TrackerInfo>(
+              tableId: 'connections',
+              items: connections,
+              columnsOf: (width) => trackerInfoColumns(
+                context,
+                width: width,
+                isLive: true,
+                actionBuilder: buildAction,
               ),
+              builder: (context, table, connections) => TrackerInfoAnimatedList(
+                controller: _scrollController,
+                padding: EdgeInsets.only(
+                  top: context.contentTopPadding,
+                  bottom: 16 + context.bottomInset,
+                ),
+                trackerInfos: connections,
+                table: table,
+                detailTitle: appLocalizations.details(
+                  appLocalizations.connection,
+                ),
+                actionBuilder: buildAction,
+              ),
+            ),
+              ),
+            ),
             ],
           );
         },
+      ),
+    );
+  }
+}
+
+// One per live row: an IconButton would add a theme animation to each.
+class _BlockConnectionButton extends StatelessWidget {
+  final VoidCallback onPressed;
+
+  const _BlockConnectionButton({required this.onPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: context.appLocalizations.blockConnection,
+      child: Semantics(
+        button: true,
+        child: InkWell(
+          onTap: onPressed,
+          customBorder: AppShape.circle,
+          child: SizedBox.square(
+            dimension: 28,
+            child: Center(
+              child: GlyphIcon(
+                AppGlyphs.block,
+                size: 16,
+                color: context.colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }

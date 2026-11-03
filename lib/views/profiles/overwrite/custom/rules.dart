@@ -1,4 +1,5 @@
 import 'package:fl_clash/common/common.dart';
+import 'package:fl_clash/ui/icons/app_glyphs.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/features/overwrite/overwrite.dart';
 import 'package:fl_clash/models/clash_config.dart';
@@ -497,7 +498,7 @@ class _AddOrEditRuleViewState extends ConsumerState<_AddOrEditRuleView> {
     return AdaptiveSheetScaffold(
       actions: [
         IconButtonData(
-          icon: Icons.check,
+          glyph: AppGlyphs.check,
           onPressed: _handleSave,
           tooltip: context.appLocalizations.save,
         ),

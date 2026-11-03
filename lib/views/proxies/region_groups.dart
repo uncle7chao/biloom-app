@@ -1,4 +1,5 @@
 import 'package:fl_clash/common/common.dart';
+import 'package:fl_clash/ui/icons/app_glyphs.dart';
 import 'package:fl_clash/models/common.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/widgets/widgets.dart';
@@ -234,7 +235,7 @@ class _RegionGroupPlanViewState extends ConsumerState<RegionGroupPlanView> {
         // 没算出计划、或没什么可做的，就不给这颗 ✓ —— 点了也不会有任何变化。
         if (canApply)
           IconButtonData(
-            icon: Icons.check,
+            glyph: AppGlyphs.check,
             tooltip: appLocalizations.generateRegionGroups,
             // `IconButtonData.onPressed` 不接受 null，重复点击靠 `_applying` 自己挡。
             onPressed: _handleApply,

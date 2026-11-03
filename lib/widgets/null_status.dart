@@ -1,4 +1,5 @@
 import 'package:fl_clash/common/common.dart';
+import 'package:fl_clash/ui/metrics.dart' hide AdaptiveSizeExt;
 import 'package:fl_clash/widgets/fade_box.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:material_new_shapes/material_new_shapes.dart';

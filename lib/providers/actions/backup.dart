@@ -1,5 +1,11 @@
 part of '../action.dart';
 
+typedef BackupDelivery = Future<bool> Function(String archivePath);
+
+/// Returns the archive to restore, or null when the user backed out. A source
+/// that downloads writes to [downloadPath], which is removed afterwards.
+typedef BackupFetch = Future<String?> Function(String downloadPath);
+
 @Riverpod(keepAlive: true)
 class BackupAction extends _$BackupAction {
   /// BiLoom 自有数据在备份 configMap 里的附加键。
@@ -15,36 +21,126 @@ class BackupAction extends _$BackupAction {
   @override
   void build() {}
 
-  Future<bool> consumeBackup(Future<bool> Function(String path) send) async {
-    final path = await createBackupFile();
-    if (path.isEmpty) {
-      return false;
-    }
-    try {
-      return await send(path);
-    } finally {
-      await File(path).safeDelete();
-    }
+  Future<bool> backup(BackupDelivery deliver) {
+    return _withWorkDir((workDir) async {
+      return deliver(await _createArchive(workDir));
+    });
   }
 
-  /// 生成备份 zip 并返回路径。与 [consumeBackup] 的区别：临时文件的生命周期
+  Future<bool> restore(RestoreOption option, BackupFetch fetch) {
+    return _withWorkDir((workDir) async {
+      final archivePath = await fetch(join(workDir, 'download.zip'));
+      if (archivePath == null) {
+        return false;
+      }
+      final stagingDirPath = join(workDir, 'staging');
+      final MigrationData data;
+      try {
+        data = await restoreTask((
+          archivePath: archivePath,
+          stagingDirPath: stagingDirPath,
+        ));
+      } on BackupException catch (e) {
+        throw MessageException(switch (e.failure) {
+          BackupFailure.invalid => currentAppLocalizations.invalidBackupFile,
+          BackupFailure.newerVersion =>
+            currentAppLocalizations.backupFromNewerVersion,
+        });
+      }
+      await applyRestore(data, option, stagingDirPath: stagingDirPath);
+      return true;
+    });
+  }
+
+  /// 生成备份 zip 并返回路径。与 [backup] 的区别：临时文件的生命周期
   /// 交给调用方 —— 局域网同步的服务端要在整个分享期间持有它，页面关掉才删。
-  Future<String> createBackupFile() {
-    return backup();
+  Future<String> createBackupFile() async {
+    final workDir = Directory(
+      join(await appPath.tempPath, 'lanbackup$uniqueId'),
+    );
+    await workDir.create(recursive: true);
+    try {
+      return await _createArchive(workDir.path);
+    } catch (_) {
+      await workDir.safeDelete(recursive: true);
+      rethrow;
+    }
   }
 
-  @visibleForTesting
-  Future<String> backup() async {
-    final res = await Future.wait([
-      database.profilesDao.fileNames().get(),
-      database.scriptsDao.fileNames().get(),
-    ]);
-    final profileFileNames = res[0];
-    final scriptFileNames = res[1];
+  /// 自动备份：按触发开关执行，产物收进本地 auto_backups 目录（滚动保留）。
+  ///
+  /// 两个设计决定：① **只落本地**，不上传 WebDAV —— 远程那份文件名固定、
+  /// 会被整包覆盖，自动备份把用户手动备份的远端版本顶掉属于事故；
+  /// ② **失败静默**——它是「添加/删除订阅」的后台搭车动作，弹窗打断主流程
+  /// 得不偿失，只记日志。
+  Future<void> runAutoBackup({required AutoBackupTrigger trigger}) async {
+    try {
+      final settings = await AutoBackupStore.loadSettings();
+      if (!settings.enabledFor(trigger)) {
+        return;
+      }
+      await backup((archivePath) async {
+        // workDir 在 deliver 返回后即被清理，产物必须先挪进独立临时文件。
+        final tempZip = join(await appPath.tempPath, 'auto_backup$uniqueId');
+        await File(archivePath).safeCopy(tempZip);
+        try {
+          await AutoBackupStore.createFromZip(
+            tempZip,
+            keepCount: settings.keepCount,
+          );
+        } finally {
+          await File(tempZip).safeDelete();
+        }
+        return true;
+      });
+    } catch (error) {
+      commonPrint.log('auto backup failed: $error', logLevel: LogLevel.warning);
+    }
+  }
+
+  Future<bool> _withWorkDir(Future<bool> Function(String workDir) run) async {
+    final workDir = Directory(join(await appPath.tempPath, 'backup$uniqueId'));
+    await workDir.create(recursive: true);
+    try {
+      return await run(workDir.path);
+    } finally {
+      await workDir.safeDelete(recursive: true);
+      await _discardLegacyStaging();
+    }
+  }
+
+  /// Earlier versions staged restores in the home directory and never removed
+  /// the downloaded archive.
+  Future<void> _discardLegacyStaging() async {
+    final homeDirPath = await appPath.homeDirPath;
+    await File(join(homeDirPath, 'backup.zip')).safeDelete();
+    await Directory(join(homeDirPath, 'restore')).safeDelete(recursive: true);
+  }
+
+  Future<String> _createArchive(String workDir) async {
+    final databaseSnapshotPath = join(workDir, backupDatabaseName);
+    await database.customStatement('VACUUM INTO ?', [databaseSnapshotPath]);
+    final (profileIds, scriptIds, providers) = await (
+      database.profilesDao.query().map((item) => item.id).get(),
+      database.scriptsDao.query().map((item) => item.id).get(),
+      database.clashProvidersDao.query().get(),
+    ).wait;
     final configMap = ref.read(configProvider).toJson();
     configMap['version'] = await preferences.getVersion();
     await _fillBiLoomData(configMap);
-    return backupTask(configMap, [...profileFileNames, ...scriptFileNames]);
+    final archivePath = join(workDir, 'backup.zip');
+    await backupTask((
+      archivePath: archivePath,
+      configMap: configMap,
+      databaseSnapshotPath: databaseSnapshotPath,
+      homeDirPath: await appPath.homeDirPath,
+      entries: BackupEntries.of(
+        profileIds: profileIds,
+        scriptIds: scriptIds,
+        providers: providers,
+      ),
+    ));
+    return archivePath;
   }
 
   /// 把 BiLoom 自有数据（链 + 收藏）塞进备份 configMap。空数据不写键：
@@ -62,26 +158,12 @@ class BackupAction extends _$BackupAction {
     }
   }
 
-  Future<void> restore(RestoreOption option) async {
-    final restoreDirPath = await appPath.restoreDirPath;
-    final restoreDir = Directory(restoreDirPath);
-    try {
-      final migrationData = await restoreTask();
-      if (!await restoreDir.exists()) {
-        throw MessageException(currentAppLocalizations.restoreException);
-      }
-      await applyRestore(migrationData, option);
-    } finally {
-      await restoreDir.safeDelete(recursive: true);
-    }
-  }
-
   @visibleForTesting
-  Future<void> applyRestore(MigrationData data, RestoreOption option) async {
-    final restoreStrategy = ref.read(
-      appSettingProvider.select((state) => state.restoreStrategy),
-    );
-    final isOverride = restoreStrategy == RestoreStrategy.override;
+  Future<void> applyRestore(
+    MigrationData data,
+    RestoreOption option, {
+    String? stagingDirPath,
+  }) async {
     final configMap = data.configMap;
     final config = option == RestoreOption.onlyProfiles || configMap == null
         ? null
@@ -90,29 +172,47 @@ class BackupAction extends _$BackupAction {
         : Config.fromJson(
             configMap,
           ).migrateLegacyDnsNameservers().migrateLegacyDnsFallback();
-    await database.restore(
-      data.profiles,
-      data.scripts,
-      data.rules,
-      data.links,
-      data.proxyGroups,
-      isOverride: isOverride,
-    );
+    final isOverride =
+        ref.read(appSettingProvider).restoreStrategy ==
+        RestoreStrategy.override;
+    final previousProviders = await database.clashProvidersDao.query().get();
+    final putBack = stagingDirPath == null
+        ? null
+        : await _copyStagedFiles(data, stagingDirPath);
+    try {
+      await database.restore(
+        data.profiles,
+        data.scripts,
+        data.rules,
+        data.disabledRules,
+        data.proxyGroups,
+        clashProviders: data.clashProviders,
+        customProxies: data.customProxies,
+        proxyDialers: data.proxyDialers,
+        isOverride: isOverride,
+      );
+    } catch (_) {
+      await putBack?.call();
+      rethrow;
+    }
+    await _clearReplacedProviderCaches(previousProviders);
+    await _clearOutdatedCompiledRuleSets(data.clashProviders);
     if (config == null) {
       return;
     }
-    ref.read(davSettingProvider.notifier).update((_) => config.davProps);
-    ref.read(patchClashConfigProvider.notifier).value = config.patchClashConfig;
-    ref.read(appSettingProvider.notifier).value = config.appSettingProps;
-    ref.read(currentProfileIdProvider.notifier).value = config.currentProfileId;
-    ref.read(themeSettingProvider.notifier).value = config.themeProps;
-    ref.read(windowSettingProvider.notifier).value = config.windowProps;
-    ref.read(vpnSettingProvider.notifier).value = config.vpnProps;
-    ref.read(proxiesStyleSettingProvider.notifier).value =
-        config.proxiesStyleProps;
-    ref.read(overrideDnsProvider.notifier).value = config.overrideDns;
-    ref.read(networkSettingProvider.notifier).value = config.networkProps;
-    ref.read(hotKeyActionsProvider.notifier).value = config.hotKeyActions;
+    // A desktop backup carries no package lists; the apps picked here stay.
+    final accessControlProps = config.vpnProps.accessControlProps.hasPackages
+        ? config.vpnProps.accessControlProps
+        : ref.read(vpnSettingProvider).accessControlProps;
+    writeConfig(
+      ref,
+      config.copyWith(
+        davProps: config.davProps ?? ref.read(davSettingProvider),
+        vpnProps: config.vpnProps.copyWith(
+          accessControlProps: accessControlProps,
+        ),
+      ),
+    );
     await _restoreBiLoomData(configMap);
   }
 
@@ -155,29 +255,70 @@ class BackupAction extends _$BackupAction {
     }
   }
 
-  /// 自动备份：按触发开关执行，产物收进本地 auto_backups 目录（滚动保留）。
-  ///
-  /// 两个设计决定：① **只落本地**，不上传 WebDAV —— 远程那份文件名固定、
-  /// 会被整包覆盖，自动备份把用户手动备份的远端版本顶掉属于事故；
-  /// ② **失败静默**——它是「添加/删除订阅」的后台搭车动作，弹窗打断主流程
-  /// 得不偿失，只记日志。
-  Future<void> runAutoBackup({required AutoBackupTrigger trigger}) async {
+  /// The files go in before the rows that name them, so the returned callback
+  /// is how a restore whose rows fail takes them back out.
+  Future<Future<void> Function()> _copyStagedFiles(
+    MigrationData data,
+    String stagingDirPath,
+  ) async {
+    final homeDirPath = await appPath.homeDirPath;
+    final replacedDirPath = join(stagingDirPath, 'replaced');
+    final copied = <String, bool>{};
+    Future<void> putBack() async {
+      for (final MapEntry(key: entry, value: replaced) in copied.entries) {
+        final target = BackupEntries.resolve(homeDirPath, entry);
+        if (replaced) {
+          await File(
+            BackupEntries.resolve(replacedDirPath, entry),
+          ).safeCopy(target);
+        } else {
+          await File(target).safeDelete();
+        }
+      }
+    }
+
     try {
-      final settings = await AutoBackupStore.loadSettings();
-      if (!settings.enabledFor(trigger)) {
-        return;
+      for (final entry in BackupEntries.ofData(data)) {
+        final staged = File(BackupEntries.resolve(stagingDirPath, entry));
+        if (!await staged.exists()) {
+          continue;
+        }
+        final target = File(BackupEntries.resolve(homeDirPath, entry));
+        final replaced = await target.exists();
+        if (replaced) {
+          await target.safeCopy(BackupEntries.resolve(replacedDirPath, entry));
+        }
+        copied[entry] = replaced;
+        await staged.safeCopy(target.path);
       }
-      final zipPath = await createBackupFile();
-      try {
-        await AutoBackupStore.createFromZip(
-          zipPath,
-          keepCount: settings.keepCount,
-        );
-      } finally {
-        await File(zipPath).safeDelete();
+    } catch (_) {
+      await putBack();
+      rethrow;
+    }
+    return putBack;
+  }
+
+  Future<void> _clearReplacedProviderCaches(
+    List<ClashProvider> previousProviders,
+  ) async {
+    final kept = (await database.clashProvidersDao.fileNames().get()).toSet();
+    for (final provider in previousProviders) {
+      if (kept.contains(provider.fileName)) {
+        continue;
       }
-    } catch (error) {
-      commonPrint.log('auto backup failed: $error', logLevel: LogLevel.warning);
+      await File(await provider.path).safeDelete();
+      await File(await provider.compiledPath).safeDelete();
+    }
+  }
+
+  /// A restored source outdates the mrs compiled from the one it replaced.
+  Future<void> _clearOutdatedCompiledRuleSets(
+    List<ClashProvider> restored,
+  ) async {
+    for (final provider in restored) {
+      if (!provider.isRemote) {
+        await File(await provider.compiledPath).safeDelete();
+      }
     }
   }
 }

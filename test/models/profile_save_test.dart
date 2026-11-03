@@ -5,31 +5,17 @@ import 'dart:typed_data';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:path_provider_platform_interface/path_provider_platform_interface.dart';
 
-class _FakePathProvider extends PathProviderPlatform {
-  final String root;
-
-  _FakePathProvider(this.root);
-
-  @override
-  Future<String?> getTemporaryPath() async => root;
-
-  @override
-  Future<String?> getApplicationSupportPath() async => root;
-
-  @override
-  Future<String?> getApplicationCachePath() async => root;
-}
+import '../helpers/app_paths.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   late Directory tempDir;
 
-  setUpAll(() {
+  setUpAll(() async {
     tempDir = Directory.systemTemp.createTempSync('profile_save_test');
-    PathProviderPlatform.instance = _FakePathProvider(tempDir.path);
+    await useAppPaths(tempDir);
   });
 
   tearDownAll(() {
@@ -77,6 +63,24 @@ void main() {
       expect(saved.lastUpdateDate, isNotNull);
       final savedFile = await profile.file;
       expect(await savedFile.readAsString(), 'proxies: []');
+    });
+
+    test('validates with the profile age key', () async {
+      final profile = Profile.normal(
+        label: 'p',
+      ).copyWith(ageSecretKey: 'AGE-SECRET-KEY-1A');
+      final bytes = Uint8List.fromList(utf8.encode('proxies: []'));
+      String? ageSecretKey;
+
+      await profile.saveFile(
+        bytes,
+        validate: (_, key) async {
+          ageSecretKey = key;
+          return '';
+        },
+      );
+
+      expect(ageSecretKey, 'AGE-SECRET-KEY-1A');
     });
 
     // 订阅兼容层：落到盘上的必须是转换结果，而不是下载到的原始内容 ——

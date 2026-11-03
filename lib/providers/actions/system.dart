@@ -10,9 +10,6 @@ class SystemAction extends _$SystemAction {
   void build() {}
 
   Future<List<Package>> getPackages() async {
-    if (ref.read(isMobileViewProvider)) {
-      await Future.delayed(commonDuration);
-    }
     ref.read(packagesProvider.notifier).value = await app?.getPackages() ?? [];
     return ref.read(packagesProvider);
   }
@@ -58,6 +55,7 @@ class SystemAction extends _$SystemAction {
       // 测落地记录是去抖写盘（2 秒窗口）—— 退出前 flush，别让批测尾声的
       // 结果随进程一起丢掉（丢了下轮批测就要重烧一遍流量）。
       _flushProxyExitStoreSafely(),
+      ?systemProxyQueue?.close(),
     ]);
   }
 
@@ -272,6 +270,15 @@ class SystemAction extends _$SystemAction {
       title: appLocalizations.bestPresetTitle,
       message: TextSpan(text: appLocalizations.bestPresetSystemProxyApplied),
       cancelable: false,
+    );
+  }
+
+  Future<void> copyProxyEnv() async {
+    final port = ref.read(
+      patchClashConfigProvider.select((state) => state.mixedPort),
+    );
+    await Clipboard.setData(
+      ClipboardData(text: proxyEnvCommand(port, isWindows: system.isWindows)),
     );
   }
 

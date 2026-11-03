@@ -1,4 +1,5 @@
 import 'package:fl_clash/common/common.dart';
+import 'package:fl_clash/ui/icons/app_glyphs.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/widgets/widgets.dart';
@@ -64,7 +65,7 @@ class _EditProxyNodeViewState extends ConsumerState<EditProxyNodeView> {
       sheetTransparentToolBar: true,
       actions: [
         IconButtonData(
-          icon: Icons.check,
+          glyph: AppGlyphs.check,
           onPressed: _handleSubmit,
           tooltip: appLocalizations.submit,
         ),

@@ -64,9 +64,9 @@ class ProxiesSetting extends StatelessWidget {
   ) {
     final appLocalizations = context.appLocalizations;
     return switch (style) {
-      ProxiesIconStyle.standard => appLocalizations.standard,
-      ProxiesIconStyle.none => appLocalizations.none,
-      ProxiesIconStyle.icon => appLocalizations.onlyIcon,
+      ProxiesIconStyle.filled => appLocalizations.standard,
+      ProxiesIconStyle.hidden => appLocalizations.none,
+      ProxiesIconStyle.plain => appLocalizations.onlyIcon,
     };
   }
 

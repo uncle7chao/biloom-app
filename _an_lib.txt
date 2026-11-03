@@ -1,0 +1,403 @@
+context: 444 dart files
+lib\common\app_localizations.dart:4:warning: Unused import: 'package:fl_clash/common/network_error.dart'.
+lib\common\common.dart:56:warning: Duplicate export.
+lib\common\num.dart:4:warning: Unused import: 'package:fl_clash/state.dart'.
+lib\features\form\custom_issue.dart:160:error: A member named 'ap' is defined in 'extension NumExt on num' and 'extension AdaptiveSizeExt on num', and neither is more specific.
+lib\features\form\form_row.dart:24:error: A member named 'ap' is defined in 'extension NumExt on num' and 'extension AdaptiveSizeExt on num', and neither is more specific.
+lib\features\form\form_row.dart:116:error: A member named 'ap' is defined in 'extension NumExt on num' and 'extension AdaptiveSizeExt on num', and neither is more specific.
+lib\features\form\rule.dart:93:error: A member named 'ap' is defined in 'extension NumExt on num' and 'extension AdaptiveSizeExt on num', and neither is more specific.
+lib\features\overwrite\overwrite_editor_page.dart:2:warning: Unused import: 'package:fl_clash/enum/enum.dart'.
+lib\features\overwrite\overwrite_form_row.dart:19:error: A member named 'ap' is defined in 'extension NumExt on num' and 'extension AdaptiveSizeExt on num', and neither is more specific.
+lib\features\overwrite\overwrite_form_row.dart:78:error: A member named 'ap' is defined in 'extension NumExt on num' and 'extension AdaptiveSizeExt on num', and neither is more specific.
+lib\features\overwrite\overwrite_form_row.dart:83:error: The getter 'bodyLargeHeight' isn't defined for the type 'Measure'.
+lib\features\overwrite\overwrite_nested_sheet.dart:22:error: The named parameter 'isScrollControlled' isn't defined.
+lib\features\overwrite\overwrite_nested_sheet.dart:24:error: The named parameter 'maxWidth' isn't defined.
+lib\features\overwrite\overwrite_selection_sheet.dart:163:error: The method 'sheetHeight' isn't defined for the type 'WidgetRef'.
+lib\features\overwrite\overwrite_selection_sheet.dart:174:error: The method 'AdaptiveSheetScaffold' isn't defined for the type '_OverwriteSelectionSheetState'.
+lib\features\overwrite\overwrite_selection_sheet.dart:2:warning: Unused import: 'package:fl_clash/enum/enum.dart'.
+lib\features\overwrite\overwrite_stage_flow.dart:42:error: The method 'ExternalDismissible' isn't defined for the type 'OverwriteDismissItem'.
+lib\features\overwrite\overwrite_stage_flow.dart:3:warning: Unused import: 'package:fl_clash/enum/enum.dart'.
+lib\features\overwrite\rule.dart:13:error: The getter 'bodyLargeHeight' isn't defined for the type 'Measure'.
+lib\features\overwrite\rule.dart:14:error: The getter 'bodyMediumHeight' isn't defined for the type 'Measure'.
+lib\features\overwrite\rule.dart:80:error: A member named 'ap' is defined in 'extension NumExt on num' and 'extension AdaptiveSizeExt on num', and neither is more specific.
+lib\features\overwrite\rule.dart:345:error: The method 'OptionsDialog' isn't defined for the type '_AddOrEditRuleDialogState'.
+lib\features\overwrite\rule.dart:344:error: The named parameter 'filter' isn't defined.
+lib\manager\window_manager.dart:655:error: Undefined name 'ClipOp'.
+lib\pages\scan.dart:103:error: Undefined name 'raw'.
+lib\providers\actions\common.dart:195:error: Undefined class 'UpdateCheckResult'.
+lib\providers\actions\common.dart:143:error: The named parameter 'data' isn't defined.
+lib\providers\actions\common.dart:200:error: Undefined name 'UpdateCheckStatus'.
+lib\providers\actions\common.dart:143:error: The named parameter 'result' is required, but there's no corresponding argument.
+lib\providers\actions\profiles.dart:334:error: The argument type 'Future<String> Function(String)' can't be assigned to the parameter type 'ValidateConfig'. 
+lib\providers\actions\profiles.dart:659:error: The argument type 'Future<String> Function(String)' can't be assigned to the parameter type 'ValidateConfig'. 
+lib\providers\actions\profiles.dart:662:error: The method 'setProfileAndAutoApply' isn't defined for the type 'ProfilesAction'.
+lib\providers\actions\profiles.dart:910:error: The getter 'overwriteType' isn't defined for the type 'Profile'.
+lib\providers\actions\profiles.dart:910:error: Undefined name 'OverwriteType'.
+lib\providers\actions\profiles.dart:912:error: Undefined name 'OverwriteType'.
+lib\providers\actions\profiles.dart:912:error: The named parameter 'overwriteType' isn't defined.
+lib\providers\actions\profiles.dart:911:error: The method 'setProfileAndAutoApply' isn't defined for the type 'ProfilesAction'.
+lib\providers\actions\profiles.dart:915:error: The method 'proxyGroupsCountProvider' isn't defined for the type 'ProfilesAction'.
+lib\providers\actions\profiles.dart:916:error: The operator '>' can't be unconditionally invoked because the receiver can be 'null'.
+lib\providers\actions\profiles.dart:919:error: The method 'setProfileCustomData' isn't defined for the type 'Database'.
+lib\providers\actions\profiles.dart:972:error: The method 'del' isn't defined for the type 'ProxyGroups'.
+lib\providers\actions\profiles.dart:1040:error: The method 'profileCustomRulesProvider' isn't defined for the type 'ProfilesAction'.
+lib\providers\actions\profiles.dart:1044:error: The method 'del' isn't defined for the type 'ProxyGroups'.
+lib\providers\actions\profiles.dart:1046:error: The method 'profileCustomRulesProvider' isn't defined for the type 'ProfilesAction'.
+lib\providers\actions\profiles.dart:1070:error: The method 'profileCustomRulesProvider' isn't defined for the type 'ProfilesAction'.
+lib\providers\actions\profiles.dart:199:error: The named parameter 'convert' is required, but there's no corresponding argument.
+lib\providers\actions\profiles.dart:432:error: The named parameter 'convert' is required, but there's no corresponding argument.
+lib\providers\actions\profiles.dart:570:error: The named parameter 'convert' is required, but there's no corresponding argument.
+lib\providers\actions\profiles.dart:615:error: The named parameter 'convert' is required, but there's no corresponding argument.
+lib\providers\actions\setup.dart:579:error: The getter 'overwriteType' isn't defined for the type 'SetupState'.
+lib\providers\actions\setup.dart:579:error: Undefined name 'OverwriteType'.
+lib\providers\actions\setup.dart:616:error: The getter 'overwriteType' isn't defined for the type 'SetupState'.
+lib\providers\actions\setup.dart:616:error: Undefined name 'OverwriteType'.
+lib\providers\actions\system.dart:245:error: The named parameter 'cancelable' isn't defined.
+lib\providers\actions\system.dart:258:error: The named parameter 'cancelable' isn't defined.
+lib\providers\actions\system.dart:272:error: The named parameter 'cancelable' isn't defined.
+lib\providers\state\custom.dart:943:error: The name 'ProxyGroupProvider' is already defined.
+lib\providers\state\custom.dart:974:error: The name 'RuleProvider' is already defined.
+lib\providers\state\proxies.dart:150:warning: The declaration '_withoutSelection' isn't referenced.
+lib\ui\list.dart:503:error: The named parameter 'type' isn't defined.
+lib\ui\list.dart:503:error: Undefined name 'CommonCardType'.
+lib\ui\list.dart:509:error: The method 'separated' isn't defined for the type 'Iterable'.
+lib\ui\list.dart:515:error: The named parameter 'type' isn't defined.
+lib\ui\list.dart:515:error: Undefined name 'CommonCardType'.
+lib\ui\list.dart:528:error: Undefined name 'listHeaderPadding'.
+lib\ui\list.dart:529:error: Undefined name 'listHeaderPadding'.
+lib\ui\list.dart:526:error: The argument type 'List<Widget>?' can't be assigned to the parameter type 'List<IconButtonData>'. 
+lib\ui\list.dart:659:error: The name 'generateSection' is already defined.
+lib\views\about.dart:38:error: The named parameter 'data' isn't defined.
+lib\views\about.dart:38:error: The named parameter 'result' is required, but there's no corresponding argument.
+lib\views\activity.dart:6:error: Target of URI doesn't exist: 'package:fl_clash/widgets/scaffold.dart'.
+lib\views\activity.dart:41:error: The method 'CommonScaffold' isn't defined for the type '_ActivityViewState'.
+lib\views\activity.dart:48:error: The method 'CommonScaffold' isn't defined for the type '_ActivityViewState'.
+lib\views\backup_and_restore.dart:34:error: The name 'File' isn't a type, so it can't be used as a type argument.
+lib\views\backup_and_restore.dart:68:error: Undefined class 'File'.
+lib\views\backup_and_restore.dart:91:error: Undefined class 'File'.
+lib\views\backup_and_restore.dart:101:error: Undefined class 'File'.
+lib\views\backup_and_restore.dart:75:error: The method 'File' isn't defined for the type '_BackupAndRestoreState'.
+lib\views\backup_and_restore.dart:75:error: The getter 'backupFilePath' isn't defined for the type 'AppPath'.
+lib\views\backup_and_restore.dart:76:error: 2 positional arguments expected by 'restore', but 1 found.
+lib\views\config\network.dart:49:error: Undefined name 'systemActionProvider'.
+lib\views\config\network.dart:69:warning: A value for optional parameter 'subtitle' isn't ever given.
+lib\views\config\override.dart:618:error: A member named 'mAp' is defined in 'extension NumExt on num' and 'extension AdaptiveSizeExt on num', and neither is more specific.
+lib\views\connection\connections.dart:13:warning: Duplicate import.
+lib\views\dashboard\widget_registry.dart:8:error: The type 'DashboardWidget' isn't exhaustively matched by the switch cases since it doesn't match the pattern 'DashboardWidget.connectionsStat'.
+lib\views\dashboard\widget_registry.dart:22:error: The type 'DashboardWidget' isn't exhaustively matched by the switch cases since it doesn't match the pattern 'DashboardWidget.connectionsStat'.
+lib\views\dashboard\widget_registry.dart:38:error: The type 'DashboardWidget' isn't exhaustively matched by the switch cases since it doesn't match the pattern 'DashboardWidget.connectionsStat'.
+lib\views\dashboard\widgets\connection_hero.dart:58:error: A member named 'ap' is defined in 'extension NumExt on num' and 'extension AdaptiveSizeExt on num', and neither is more specific.
+lib\views\dashboard\widgets\connection_hero.dart:64:error: A member named 'ap' is defined in 'extension NumExt on num' and 'extension AdaptiveSizeExt on num', and neither is more specific.
+lib\views\dashboard\widgets\connection_hero.dart:65:error: A member named 'ap' is defined in 'extension NumExt on num' and 'extension AdaptiveSizeExt on num', and neither is more specific.
+lib\views\dashboard\widgets\connection_hero.dart:75:error: A member named 'ap' is defined in 'extension NumExt on num' and 'extension AdaptiveSizeExt on num', and neither is more specific.
+lib\views\dashboard\widgets\connection_hero.dart:84:error: The named parameter 'type' isn't defined.
+lib\views\dashboard\widgets\connection_hero.dart:85:error: Undefined name 'CommonCardType'.
+lib\views\dashboard\widgets\connection_hero.dart:86:error: Undefined name 'CommonCardType'.
+lib\views\dashboard\widgets\connection_hero.dart:131:error: The getter 'toSoftBold' isn't defined for the type 'TextStyle'.
+lib\views\dashboard\widgets\connections_stat.dart:66:error: The getter 'theme' isn't defined for the type 'GlobalState'.
+lib\views\dashboard\widgets\connections_stat.dart:67:error: The getter 'theme' isn't defined for the type 'GlobalState'.
+lib\views\dashboard\widgets\connections_stat.dart:73:error: The named parameter 'info' isn't defined.
+lib\views\dashboard\widgets\connections_stat.dart:75:error: The named parameter 'iconData' isn't defined.
+lib\views\dashboard\widgets\connections_stat.dart:79:error: Undefined name 'baseInfoEdgeInsets'.
+lib\views\dashboard\widgets\network_speed.dart:16:error: The name 'Point' isn't a type, so it can't be used as a type argument.
+lib\views\dashboard\widgets\network_speed.dart:18:error: The name 'Point' isn't a type, so it can't be used as a type argument.
+lib\views\dashboard\widgets\network_speed.dart:19:error: The name 'Point' isn't a type, so it can't be used as a type argument.
+lib\views\dashboard\widgets\network_speed.dart:16:error: The method 'Point' isn't defined for the type '_NetworkSpeedState'.
+lib\views\dashboard\widgets\network_speed.dart:16:error: The method 'Point' isn't defined for the type '_NetworkSpeedState'.
+lib\views\dashboard\widgets\network_speed.dart:25:error: The method 'Point' isn't defined for the type '_NetworkSpeedState'.
+lib\views\dashboard\widgets\network_speed.dart:58:error: A member named 'mAp' is defined in 'extension NumExt on num' and 'extension AdaptiveSizeExt on num', and neither is more specific.
+lib\views\dashboard\widgets\network_speed.dart:63:error: The named parameter 'gradient' isn't defined.
+lib\views\dashboard\widgets\network_speed.dart:65:error: The named parameter 'points' isn't defined.
+lib\views\dashboard\widgets\network_speed.dart:77:error: The named parameter 'iconData' isn't defined.
+lib\views\dashboard\widgets\network_speed.dart:16:error: The values in a const list literal must be constants.
+lib\views\dashboard\widgets\network_speed.dart:16:error: The values in a const list literal must be constants.
+lib\views\dashboard\widgets\network_speed.dart:62:error: The named parameter 'values' is required, but there's no corresponding argument.
+lib\views\dashboard\widgets\network_speed.dart:62:error: The named parameter 'revision' is required, but there's no corresponding argument.
+lib\views\dashboard\widgets\network_speed.dart:62:error: The named parameter 'capacity' is required, but there's no corresponding argument.
+lib\views\dashboard\widgets\network_speed.dart:62:error: The named parameter 'minScale' is required, but there's no corresponding argument.
+lib\views\dashboard\widgets\network_speed.dart:62:error: The named parameter 'baselineRatio' is required, but there's no corresponding argument.
+lib\views\dashboard\widgets\profile_detail.dart:218:error: 'LastUpdateTimeText' isn't a function.
+lib\views\dashboard\widgets\profile_detail.dart:218:error: The name 'LastUpdateTimeText' is defined in the libraries 'package:fl_clash/views/profiles/profiles.dart' and 'package:fl_clash/widgets/last_update_time_text.dart (via package:fl_clash/widgets/widgets.dart)'.
+lib\views\dashboard\widgets\quick_options.dart:40:error: The named parameter 'info' isn't defined.
+lib\views\dashboard\widgets\quick_options.dart:40:error: The named parameter 'iconData' isn't defined.
+lib\views\dashboard\widgets\quick_options.dart:42:error: Undefined name 'baseInfoEdgeInsets'.
+lib\views\dashboard\widgets\quick_options.dart:56:error: The method 'adjustSize' isn't defined for the type 'TextStyle'.
+lib\views\dashboard\widgets\quick_options.dart:34:error: The method 'generateListView' isn't defined for the type '_QuickSwitchCard'.
+lib\views\dashboard\widgets\quick_options.dart:33:error: The method 'AdaptiveSheetScaffold' isn't defined for the type '_QuickSwitchCard'.
+lib\views\dashboard\widgets\start_button.dart:12:error: The getter 'toSoftBold' isn't defined for the type 'TextStyle'.
+lib\views\dashboard\widgets\start_button.dart:13:error: The getter 'colorScheme' isn't defined for the type 'BuildContext'.
+lib\views\dashboard\widgets\start_button.dart:18:error: The getter 'toSoftBold' isn't defined for the type 'TextStyle'.
+lib\views\dashboard\widgets\start_button.dart:19:error: The getter 'colorScheme' isn't defined for the type 'BuildContext'.
+lib\views\dashboard\widgets\start_button.dart:256:error: The getter 'colorScheme' isn't defined for the type 'BuildContext'.
+lib\views\dns_leak.dart:146:error: The named parameter 'isFirst' isn't defined.
+lib\views\dns_leak.dart:244:error: Undefined name 'baseInfoEdgeInsets'.
+lib\views\dns_leak.dart:143:error: The method 'generateListView' isn't defined for the type '_DnsLeakViewState'.
+lib\views\dns_leak.dart:144:error: Spread elements in list or set literals must implement 'Iterable'.
+lib\views\dns_leak.dart:220:error: Spread elements in list or set literals must implement 'Iterable'.
+lib\views\dns_leak.dart:234:error: Spread elements in list or set literals must implement 'Iterable'.
+lib\views\lan_sync.dart:11:error: Target of URI doesn't exist: 'package:fl_clash/widgets/dialog.dart'.
+lib\views\lan_sync.dart:12:error: Target of URI doesn't exist: 'package:fl_clash/widgets/list.dart'.
+lib\views\lan_sync.dart:13:error: Target of URI doesn't exist: 'package:fl_clash/widgets/scaffold.dart'.
+lib\views\lan_sync.dart:80:error: There's no constant named 'M' in 'QrErrorCorrectLevel'.
+lib\views\lan_sync.dart:80:error: The method 'fromData' isn't defined for the type 'QrCode'.
+lib\views\lan_sync.dart:166:error: The method 'ListItem' isn't defined for the type '_LanSyncSharePageState'.
+lib\views\lan_sync.dart:202:error: The method 'ListItem' isn't defined for the type '_LanSyncSharePageState'.
+lib\views\lan_sync.dart:206:error: The method 'ListItem' isn't defined for the type '_LanSyncSharePageState'.
+lib\views\lan_sync.dart:160:error: The method 'CommonScaffold' isn't defined for the type '_LanSyncSharePageState'.
+lib\views\lan_sync.dart:295:error: The getter 'backupFilePath' isn't defined for the type 'AppPath'.
+lib\views\lan_sync.dart:300:error: The getter 'backupFilePath' isn't defined for the type 'AppPath'.
+lib\views\lan_sync.dart:336:error: Undefined name 'BaseNavigator'.
+lib\views\lan_sync.dart:355:error: The method 'CommonDialog' isn't defined for the type '_AddressInputDialogState'.
+lib\views\navigation.dart:87:error: The named parameter 'keep' isn't defined.
+lib\views\navigation.dart:88:error: The named parameter 'icon' isn't defined.
+lib\views\navigation.dart:86:error: The named parameter 'glyph' is required, but there's no corresponding argument.
+lib\views\profiles\add.dart:130:error: Undefined name 'context'.
+lib\views\profiles\overwrite\custom\custom.dart:23:error: The method 'setProfileCustomData' isn't defined for the type 'Database'.
+lib\views\profiles\overwrite\custom\custom.dart:43:error: The method 'profileCustomRulesProvider' isn't defined for the type 'CustomContent'.
+lib\views\profiles\overwrite\custom\custom.dart:46:error: The method 'proxyGroupsCountProvider' isn't defined for the type 'CustomContent'.
+lib\views\profiles\overwrite\custom\custom.dart:47:error: The method 'customRulesCountProvider' isn't defined for the type 'CustomContent'.
+lib\views\profiles\overwrite\custom\groups.dart:113:error: The named parameter 'cancelable' isn't defined.
+lib\views\profiles\overwrite\custom\groups.dart:285:error: The named parameter 'type' isn't defined.
+lib\views\profiles\overwrite\custom\groups.dart:285:error: Undefined name 'CommonCardType'.
+lib\views\profiles\overwrite\custom\groups.dart:452:error: The getter 'bodySmallHeight' isn't defined for the type 'Measure'.
+lib\views\profiles\overwrite\custom\groups.dart:528:error: The method 'getDelayColor' isn't defined for the type '_GroupStatusDot'.
+lib\views\profiles\overwrite\custom\groups.dart:624:error: The method 'getDelayColor' isn't defined for the type '_GroupDelayText'.
+lib\views\profiles\overwrite\custom\groups.dart:742:error: The method 'getDelayColor' isn't defined for the type '_GroupNodeTile'.
+lib\views\profiles\overwrite\custom\groups.dart:757:error: The named parameter 'cancelable' isn't defined.
+lib\views\profiles\overwrite\custom\groups.dart:774:error: The named parameter 'cancelable' isn't defined.
+lib\views\profiles\overwrite\custom\groups.dart:809:error: The method 'OptionsDialog' isn't defined for the type '_EditProxyGroupViewState'.
+lib\views\profiles\overwrite\custom\groups.dart:1214:error: The method 'del' isn't defined for the type 'ProxyGroups'.
+lib\views\profiles\overwrite\custom\groups.dart:1230:error: The method 'sheetHeight' isn't defined for the type 'WidgetRef'.
+lib\views\profiles\overwrite\custom\groups.dart:1235:error: The named parameter 'icon' isn't defined.
+lib\views\profiles\overwrite\custom\groups.dart:1247:error: The method 'generateSectionV3' isn't defined for the type '_EditProxyGroupViewState'.
+lib\views\profiles\overwrite\custom\groups.dart:1257:error: The method 'generateSectionV3' isn't defined for the type '_EditProxyGroupViewState'.
+lib\views\profiles\overwrite\custom\groups.dart:1283:error: The method 'generateSectionV3' isn't defined for the type '_EditProxyGroupViewState'.
+lib\views\profiles\overwrite\custom\groups.dart:1295:error: The method 'generateSectionV3' isn't defined for the type '_EditProxyGroupViewState'.
+lib\views\profiles\overwrite\custom\groups.dart:1231:error: The method 'AdaptiveSheetScaffold' isn't defined for the type '_EditProxyGroupViewState'.
+lib\views\profiles\overwrite\custom\groups.dart:1327:error: A member named 'ap' is defined in 'extension NumExt on num' and 'extension AdaptiveSizeExt on num', and neither is more specific.
+lib\views\profiles\overwrite\custom\groups.dart:1347:error: The getter 'bodySmallHeight' isn't defined for the type 'Measure'.
+lib\views\profiles\overwrite\custom\groups.dart:1234:error: The named parameter 'glyph' is required, but there's no corresponding argument.
+lib\views\profiles\overwrite\custom\icon.dart:145:error: The getter 'bodyLargeHeight' isn't defined for the type 'Measure'.
+lib\views\profiles\overwrite\custom\icon.dart:146:error: The method 'sheetHeight' isn't defined for the type 'WidgetRef'.
+lib\views\profiles\overwrite\custom\icon.dart:175:error: There's no constant named 'history' in 'NullStatusIllustration'.
+lib\views\profiles\overwrite\custom\icon.dart:147:error: The method 'AdaptiveSheetScaffold' isn't defined for the type '_IconEditViewState'.
+lib\views\profiles\overwrite\custom\icon.dart:279:error: The named parameter 'type' isn't defined.
+lib\views\profiles\overwrite\custom\icon.dart:279:error: Undefined name 'CommonCardType'.
+lib\views\profiles\overwrite\custom\icon.dart:282:error: The method 'CommonImage' isn't defined for the type '_IconPreview'.
+lib\views\profiles\overwrite\custom\icon.dart:315:error: The named parameter 'type' isn't defined.
+lib\views\profiles\overwrite\custom\icon.dart:315:error: Undefined name 'CommonCardType'.
+lib\views\profiles\overwrite\custom\name_add_picker.dart:82:error: Undefined name 'ExternalDismissibleEffect'.
+lib\views\profiles\overwrite\custom\name_add_picker.dart:81:error: The method 'ExternalDismissible' isn't defined for the type '_NameAddPickerState'.
+lib\views\profiles\overwrite\custom\name_add_picker.dart:132:error: The method 'calculateVisualPosition' isn't defined for the type 'ItemPosition'.
+lib\views\profiles\overwrite\custom\name_add_picker.dart:151:error: The method 'sheetHeight' isn't defined for the type 'WidgetRef'.
+lib\views\profiles\overwrite\custom\name_add_picker.dart:158:error: The method 'AdaptiveSheetScaffold' isn't defined for the type '_NameAddPickerState'.
+lib\views\profiles\overwrite\custom\name_list_editor.dart:141:error: The method 'sheetHeight' isn't defined for the type 'WidgetRef'.
+lib\views\profiles\overwrite\custom\name_list_editor.dart:145:error: The method 'calculateVisualPosition' isn't defined for the type 'ItemPosition'.
+lib\views\profiles\overwrite\custom\name_list_editor.dart:158:error: The method 'AdaptiveSheetScaffold' isn't defined for the type '_NameListEditorState'.
+lib\views\profiles\overwrite\custom\name_list_editor.dart:232:error: The named parameter 'type' isn't defined.
+lib\views\profiles\overwrite\custom\name_list_editor.dart:232:error: Undefined name 'CommonCardType'.
+lib\views\profiles\overwrite\custom\name_list_editor.dart:251:error: A member named 'ap' is defined in 'extension NumExt on num' and 'extension AdaptiveSizeExt on num', and neither is more specific.
+lib\views\profiles\overwrite\custom\name_list_editor.dart:247:error: The named parameter 'cancelable' isn't defined.
+lib\views\profiles\overwrite\custom\proxies.dart:22:error: The getter 'proxyTypeMap' isn't defined for the type 'ClashConfig'.
+lib\views\profiles\overwrite\custom\rules.dart:26:error: The method 'profileCustomRulesProvider' isn't defined for the type '_CustomRulesViewState'.
+lib\views\profiles\overwrite\custom\rules.dart:45:error: The method 'profileCustomRulesProvider' isn't defined for the type '_CustomRulesViewState'.
+lib\views\profiles\overwrite\custom\rules.dart:92:error: The method 'profileCustomRulesProvider' isn't defined for the type '_CustomRulesViewState'.
+lib\views\profiles\overwrite\custom\rules.dart:354:error: A member named 'ap' is defined in 'extension NumExt on num' and 'extension AdaptiveSizeExt on num', and neither is more specific.
+lib\views\profiles\overwrite\custom\rules.dart:486:error: The method 'profileCustomRulesProvider' isn't defined for the type '_AddOrEditRuleViewState'.
+lib\views\profiles\overwrite\custom\rules.dart:496:error: The method 'sheetHeight' isn't defined for the type 'WidgetRef'.
+lib\views\profiles\overwrite\custom\rules.dart:500:error: The named parameter 'icon' isn't defined.
+lib\views\profiles\overwrite\custom\rules.dart:514:error: The method 'generateSectionV3' isn't defined for the type '_AddOrEditRuleViewState'.
+lib\views\profiles\overwrite\custom\rules.dart:528:error: The method 'generateSectionV3' isn't defined for the type '_AddOrEditRuleViewState'.
+lib\views\profiles\overwrite\custom\rules.dart:535:error: The method 'generateSectionV3' isn't defined for the type '_AddOrEditRuleViewState'.
+lib\views\profiles\overwrite\custom\rules.dart:497:error: The method 'AdaptiveSheetScaffold' isn't defined for the type '_AddOrEditRuleViewState'.
+lib\views\profiles\overwrite\custom\rules.dart:564:error: The named parameter 'cancelable' isn't defined.
+lib\views\profiles\overwrite\custom\rules.dart:575:error: The named parameter 'cancelable' isn't defined.
+lib\views\profiles\overwrite\custom\rules.dart:589:error: The function 'profileCustomRulesProvider' isn't defined.
+lib\views\profiles\overwrite\custom\rules.dart:499:error: The named parameter 'glyph' is required, but there's no corresponding argument.
+lib\views\profiles\overwrite\overwrite.dart:78:error: Undefined class 'OverwriteType'.
+lib\views\profiles\overwrite\overwrite.dart:86:error: Undefined class 'OverwriteType'.
+lib\views\profiles\overwrite\overwrite.dart:94:error: Undefined class 'OverwriteType'.
+lib\views\profiles\overwrite\overwrite.dart:102:error: Undefined class 'OverwriteType'.
+lib\views\profiles\overwrite\overwrite.dart:80:error: Undefined name 'OverwriteType'.
+lib\views\profiles\overwrite\overwrite.dart:81:error: Undefined name 'OverwriteType'.
+lib\views\profiles\overwrite\overwrite.dart:82:error: Undefined name 'OverwriteType'.
+lib\views\profiles\overwrite\overwrite.dart:88:error: Undefined name 'OverwriteType'.
+lib\views\profiles\overwrite\overwrite.dart:89:error: Undefined name 'OverwriteType'.
+lib\views\profiles\overwrite\overwrite.dart:90:error: Undefined name 'OverwriteType'.
+lib\views\profiles\overwrite\overwrite.dart:96:error: Undefined name 'OverwriteType'.
+lib\views\profiles\overwrite\overwrite.dart:97:error: Undefined name 'OverwriteType'.
+lib\views\profiles\overwrite\overwrite.dart:98:error: Undefined name 'OverwriteType'.
+lib\views\profiles\overwrite\overwrite.dart:104:error: The named parameter 'overwriteType' isn't defined.
+lib\views\profiles\overwrite\overwrite.dart:112:error: The method 'overwriteTypeProvider' isn't defined for the type '_Title'.
+lib\views\profiles\overwrite\overwrite.dart:124:error: Undefined name 'OverwriteType'.
+lib\views\profiles\overwrite\overwrite.dart:168:error: The method 'overwriteTypeProvider' isn't defined for the type '_Content'.
+lib\views\profiles\overwrite\overwrite.dart:170:error: Undefined name 'OverwriteType'.
+lib\views\profiles\overwrite\overwrite.dart:171:error: Undefined name 'OverwriteType'.
+lib\views\profiles\overwrite\overwrite.dart:172:error: Undefined name 'OverwriteType'.
+lib\views\profiles\overwrite\script.dart:52:error: The method 'generateSectionV3' isn't defined for the type 'ScriptContent'.
+lib\views\profiles\overwrite\standard.dart:28:error: The method 'profileAddedRulesProvider' isn't defined for the type '_StandardContentState'.
+lib\views\profiles\overwrite\standard.dart:42:error: The method 'profileAddedRulesProvider' isn't defined for the type '_StandardContentState'.
+lib\views\profiles\overwrite\standard.dart:65:error: The method 'profileAddedRulesProvider' isn't defined for the type '_StandardContentState'.
+lib\views\profiles\overwrite\standard.dart:85:error: The method 'profileAddedRulesProvider' isn't defined for the type '_StandardContentState'.
+lib\views\profiles\overwrite\standard.dart:168:error: The method 'profileAddedRulesProvider' isn't defined for the type '_StandardContentState'.
+lib\views\profiles\overwrite\standard.dart:193:error: The named parameter 'isScrollControlled' isn't defined.
+lib\views\profiles\profiles.dart:216:error: A member named 'ap' is defined in 'extension NumExt on num' and 'extension AdaptiveSizeExt on num', and neither is more specific.
+lib\views\profiles\profiles.dart:367:error: The named parameter 'compact' isn't defined.
+lib\views\profiles\profiles.dart:604:error: The named parameter 'backgroundColor' isn't defined.
+lib\views\profiles\profiles.dart:19:warning: Unused import: '../proxies/add_node.dart'.
+lib\views\profiles\profiles.dart:20:warning: Unused import: '../proxies/manage_nodes.dart'.
+lib\views\proxies\add_chain.dart:388:error: The named parameter 'cancelable' isn't defined.
+lib\views\proxies\add_chain.dart:406:error: The named parameter 'isScrollControlled' isn't defined.
+lib\views\proxies\add_chain.dart:533:error: The method 'sheetHeight' isn't defined for the type 'WidgetRef'.
+lib\views\proxies\add_chain.dart:538:error: The named parameter 'icon' isn't defined.
+lib\views\proxies\add_chain.dart:534:error: The method 'AdaptiveSheetScaffold' isn't defined for the type '_AddProxyChainViewState'.
+lib\views\proxies\add_chain.dart:761:error: The method 'sheetHeight' isn't defined for the type 'WidgetRef'.
+lib\views\proxies\add_chain.dart:790:error: The getter 'proxyChainPickerTopHint' isn't defined for the type 'AppLocalizations'.
+lib\views\proxies\add_chain.dart:758:error: The method 'AdaptiveSheetScaffold' isn't defined for the type '_TargetPickerViewState'.
+lib\views\proxies\add_chain.dart:537:error: The named parameter 'glyph' is required, but there's no corresponding argument.
+lib\views\proxies\add_node.dart:61:error: The getter 'clipboardEmpty' isn't defined for the type 'AppLocalizations'.
+lib\views\proxies\add_node.dart:81:error: The getter 'convertToLocalProfileDesc' isn't defined for the type 'AppLocalizations'.
+lib\views\proxies\add_node.dart:89:error: The getter 'profileConvertedToLocal' isn't defined for the type 'AppLocalizations'.
+lib\views\proxies\add_node.dart:133:error: The getter 'skippedDuplicateNodes' isn't defined for the type 'AppLocalizations'.
+lib\views\proxies\add_node.dart:139:error: The named parameter 'cancelable' isn't defined.
+lib\views\proxies\add_node.dart:144:error: The named parameter 'cancelable' isn't defined.
+lib\views\proxies\add_node.dart:162:error: The getter 'addNodeTargetProfile' isn't defined for the type 'AppLocalizations'.
+lib\views\proxies\add_node.dart:202:error: The getter 'subscribeOverwriteWarning' isn't defined for the type 'AppLocalizations'.
+lib\views\proxies\add_node.dart:212:error: The getter 'convertToLocalProfile' isn't defined for the type 'AppLocalizations'.
+lib\views\proxies\add_node.dart:232:error: The getter 'addNodePasteMode' isn't defined for the type 'AppLocalizations'.
+lib\views\proxies\add_node.dart:237:error: The getter 'addNodeManualMode' isn't defined for the type 'AppLocalizations'.
+lib\views\proxies\add_node.dart:249:error: The getter 'addProxyNodeDesc' isn't defined for the type 'AppLocalizations'.
+lib\views\proxies\add_node.dart:273:error: The getter 'pasteFromClipboard' isn't defined for the type 'AppLocalizations'.
+lib\views\proxies\add_node.dart:293:error: The method 'sheetHeight' isn't defined for the type 'WidgetRef'.
+lib\views\proxies\add_node.dart:298:error: The named parameter 'icon' isn't defined.
+lib\views\proxies\add_node.dart:294:error: The method 'AdaptiveSheetScaffold' isn't defined for the type '_AddProxyNodeViewState'.
+lib\views\proxies\add_node.dart:297:error: The named parameter 'glyph' is required, but there's no corresponding argument.
+lib\views\proxies\add_node_form.dart:583:error: The getter 'proxyFieldName' isn't defined for the type 'AppLocalizations'.
+lib\views\proxies\add_node_form.dart:585:error: The getter 'proxyFieldServer' isn't defined for the type 'AppLocalizations'.
+lib\views\proxies\add_node_form.dart:587:error: The getter 'proxyFieldPort' isn't defined for the type 'AppLocalizations'.
+lib\views\proxies\add_node_form.dart:589:error: The getter 'proxyFieldUsername' isn't defined for the type 'AppLocalizations'.
+lib\views\proxies\add_node_form.dart:591:error: The getter 'proxyFieldPassword' isn't defined for the type 'AppLocalizations'.
+lib\views\proxies\add_node_form.dart:593:error: The getter 'proxyFieldUuid' isn't defined for the type 'AppLocalizations'.
+lib\views\proxies\add_node_form.dart:595:error: The getter 'proxyFieldAlterId' isn't defined for the type 'AppLocalizations'.
+lib\views\proxies\add_node_form.dart:597:error: The getter 'proxyFieldCipher' isn't defined for the type 'AppLocalizations'.
+lib\views\proxies\add_node_form.dart:599:error: The getter 'proxyFieldUdp' isn't defined for the type 'AppLocalizations'.
+lib\views\proxies\add_node_form.dart:601:error: The getter 'proxyFieldTls' isn't defined for the type 'AppLocalizations'.
+lib\views\proxies\add_node_form.dart:603:error: The getter 'proxyFieldSkipCertVerify' isn't defined for the type 'AppLocalizations'.
+lib\views\proxies\add_node_form.dart:605:error: The getter 'proxyFieldNetwork' isn't defined for the type 'AppLocalizations'.
+lib\views\proxies\add_node_form.dart:607:error: The getter 'proxyFieldWsPath' isn't defined for the type 'AppLocalizations'.
+lib\views\proxies\add_node_form.dart:609:error: The getter 'proxyFieldWsHost' isn't defined for the type 'AppLocalizations'.
+lib\views\proxies\add_node_form.dart:611:error: The getter 'proxyFieldGrpcService' isn't defined for the type 'AppLocalizations'.
+lib\views\proxies\add_node_form.dart:613:error: The getter 'proxyFieldSni' isn't defined for the type 'AppLocalizations'.
+lib\views\proxies\add_node_form.dart:615:error: The getter 'proxyFieldFlow' isn't defined for the type 'AppLocalizations'.
+lib\views\proxies\add_node_form.dart:617:error: The getter 'proxyFieldReality' isn't defined for the type 'AppLocalizations'.
+lib\views\proxies\add_node_form.dart:619:error: The getter 'proxyFieldPublicKey' isn't defined for the type 'AppLocalizations'.
+lib\views\proxies\add_node_form.dart:621:error: The getter 'proxyFieldShortId' isn't defined for the type 'AppLocalizations'.
+lib\views\proxies\add_node_form.dart:623:error: The getter 'proxyFieldFingerprint' isn't defined for the type 'AppLocalizations'.
+lib\views\proxies\add_node_form.dart:625:error: The getter 'proxyFieldObfs' isn't defined for the type 'AppLocalizations'.
+lib\views\proxies\add_node_form.dart:627:error: The getter 'proxyFieldObfsPassword' isn't defined for the type 'AppLocalizations'.
+lib\views\proxies\add_node_form.dart:629:error: The getter 'proxyFieldUp' isn't defined for the type 'AppLocalizations'.
+lib\views\proxies\add_node_form.dart:631:error: The getter 'proxyFieldDown' isn't defined for the type 'AppLocalizations'.
+lib\views\proxies\add_node_form.dart:633:error: The getter 'proxyFieldAlpn' isn't defined for the type 'AppLocalizations'.
+lib\views\proxies\add_node_form.dart:635:error: The getter 'proxyFieldPorts' isn't defined for the type 'AppLocalizations'.
+lib\views\proxies\add_node_form.dart:637:error: The getter 'proxyFieldHopInterval' isn't defined for the type 'AppLocalizations'.
+lib\views\proxies\add_node_form.dart:829:error: The getter 'addNodeProtocol' isn't defined for the type 'AppLocalizations'.
+lib\views\proxies\add_node_form.dart:858:error: The getter 'proxyFormAdvanced' isn't defined for the type 'AppLocalizations'.
+lib\views\proxies\add_node_form.dart:905:error: The getter 'proxyFormOptionNone' isn't defined for the type 'AppLocalizations'.
+lib\views\proxies\add_node_form.dart:935:error: The getter 'proxyFormMissingRequired' isn't defined for the type 'AppLocalizations'.
+lib\views\proxies\add_node_form.dart:941:error: The getter 'proxyFormMissingRequired' isn't defined for the type 'AppLocalizations'.
+lib\views\proxies\card.dart:117:error: The getter 'bodyMediumHeight' isn't defined for the type 'Measure'.
+lib\views\proxies\card.dart:184:error: The getter 'subscribeOverwriteWarning' isn't defined for the type 'AppLocalizations'.
+lib\views\proxies\card.dart:185:error: The getter 'deleteNodeConfirm' isn't defined for the type 'AppLocalizations'.
+lib\views\proxies\card.dart:199:error: The getter 'deleteNodeMissing' isn't defined for the type 'AppLocalizations'.
+lib\views\proxies\card.dart:200:error: The getter 'deleteNodeSuccess' isn't defined for the type 'AppLocalizations'.
+lib\views\proxies\card.dart:220:error: The named parameter 'icon' isn't defined.
+lib\views\proxies\card.dart:222:error: The getter 'unfavoriteNode' isn't defined for the type 'AppLocalizations'.
+lib\views\proxies\card.dart:223:error: The getter 'favoriteNode' isn't defined for the type 'AppLocalizations'.
+lib\views\proxies\card.dart:233:error: The named parameter 'icon' isn't defined.
+lib\views\proxies\card.dart:234:error: The getter 'proxyDelayTestNow' isn't defined for the type 'AppLocalizations'.
+lib\views\proxies\card.dart:238:error: The named parameter 'icon' isn't defined.
+lib\views\proxies\card.dart:247:error: The named parameter 'icon' isn't defined.
+lib\views\proxies\card.dart:252:error: The named parameter 'icon' isn't defined.
+lib\views\proxies\card.dart:258:error: The named parameter 'icon' isn't defined.
+lib\views\proxies\card.dart:259:error: The getter 'deleteNode' isn't defined for the type 'AppLocalizations'.
+lib\views\proxies\card.dart:311:error: The named parameter 'type' isn't defined.
+lib\views\proxies\card.dart:314:error: The named parameter 'highlightSelected' isn't defined.
+lib\views\proxies\card.dart:311:error: Undefined name 'CommonCardType'.
+lib\views\proxies\card.dart:399:error: The method '_ProxyComputedMark' isn't defined for the type 'ProxyCard'.
+lib\views\proxies\card.dart:287:error: The named parameter 'offset' isn't defined.
+lib\views\proxies\card.dart:288:error: The named parameter 'offset' isn't defined.
+lib\views\proxies\card.dart:431:error: The method 'getDelayColor' isn't defined for the type '_ProxyDelayBar'.
+lib\views\proxies\card.dart:525:error: The method 'delayTestPendingProvider' isn't defined for the type 'ProxyDelayButton'.
+lib\views\proxies\card.dart:527:error: The method 'getDelayColor' isn't defined for the type 'ProxyDelayButton'.
+lib\views\proxies\card.dart:529:error: The getter 'proxyDelayTestNow' isn't defined for the type 'AppLocalizations'.
+lib\views\proxies\card.dart:534:error: The getter 'proxyDelayTestHint' isn't defined for the type 'AppLocalizations'.
+lib\views\proxies\card.dart:812:error: Undefined name 'groupName'.
+lib\views\proxies\card.dart:797:error: Missing concrete implementation of 'ConsumerStatefulWidget.createState'.
+lib\views\proxies\card.dart:809:warning: The method doesn't override an inherited method.
+lib\views\proxies\card.dart:797:warning: The declaration '_DelayText' isn't referenced.
+lib\views\proxies\common.dart:9:error: The getter 'titleMediumHeight' isn't defined for the type 'Measure'.
+lib\views\proxies\common.dart:9:error: The getter 'bodyMediumHeight' isn't defined for the type 'Measure'.
+lib\views\proxies\common.dart:18:error: The getter 'labelSmallHeight' isn't defined for the type 'Measure'.
+lib\views\proxies\common.dart:48:error: The getter 'bodyMediumHeight' isn't defined for the type 'Measure'.
+lib\views\proxies\common.dart:54:error: The getter 'bodyMediumHeight' isn't defined for the type 'Measure'.
+lib\views\proxies\dashboard.dart:67:error: The named parameter 'type' isn't defined.
+lib\views\proxies\dashboard.dart:67:error: Undefined name 'CommonCardType'.
+lib\views\proxies\edit_node.dart:51:error: The getter 'editNodeSuccess' isn't defined for the type 'AppLocalizations'.
+lib\views\proxies\edit_node.dart:53:error: The named parameter 'cancelable' isn't defined.
+lib\views\proxies\edit_node.dart:62:error: The method 'sheetHeight' isn't defined for the type 'WidgetRef'.
+lib\views\proxies\edit_node.dart:67:error: The named parameter 'icon' isn't defined.
+lib\views\proxies\edit_node.dart:63:error: The method 'AdaptiveSheetScaffold' isn't defined for the type '_EditProxyNodeViewState'.
+lib\views\proxies\edit_node.dart:66:error: The named parameter 'glyph' is required, but there's no corresponding argument.
+lib\views\proxies\edit_node.dart:2:warning: Unused import: 'package:fl_clash/models/models.dart'.
+lib\views\proxies\intent_groups.dart:86:error: The getter 'intentGroupsDone' isn't defined for the type 'AppLocalizations'.
+lib\views\proxies\intent_groups.dart:99:error: The named parameter 'cancelable' isn't defined.
+lib\views\proxies\intent_groups.dart:140:error: The getter 'toSoftBold' isn't defined for the type 'TextStyle'.
+lib\views\proxies\intent_groups.dart:199:error: The getter 'intentGroupsTip' isn't defined for the type 'AppLocalizations'.
+lib\views\proxies\intent_groups.dart:210:error: The getter 'intentGroups' isn't defined for the type 'AppLocalizations'.
+lib\views\proxies\intent_groups.dart:215:error: The named parameter 'icon' isn't defined.
+lib\views\proxies\intent_groups.dart:209:error: The method 'AdaptiveSheetScaffold' isn't defined for the type '_IntentGroupPlanViewState'.
+lib\views\proxies\intent_groups.dart:214:error: The named parameter 'glyph' is required, but there's no corresponding argument.
+lib\views\proxies\intent_groups.dart:2:warning: Unused import: 'package:fl_clash/models/common.dart'.
+lib\views\proxies\list.dart:123:error: The method 'FadeSlideEnterBox' isn't defined for the type '_ProxiesListViewState'.
+lib\views\proxies\list.dart:321:error: The named parameter 'trackVisibility' isn't defined.
+lib\views\proxies\list.dart:415:error: The named parameter 'type' isn't defined.
+lib\views\proxies\list.dart:414:error: A member named 'ap' is defined in 'extension NumExt on num' and 'extension AdaptiveSizeExt on num', and neither is more specific.
+lib\views\proxies\list.dart:415:error: Undefined name 'CommonCardType'.
+lib\views\proxies\list.dart:461:error: There's no constant named 'standard' in 'ProxiesIconStyle'.
+lib\views\proxies\list.dart:471:error: A member named 'ap' is defined in 'extension NumExt on num' and 'extension AdaptiveSizeExt on num', and neither is more specific.
+lib\views\proxies\list.dart:478:error: A member named 'ap' is defined in 'extension NumExt on num' and 'extension AdaptiveSizeExt on num', and neither is more specific.
+lib\views\proxies\list.dart:486:error: There's no constant named 'icon' in 'ProxiesIconStyle'.
+lib\views\proxies\list.dart:491:error: A member named 'ap' is defined in 'extension NumExt on num' and 'extension AdaptiveSizeExt on num', and neither is more specific.
+lib\views\proxies\list.dart:497:error: There's no constant named 'none' in 'ProxiesIconStyle'.
+lib\views\proxies\manage_nodes.dart:116:error: The named parameter 'isScrollControlled' isn't defined.
+lib\views\proxies\manage_nodes.dart:124:error: The getter 'deleteNodeSuccess' isn't defined for the type 'AppLocalizations'.
+lib\views\proxies\manage_nodes.dart:129:error: The getter 'deleteNodeMissing' isn't defined for the type 'AppLocalizations'.
+lib\views\proxies\manage_nodes.dart:135:error: The named parameter 'cancelable' isn't defined.
+lib\views\proxies\manage_nodes.dart:144:error: The getter 'deleteNodeConfirm' isn't defined for the type 'AppLocalizations'.
+lib\views\proxies\manage_nodes.dart:177:error: The getter 'deleteNodesConfirm' isn't defined for the type 'AppLocalizations'.
+lib\views\proxies\manage_nodes.dart:230:error: The getter 'deleteSelected' isn't defined for the type 'AppLocalizations'.
+lib\views\proxies\manage_nodes.dart:258:error: The getter 'noProxyNodes' isn't defined for the type 'AppLocalizations'.
+lib\views\proxies\manage_nodes.dart:298:error: The getter 'deleteNode' isn't defined for the type 'AppLocalizations'.
+lib\views\proxies\manage_nodes.dart:311:error: The method 'sheetHeight' isn't defined for the type 'WidgetRef'.
+lib\views\proxies\manage_nodes.dart:336:error: The getter 'subscribeOverwriteWarning' isn't defined for the type 'AppLocalizations'.
+lib\views\proxies\manage_nodes.dart:312:error: The method 'AdaptiveSheetScaffold' isn't defined for the type '_ManageProxyNodesViewState'.
+lib\views\proxies\proxies.dart:41:error: Undefined class 'ProxiesStyleProps'.
+lib\views\proxies\proxies.dart:41:error: Undefined class 'ProxiesStyleProps'.
+lib\views\proxies\proxies.dart:48:error: Undefined class 'ProxiesStyleProps'.
+lib\views\proxies\proxies.dart:184:error: The name 'ProvidersView' isn't a class.
+lib\views\proxies\proxies.dart:68:error: The getter 'updateSubscription' isn't defined for the type 'AppLocalizations'.
+lib\views\proxies\proxies.dart:87:error: The named parameter 'offset' isn't defined.
+lib\views\proxies\proxies.dart:97:error: The named parameter 'icon' isn't defined.
+lib\views\proxies\proxies.dart:118:error: The named parameter 'offset' isn't defined.
+lib\views\proxies\proxies.dart:126:error: The named parameter 'icon' isn't defined.
+lib\views\proxies\proxies.dart:133:error: The named parameter 'icon' isn't defined.
+lib\views\proxies\proxies.dart:140:error: The named parameter 'icon' isn't defined.
+lib\views\proxies\proxies.dart:147:error: The named parameter 'icon' isn't defined.
+lib\views\proxies\proxies.dart:154:error: The named parameter 'icon' isn't defined.
+lib\views\proxies\proxies.dart:155:error: The getter 'intentGroups' isn't defined for the type 'AppLocalizations'.
+lib\views\proxies\proxies.dart:161:error: The named parameter 'icon' isn't defined.
+lib\views\proxies\proxies.dart:166:error: The named parameter 'isScrollControlled' isn't defined.
+lib\views\proxies\proxies.dart:168:error: The method 'AdaptiveSheetScaffold' isn't defined for the type '_ProxiesViewState'.
+lib\views\proxies\proxies.dart:176:error: Undefined name '_hasProviders'.
+... 还有 80 条未打印
+--- errors=461 warnings=19 infos=0 ---

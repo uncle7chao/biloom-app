@@ -1,4 +1,4 @@
-package main
+package core
 
 // BiLoom: V2rayN / Xray 导出配置 → mihomo 节点 的自动转化。
 //

@@ -1,25 +1,105 @@
 import 'dart:async';
 
-import 'common/common.dart';
-import 'enum/enum.dart';
-import 'models/models.dart';
-
 import 'package:fl_clash/common/theme.dart';
 import 'package:fl_clash/providers/app.dart';
 import 'package:fl_clash/providers/config.dart';
+import 'package:fl_clash/ui/ui.dart';
+import 'package:fl_clash/widgets/widgets.dart' hide
+      ActivateBox,
+      AnimatedVisibility,
+      AppBarSearchStateBuilder,
+      BackLayerScope,
+      BaseScaffold,
+      BottomInsetScope,
+      CloseContainerActionCallback,
+      CloseContainerBuilder,
+      ClosedCallback,
+      CommonCard,
+      CommonCheckBox,
+      CommonChip,
+      CommonCircleLoading,
+      CommonDialog,
+      CommonExpandIcon,
+      CommonMinFilledButtonTheme,
+      CommonMinIconButtonTheme,
+      CommonPopScope,
+      CommonPopupBox,
+      CommonPopupMenu,
+      CommonPopupMenuItem,
+      CommonPopupRoute,
+      CommonScaffold,
+      CommonScaffoldState,
+      CommonScrollBar,
+      DecorationListItem,
+      DisabledMask,
+      EmojiText,
+      ExtendProps,
+      FadeBox,
+      FadeScaleBox,
+      FadeScaleEnterBox,
+      FadeScaleEnterTransition,
+      FadeSlideEnterTransition,
+      FadeThroughBox,
+      FloatingScrollbar,
+      Info,
+      InfoHeader,
+      InputDialog,
+      ItemPositionProvider,
+      KeepScope,
+      KeyedAnimatedList,
+      LineChart,
+      ListHeader,
+      ListItem,
+      MetaChip,
+      ModalSideSheetRoute,
+      MoreActionButton,
+      NullStatus,
+      NullStatusIllustration,
+      NullStatusSwitcher,
+      OnKeywordsUpdateCallback,
+      OpenContainer,
+      OpenContainerBuilder,
+      PageActivityScope,
+      PageFocusScope,
+      PageTraversalPolicy,
+      PagedSheet,
+      PagedSheetRoute,
+      PopupAnchorResolver,
+      PopupOpen,
+      ProfileIdProvider,
+      ProxyDecoratorProvider,
+      ScrollToEndBox,
+      SelectedDecorationListItem,
+      SettingTextCard,
+      SheetProps,
+      SheetProvider,
+      SheetType,
+      SideSheet,
+      SliderDefaultsM3,
+      TooltipLabel,
+      TooltipText,
+      commonProxyDecorator,
+      genActions,
+      generateSection,
+      showExtend,
+      showModalSideSheet,
+      showSheet;
 import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
+import 'common/common.dart';
+import 'enum/enum.dart';
+import 'models/models.dart';
+
 class GlobalState {
+  late CommonTheme theme;
   static GlobalState? _instance;
   GlobalKey<NavigatorState> get navigatorKey => rootNavigatorKey;
-  late final String appEnv;
-  late final PackageInfo packageInfo;
-  Function? updateCurrentDelayDebounce;
+  late String appEnv;
+  late PackageInfo packageInfo;
   late Measure measure;
-  late CommonTheme theme;
   late ProviderContainer container;
   bool needInitStatus = true;
 
@@ -33,7 +113,7 @@ class GlobalState {
   }
 
   String? lastConfigMd5;
-  VpnState? lastVpnState;
+  ConfigCounts? lastConfigCounts;
   bool isAttach = false;
 
   GlobalState._internal();
@@ -70,6 +150,39 @@ class GlobalState {
     );
   }
 
+  /// Concurrent [loadingRun]s would let the first to finish clear [tag].
+  Future<void> batchRun<T>(
+    List<T> items,
+    Future<void> Function(T item) task, {
+    required String Function(T item) label,
+    required int concurrency,
+    required LoadingTag? tag,
+  }) async {
+    final pool = TaskPool(concurrency);
+    final failures = List<UpdatingMessage?>.filled(items.length, null);
+    await loadingRun(
+      () => Future.wait([
+        for (final (index, item) in items.indexed)
+          pool.run(() async {
+            try {
+              await task(item);
+            } catch (e, s) {
+              commonPrint.log(
+                '${label(item)} ===> ${compactError(e)}, $s',
+                logLevel: LogLevel.warning,
+              );
+              failures[index] = UpdatingMessage(
+                label: label(item),
+                message: userFacingErrorMessage(e, currentAppLocalizations),
+              );
+            }
+          }),
+      ]),
+      tag: tag,
+    );
+    dialogs.showFailures(failures.nonNulls.toList());
+  }
+
   Future<T?> safeRun<T>(
     FutureOr<T> Function() futureFunction, {
     String? title,
@@ -92,7 +205,7 @@ class GlobalState {
         dialogs.showNotifier(message, level: MessageLevel.error);
       } else {
         unawaited(
-          dialogs.showMessage(
+          dialogs.showAlert(
             title: title ?? currentAppLocalizations.tip,
             message: TextSpan(text: message),
           ),

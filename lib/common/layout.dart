@@ -2,6 +2,88 @@ import 'dart:math';
 import 'dart:ui' show Size;
 
 import 'package:fl_clash/enum/enum.dart';
+import 'package:fl_clash/ui/ui.dart';
+import 'package:fl_clash/widgets/widgets.dart' hide
+      ActivateBox,
+      AnimatedVisibility,
+      AppBarSearchStateBuilder,
+      BackLayerScope,
+      BaseScaffold,
+      BottomInsetScope,
+      CloseContainerActionCallback,
+      CloseContainerBuilder,
+      ClosedCallback,
+      CommonCard,
+      CommonCheckBox,
+      CommonChip,
+      CommonCircleLoading,
+      CommonDialog,
+      CommonExpandIcon,
+      CommonMinFilledButtonTheme,
+      CommonMinIconButtonTheme,
+      CommonPopScope,
+      CommonPopupBox,
+      CommonPopupMenu,
+      CommonPopupMenuItem,
+      CommonPopupRoute,
+      CommonScaffold,
+      CommonScaffoldState,
+      CommonScrollBar,
+      DecorationListItem,
+      DisabledMask,
+      EmojiText,
+      ExtendProps,
+      FadeBox,
+      FadeScaleBox,
+      FadeScaleEnterBox,
+      FadeScaleEnterTransition,
+      FadeSlideEnterTransition,
+      FadeThroughBox,
+      FloatingScrollbar,
+      Info,
+      InfoHeader,
+      InputDialog,
+      ItemPositionProvider,
+      KeepScope,
+      KeyedAnimatedList,
+      LineChart,
+      ListHeader,
+      ListItem,
+      MetaChip,
+      ModalSideSheetRoute,
+      MoreActionButton,
+      NullStatus,
+      NullStatusIllustration,
+      NullStatusSwitcher,
+      OnKeywordsUpdateCallback,
+      OpenContainer,
+      OpenContainerBuilder,
+      PageActivityScope,
+      PageFocusScope,
+      PageTraversalPolicy,
+      PagedSheet,
+      PagedSheetRoute,
+      PopupAnchorResolver,
+      PopupOpen,
+      ProfileIdProvider,
+      ProxyDecoratorProvider,
+      ScrollToEndBox,
+      SelectedDecorationListItem,
+      SettingTextCard,
+      SheetProps,
+      SheetProvider,
+      SheetType,
+      SideSheet,
+      SliderDefaultsM3,
+      TooltipLabel,
+      TooltipText,
+      commonProxyDecorator,
+      genActions,
+      generateSection,
+      showExtend,
+      showModalSideSheet,
+      showSheet;
+import 'package:flutter/widgets.dart' show BuildContext;
 
 import 'constant.dart';
 
@@ -10,10 +92,8 @@ double getWindowHeaderHeight({required bool isDesktop, required bool isMacOS}) {
   return isMacOS ? 28 : 32;
 }
 
-/// Windows 11 draws its caption buttons 46 wide over a 32 tall title bar
-/// and renders every glyph as a 10x10 Segoe Fluent icon.
+/// Windows 11 draws its caption buttons 46 wide over a 32 tall title bar.
 const captionButtonWidth = 46.0;
-const captionGlyphSize = 10.0;
 
 /// The pin is not a caption button: it keeps the round Material button in a
 /// square slot the height of the bar, with a regular icon size.
@@ -38,6 +118,29 @@ ViewMode getViewMode(double viewWidth) {
   return ViewMode.desktop;
 }
 
+/// An expanded sidebar in the laptop range would leave the content narrower
+/// than the mobile layout one breakpoint below, so labels wait for desktop.
+bool canExpandSidebar(ViewMode viewMode) => viewMode == ViewMode.desktop;
+
+/// Measured on macOS 27, the traffic lights span 9 to 69 from the left edge
+/// of the hidden 32 tall title bar; macOS 10 keeps its title bar instead.
+const macOSTrafficLightsArea = Size(78, 32);
+
+Size windowControlsOverSidebar({required bool isMacOS, required int version}) {
+  return isMacOS && version > 10 ? macOSTrafficLightsArea : Size.zero;
+}
+
+/// The mobile view holds the traffic lights in its window header, so only a
+/// page filling a wider window meets them.
+Size windowControlsOverPage({
+  required bool isMacOS,
+  required int version,
+  required bool isMobileView,
+}) {
+  if (isMobileView) return Size.zero;
+  return windowControlsOverSidebar(isMacOS: isMacOS, version: version);
+}
+
 int getProxiesColumns(double viewWidth, ProxiesLayout proxiesLayout) {
   final columns = max((viewWidth / 250).ceil(), 2);
   return switch (proxiesLayout) {
@@ -47,7 +150,15 @@ int getProxiesColumns(double viewWidth, ProxiesLayout proxiesLayout) {
   };
 }
 
-const profileItemMinWidth = 270.0;
+double cardSpacingOf(BuildContext context, ViewMode viewMode) =>
+    switch (viewMode) {
+      ViewMode.mobile => 8.0,
+      ViewMode.laptop => 12.0,
+      ViewMode.desktop => 16.0,
+    }.mAp(context);
+
+const profileItemMinWidth = 300.0;
+const _profilesMaxColumns = 3;
 
 int getProfilesColumns(
   double viewWidth, {
@@ -55,5 +166,5 @@ int getProfilesColumns(
   double minItemWidth = profileItemMinWidth,
 }) {
   final columns = (viewWidth + spacing) / (minItemWidth + spacing);
-  return max(columns.floor(), 1);
+  return columns.floor().clamp(1, _profilesMaxColumns);
 }

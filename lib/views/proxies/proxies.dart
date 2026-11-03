@@ -1,14 +1,82 @@
 import 'package:fl_clash/common/common.dart';
+import 'package:fl_clash/ui/icons/app_glyphs.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/models/profile.dart';
-import 'package:fl_clash/models/state.dart';
+import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/state.dart';
+import 'package:fl_clash/models/fork_app_bar.dart';
 import 'package:fl_clash/views/dashboard/widgets/start_button.dart';
+import 'package:fl_clash/views/config/providers.dart';
 import 'package:fl_clash/views/profiles/overwrite/custom/groups.dart';
 import 'package:fl_clash/views/proxies/list.dart';
-import 'package:fl_clash/views/proxies/providers.dart';
-import 'package:fl_clash/widgets/widgets.dart';
+import 'package:fl_clash/widgets/widgets.dart' hide
+      ActivateBox,
+      AdaptiveSizeExt,
+      AnimatedVisibility,
+      AppBarSearchStateBuilder,
+      AppBarSearchState,
+      BaseScaffold,
+      BottomInsetScope,
+      CloseContainerActionCallback,
+      CloseContainerBuilder,
+      ClosedCallback,
+      CommonChip,
+      CommonCircleLoading,
+      CommonDialog,
+      CommonExpandIcon,
+      CommonMinFilledButtonTheme,
+      CommonMinIconButtonTheme,
+      CommonScrollBar,
+      DecorationListItem,
+      DisabledMask,
+      EmojiText,
+      FadeBox,
+      FadeScaleBox,
+      FadeScaleEnterBox,
+      FadeScaleEnterTransition,
+      FadeSlideEnterTransition,
+      FadeThroughBox,
+      FloatingScrollbar,
+      Info,
+      InfoHeader,
+      ItemPositionProvider,
+      KeepScope,
+      KeyedAnimatedList,
+      LineChart,
+      ListHeader,
+      ListItem,
+      MetaChip,
+      ModalSideSheetRoute,
+      MoreActionButton,
+      NullStatus,
+      NullStatusIllustration,
+      NullStatusSwitcher,
+      OnKeywordsUpdateCallback,
+      OpenContainer,
+      OpenContainerBuilder,
+      PageActivityScope,
+      PageFocusScope,
+      PageTraversalPolicy,
+      PagedSheet,
+      PagedSheetRoute,
+      PopupAnchorResolver,
+      PopupOpen,
+      ProfileIdProvider,
+      ProxyDecoratorProvider,
+      ScrollToEndBox,
+      SelectedDecorationListItem,
+      SettingTextCard,
+      SheetProvider,
+      SideSheet,
+      SliderDefaultsM3,
+      TooltipLabel,
+      TooltipText,
+      commonProxyDecorator,
+      genActions,
+      generateSection,
+      showExtend;
+import 'package:fl_clash/ui/ui.dart' hide CommonCard, CommonPopupBox, CommonPopupMenu, CommonPopupMenuItem, CommonPopupRoute, CommonCheckBox, CommonPopScope, InputDialog, OptionsDialog, BackLayerScope, SheetProps, SheetType, ExtendProps, CommonScaffold, CommonScaffoldState, AppBarSearchState, showSheet;
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -20,7 +88,11 @@ import 'setting.dart';
 import 'tab.dart';
 
 class ProxiesView extends ConsumerStatefulWidget {
-  const ProxiesView({super.key});
+  const ProxiesView({super.key, this.picker = false});
+
+  /// Leaves the bar only its search and delay test, for picking a proxy from a
+  /// sheet.
+  final bool picker;
 
   @override
   ConsumerState<ProxiesView> createState() => _ProxiesViewState();
@@ -28,8 +100,18 @@ class ProxiesView extends ConsumerStatefulWidget {
 
 class _ProxiesViewState extends ConsumerState<ProxiesView> {
   final GlobalKey<ProxiesTabViewState> _proxiesTabKey = GlobalKey();
+
+  // The same instance on every build, so the bar changing with the current
+  // group or its delay test leaves the page alone.
+  late final _tabView = ProxiesTabView(key: _proxiesTabKey);
   bool _hasProviders = false;
   bool _isTab = false;
+
+  void _updateStyle(
+    ProxiesStyleProps Function(ProxiesStyleProps state) update,
+  ) {
+    ref.read(proxiesStyleSettingProvider.notifier).update(update);
+  }
 
   List<Widget> _buildActions(BuildContext context) {
     final appLocalizations = context.appLocalizations;
@@ -129,7 +211,7 @@ class _ProxiesViewState extends ConsumerState<ProxiesView> {
               },
             ),
             CommonPopupMenuItem(
-              icon: Icons.category_outlined,
+              icon: Icons.interests,
               label: appLocalizations.generateRegionGroups,
               onPressed: () {
                 _handleGenerateRegionGroups(context);
@@ -166,7 +248,7 @@ class _ProxiesViewState extends ConsumerState<ProxiesView> {
                   showExtend(
                     context,
                     builder: (_) {
-                      return const ProvidersView();
+                      return const ClashProvidersView();
                     },
                   );
                 },
@@ -202,6 +284,7 @@ class _ProxiesViewState extends ConsumerState<ProxiesView> {
       ],
     );
   }
+
 
   /// 更新当前生效的配置。
   ///
@@ -374,11 +457,12 @@ class _ProxiesViewState extends ConsumerState<ProxiesView> {
       proxiesStyleSettingProvider.select((state) => state.type),
     );
     final isLoading = ref.watch(loadingProvider(LoadingTag.proxies));
+    final picker = widget.picker;
     return CommonScaffold(
       isLoading: isLoading,
       resizeToAvoidBottomInset: false,
       floatingActionButton: _buildFAB(),
-      actions: _buildActions(context),
+      actions: picker ? const <Widget>[] : _buildActions(context),
       title: context.appLocalizations.proxies,
       searchState: AppBarSearchState(onSearch: _onSearch),
       // v4 安卓变现：代理页底部自适应 Banner（AdsBanner 内部自裁决，非

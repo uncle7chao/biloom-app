@@ -2,11 +2,10 @@ import 'dart:async';
 
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/enum/enum.dart';
-import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/state.dart';
-import 'package:fl_clash/widgets/list.dart';
-import 'package:fl_clash/widgets/scaffold.dart';
+import 'package:fl_clash/ui/icons/icons.dart';
+import 'package:fl_clash/ui/ui.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -14,196 +13,261 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 class Contributor {
   final String avatar;
   final String name;
-  final String link;
 
-  const Contributor({
-    required this.avatar,
-    required this.name,
-    required this.link,
-  });
+  const Contributor({required this.avatar, required this.name});
 }
 
 class AboutView extends ConsumerWidget {
   const AboutView({super.key});
 
-  Future<void> _checkUpdate(WidgetRef ref) async {
+  static const _contributors = [
+    Contributor(avatar: 'assets/images/avatar/june2.jpg', name: 'June2'),
+    Contributor(avatar: 'assets/images/avatar/arue.jpg', name: 'Arue'),
+  ];
+
+  Future<void> _checkUpdate(BuildContext context, WidgetRef ref) async {
+    if (ref.read(loadingProvider(LoadingTag.checkUpdate))) return;
     final commonAction = ref.read(commonActionProvider.notifier);
-    // 不再包 `safeRun`：现在这三种结局都在应用自己的对话框里讲清楚，
-    // 而不是把「失败」抛成异常、或者含混成「已是最新版」。
-    final result = await request.checkForUpdate();
+    final result = await globalState.loadingRun(
+      () async => (release: await request.checkForUpdate()),
+      title: context.appLocalizations.checkUpdate,
+      tag: LoadingTag.checkUpdate,
+    );
+    if (result == null) return;
     unawaited(
-      commonAction.checkUpdateResultHandle(result: result, isUser: true),
+      commonAction.checkUpdateResultHandle(
+        result: result.release == null
+            ? const UpdateCheckResult(UpdateCheckStatus.upToDate)
+            : UpdateCheckResult(UpdateCheckStatus.hasUpdate, result.release),
+        isUser: true,
+      ),
     );
   }
 
-  List<Widget> _buildMoreSection(BuildContext context, WidgetRef ref) {
-    final appLocalizations = context.appLocalizations;
-    return generateSection(
-      separated: false,
-      title: appLocalizations.more,
-      items: [
-        ListItem(
-          title: Text(appLocalizations.checkUpdate),
-          onTap: () {
-            _checkUpdate(ref);
-          },
-        ),
-        ListItem(
-          title: Text(appLocalizations.project),
-          onTap: () {
-            dialogs.openUrl('https://github.com/$repository');
-          },
-          trailing: const Icon(Icons.launch),
-        ),
-        // 这一个不是「友情链接」，是 GPL-3.0 的署名义务：BiLoom 的 Dart/UI 层
-        // 来自 FlClash（内核另有其源），署名与出处必须出现在用户能看到的地方。
-        // 基线版本这里是 FlClash 官方 Telegram，换皮时删掉了 —— 删对了（不该把
-        // 用户导向上游的支持渠道），但该补的出处说明不能跟着一起消失。
-        ListItem(
-          title: Text(appLocalizations.forkedFrom),
-          onTap: () {
-            dialogs.openUrl('https://github.com/chen08209/FlClash');
-          },
-          trailing: const Icon(Icons.launch),
-        ),
-        ListItem(
-          title: Text(appLocalizations.core),
-          onTap: () {
-            dialogs.openUrl(
-              'https://github.com/chen08209/Clash.Meta/tree/FlClash',
-            );
-          },
-          trailing: const Icon(Icons.launch),
-        ),
-      ],
-    );
-  }
-
-  List<Widget> _buildContributorsSection(AppLocalizations appLocalizations) {
-    const contributors = [
-      Contributor(
-        avatar: 'assets/images/avatar/june2.jpg',
-        name: 'June2',
-        link: 'https://t.me/Jibadong',
-      ),
-      Contributor(
-        avatar: 'assets/images/avatar/arue.jpg',
-        name: 'Arue',
-        link: 'https://t.me/xrcm6868',
-      ),
-    ];
-    return generateSection(
-      separated: false,
-      title: appLocalizations.otherContributors,
-      items: [
-        ListItem(
-          title: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Wrap(
-              spacing: 24,
-              children: [
-                for (final contributor in contributors)
-                  Avatar(contributor: contributor),
-              ],
-            ),
-          ),
-        ),
-      ],
+  Widget _buildLinkItem({
+    required Glyph glyph,
+    required String title,
+    required String url,
+    required String label,
+  }) {
+    return ListItem(
+      leading: _LinkBadge(glyph: glyph),
+      title: Text(title),
+      subtitle: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis),
+      trailing: const GlyphIcon(AppGlyphs.openExternal),
+      onTap: () {
+        dialogs.openUrl(url);
+      },
     );
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final appLocalizations = context.appLocalizations;
-    final items = [
-      ListTile(
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Consumer(
-              builder: (_, ref, _) {
-                return _DeveloperModeDetector(
-                  child: Wrap(
-                    spacing: 16,
-                    crossAxisAlignment: WrapCrossAlignment.center,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.all(12),
-                        child: Image.asset(
-                          'assets/images/icon.png',
-                          width: 64,
-                          height: 64,
-                        ),
-                      ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            appName,
-                            style: Theme.of(context).textTheme.headlineSmall,
-                          ),
-                          Text(
-                            globalState.packageInfo.version,
-                            style: Theme.of(context).textTheme.labelLarge,
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                  onEnterDeveloperMode: () {
-                    ref
-                        .read(appSettingProvider.notifier)
-                        .update((state) => state.copyWith(developerMode: true));
-                    context.showNotifier(
-                      appLocalizations.developerModeEnableTip,
-                      level: MessageLevel.success,
-                    );
-                  },
-                );
-              },
-            ),
-            const SizedBox(height: 24),
-            Text(
-              appLocalizations.desc,
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
-          ],
-        ),
-      ),
-      const SizedBox(height: 12),
-      ..._buildContributorsSection(appLocalizations),
-      ..._buildMoreSection(context, ref),
-    ];
-    return BaseScaffold(
+    final isLoading = ref.watch(loadingProvider(LoadingTag.checkUpdate));
+    return CommonScaffold(
+      isLoading: isLoading,
       title: appLocalizations.about,
-      body: Padding(
-        padding: kMaterialListPadding.copyWith(top: 16, bottom: 16),
-        child: generateListView(items),
+      body: ListView(
+        padding: const EdgeInsets.symmetric(horizontal: 16).copyWith(
+          top: context.contentTopPadding,
+          bottom: 32 + context.bottomInset,
+        ),
+        children: [
+          _AboutHero(
+            isCheckingUpdate: isLoading,
+            onCheckUpdate: () {
+              _checkUpdate(context, ref);
+            },
+            onEnterDeveloperMode: () {
+              ref
+                  .read(appSettingProvider.notifier)
+                  .update((state) => state.copyWith(developerMode: true));
+              context.showNotifier(
+                appLocalizations.developerModeEnableTip,
+                level: MessageLevel.success,
+              );
+            },
+          ),
+          const SizedBox(height: 8),
+          generateSection(
+            title: appLocalizations.more,
+            items: [
+              _buildLinkItem(
+                glyph: AppGlyphs.code,
+                title: appLocalizations.project,
+                url: 'https://github.com/$repository',
+                label: 'github.com/$repository',
+              ),
+              _buildLinkItem(
+                glyph: AppGlyphs.cpu,
+                title: appLocalizations.core,
+                url: 'https://github.com/chen08209/Clash.Meta/tree/FlClash',
+                label: 'github.com/chen08209/Clash.Meta',
+              ),
+              _buildLinkItem(
+                glyph: AppGlyphs.code,
+                title: appLocalizations.forkedFrom,
+                url: 'https://github.com/chen08209/FlClash',
+                label: 'github.com/chen08209/FlClash',
+              ),
+            ],
+          ),
+          generateSection(
+            title: appLocalizations.otherContributors,
+            items: [
+              for (final contributor in _contributors)
+                ListItem(
+                  leading: CircleAvatar(
+                    foregroundImage: AssetImage(contributor.avatar),
+                  ),
+                  title: Text(contributor.name),
+                  subtitle: Text(appLocalizations.appIconDesign),
+                ),
+            ],
+          ),
+        ],
       ),
     );
   }
 }
 
-class Avatar extends StatelessWidget {
-  final Contributor contributor;
+class _AboutHero extends StatelessWidget {
+  final bool isCheckingUpdate;
+  final VoidCallback onCheckUpdate;
+  final VoidCallback onEnterDeveloperMode;
 
-  const Avatar({super.key, required this.contributor});
+  const _AboutHero({
+    required this.isCheckingUpdate,
+    required this.onCheckUpdate,
+    required this.onEnterDeveloperMode,
+  });
+
+  static const _logoSize = 96.0;
+  static const _logoInset = 14.0;
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    final colorScheme = context.colorScheme;
+    final appLocalizations = context.appLocalizations;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
       child: Column(
         children: [
-          SizedBox(
-            width: 36,
-            height: 36,
-            child: CircleAvatar(
-              foregroundImage: AssetImage(contributor.avatar),
+          _DeveloperModeDetector(
+            onEnterDeveloperMode: onEnterDeveloperMode,
+            child: DecoratedBox(
+              decoration: ShapeDecoration(
+                color: context.raisedSurfaceLevel.colorOf(colorScheme),
+                shape: AppShape.all(AppCorner.fit(_logoSize)),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(_logoInset),
+                child: Image.asset(
+                  'assets/images/icon.png',
+                  width: _logoSize - _logoInset * 2,
+                  height: _logoSize - _logoInset * 2,
+                ),
+              ),
             ),
           ),
-          const SizedBox(height: 4),
-          Text(contributor.name, style: context.textTheme.bodySmall),
+          const SizedBox(height: 20),
+          Text(
+            appName,
+            style: AppTextStyle.title2.of(context, emphasized: true),
+          ),
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            alignment: WrapAlignment.center,
+            children: [
+              _Pill(
+                label: 'v${globalState.packageInfo.version}',
+                color: colorScheme.primary,
+                foregroundColor: colorScheme.onPrimary,
+              ),
+              _Pill(
+                label: 'GPL-3.0',
+                color: context.raisedSurfaceLevel.colorOf(colorScheme),
+                foregroundColor: colorScheme.onSurfaceVariant,
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 420),
+            child: Text(
+              appLocalizations.desc,
+              textAlign: TextAlign.center,
+              style: AppTextStyle.subheadline
+                  .of(context)
+                  .copyWith(color: colorScheme.onSurfaceVariant, height: 1.5),
+            ),
+          ),
+          const SizedBox(height: 20),
+          TonalButton(
+            size: TonalButtonSize.bar,
+            glyph: AppGlyphs.sync,
+            label: appLocalizations.checkUpdate,
+            onPressed: isCheckingUpdate ? null : onCheckUpdate,
+          ),
         ],
+      ),
+    );
+  }
+}
+
+class _Pill extends StatelessWidget {
+  final String label;
+  final Color color;
+  final Color foregroundColor;
+
+  const _Pill({
+    required this.label,
+    required this.color,
+    required this.foregroundColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: ShapeDecoration(color: color, shape: AppShape.full),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        child: Text(
+          label,
+          style: AppTextStyle.caption1
+              .of(context, emphasized: true)
+              .copyWith(color: foregroundColor),
+        ),
+      ),
+    );
+  }
+}
+
+class _LinkBadge extends StatelessWidget {
+  final Glyph glyph;
+
+  const _LinkBadge({required this.glyph});
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = context.colorScheme;
+    return DecoratedBox(
+      decoration: ShapeDecoration(
+        color: context.raisedSurfaceLevel.colorOf(colorScheme),
+        shape: AppShape.md,
+      ),
+      child: SizedBox.square(
+        dimension: 40,
+        child: Center(
+          child: GlyphIcon(
+            glyph,
+            size: 20,
+            color: colorScheme.onSurfaceVariant,
+          ),
+        ),
       ),
     );
   }

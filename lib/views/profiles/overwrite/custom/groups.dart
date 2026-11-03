@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:fl_clash/common/common.dart';
+import 'package:fl_clash/ui/icons/app_glyphs.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/features/overwrite/overwrite.dart';
 import 'package:fl_clash/models/models.dart' hide FileInfo;
@@ -428,7 +429,7 @@ class _ProxyGroupCard extends ConsumerWidget {
                 if (excludeFilter != null && excludeFilter.isNotEmpty)
                   _GroupChip(
                     label: excludeFilter,
-                    icon: Icons.filter_alt_off_outlined,
+                    icon: Icons.filter_alt_outlined,
                     tooltip: appLocalizations.excludeProxyFilter,
                   ),
               ],
@@ -1232,7 +1233,7 @@ class _EditProxyGroupViewState extends ConsumerState<_EditProxyGroupView> {
       sheetTransparentToolBar: true,
       actions: [
         IconButtonData(
-          icon: Icons.check,
+          glyph: AppGlyphs.check,
           onPressed: _handleSave,
           tooltip: context.appLocalizations.save,
         ),

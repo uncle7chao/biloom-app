@@ -2,18 +2,7 @@ import 'package:fl_clash/widgets/active_polling.dart';
 import 'package:fl_clash/widgets/inherited.dart';
 import 'package:material_ui/material_ui.dart';
 
-typedef TickWidgetBuilder = Widget Function(BuildContext context, int tick);
 
-class TickBuilder extends StatefulWidget {
-  final Duration duration;
-  final TickWidgetBuilder builder;
-
-  const TickBuilder({super.key, required this.duration, required this.builder})
-    : assert(duration > Duration.zero);
-
-  @override
-  State<TickBuilder> createState() => _TickBuilderState();
-}
 
 class _TickBuilderState extends State<TickBuilder>
     with WidgetsBindingObserver, ActivePollingMixin<TickBuilder> {

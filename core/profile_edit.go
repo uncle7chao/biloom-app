@@ -1,4 +1,4 @@
-package main
+package core
 
 import (
 	"encoding/json"
@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/metacubex/mihomo/common/convert"
-	yamlv3 "gopkg.in/yaml.v3"
+	yamlv3 "go.yaml.in/yaml/v3"
 )
 
 // BiLoom: 配置编辑层。
@@ -942,11 +942,11 @@ func scalarValue(node *yamlv3.Node, key string) string {
 	return strings.TrimSpace(value.Value)
 }
 
-// setMappingValue 写入一个字符串字段，键已存在就原地替换。
+// setMappingString 写入一个字符串字段，键已存在就原地替换。
 //
 // 「原地替换」而不是「先删再追加」：追加会把字段挪到条目末尾，用户按字段顺序读它
 // 自己的配置时，新增的那一项会突然跑到最后一行。
-func setMappingValue(mapping *yamlv3.Node, key, value string) {
+func setMappingString(mapping *yamlv3.Node, key, value string) {
 	if _, index := mappingEntry(mapping, key); index >= 0 {
 		mapping.Content[index] = &yamlv3.Node{
 			Kind:  yamlv3.ScalarNode,
@@ -1100,7 +1100,7 @@ func handleSetProxyChain(params *SetProxyChainParams) (SetProxyChainResult, erro
 		return SetProxyChainResult{}, errors.New(reason)
 	}
 
-	setMappingValue(targetNode, "dialer-proxy", dialer)
+	setMappingString(targetNode, "dialer-proxy", dialer)
 	out, err := marshalDocument(doc)
 	if err != nil {
 		return SetProxyChainResult{}, err

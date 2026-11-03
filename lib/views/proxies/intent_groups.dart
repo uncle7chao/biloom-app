@@ -1,4 +1,5 @@
 import 'package:fl_clash/common/common.dart';
+import 'package:fl_clash/ui/icons/app_glyphs.dart';
 import 'package:fl_clash/models/common.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/widgets/widgets.dart';
@@ -212,7 +213,7 @@ class _IntentGroupPlanViewState extends ConsumerState<IntentGroupPlanView> {
         // 没算出计划、或没什么可做的，就不给这颗 ✓ —— 点了也不会有任何变化。
         if (_plan != null && !_applying && _plan!.upserts.isNotEmpty)
           IconButtonData(
-            icon: Icons.check,
+            glyph: AppGlyphs.check,
             tooltip: appLocalizations.save,
             onPressed: _handleApply,
           ),

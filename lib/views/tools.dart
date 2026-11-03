@@ -1,23 +1,104 @@
-import 'dart:io';
-
 import 'package:fl_clash/common/common.dart';
+import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/providers.dart';
+import 'package:fl_clash/ui/icons/icons.dart';
 import 'package:fl_clash/views/about.dart';
 import 'package:fl_clash/views/access.dart';
-import 'package:fl_clash/views/application_setting.dart';
 import 'package:fl_clash/views/backup_and_restore.dart';
-import 'package:fl_clash/views/config/config.dart';
+import 'package:fl_clash/views/config/general.dart';
 import 'package:fl_clash/views/hotkey.dart';
-import 'package:fl_clash/widgets/widgets.dart';
+import 'package:fl_clash/widgets/widgets.dart' hide
+      ActivateBox,
+      AdaptiveSizeExt,
+      AnimatedVisibility,
+      AppBarSearchStateBuilder,
+      BackLayerScope,
+      BaseScaffold,
+      BottomInsetScope,
+      CloseContainerActionCallback,
+      CloseContainerBuilder,
+      ClosedCallback,
+      CommonCard,
+      CommonCheckBox,
+      CommonChip,
+      CommonCircleLoading,
+      CommonDialog,
+      CommonExpandIcon,
+      CommonMinFilledButtonTheme,
+      CommonMinIconButtonTheme,
+      CommonPopScope,
+      CommonPopupBox,
+      CommonPopupMenu,
+      CommonPopupMenuItem,
+      CommonPopupRoute,
+      CommonScaffold,
+      CommonScaffoldState,
+      CommonScrollBar,
+      DecorationListItem,
+      DisabledMask,
+      EmojiText,
+      ExtendProps,
+      FadeBox,
+      FadeScaleBox,
+      FadeScaleEnterBox,
+      FadeScaleEnterTransition,
+      FadeSlideEnterTransition,
+      FadeThroughBox,
+      FloatingScrollbar,
+      Info,
+      InfoHeader,
+      InputDialog,
+      ItemPositionProvider,
+      KeepScope,
+      KeyedAnimatedList,
+      LineChart,
+      ListHeader,
+      ListItem,
+      MetaChip,
+      ModalSideSheetRoute,
+      MoreActionButton,
+      NullStatus,
+      NullStatusIllustration,
+      NullStatusSwitcher,
+      OnKeywordsUpdateCallback,
+      OpenContainer,
+      OpenContainerBuilder,
+      PageActivityScope,
+      PageFocusScope,
+      PageTraversalPolicy,
+      PagedSheet,
+      PagedSheetRoute,
+      PopupAnchorResolver,
+      PopupOpen,
+      ProfileIdProvider,
+      ProxyDecoratorProvider,
+      ScrollToEndBox,
+      SelectedDecorationListItem,
+      SettingTextCard,
+      SheetProps,
+      SheetProvider,
+      SheetType,
+      SideSheet,
+      SliderDefaultsM3,
+      TooltipLabel,
+      TooltipText,
+      commonProxyDecorator,
+      genActions,
+      generateSection,
+      showExtend,
+      showModalSideSheet,
+      showSheet;
+import 'package:fl_clash/ui/ui.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:path/path.dart' show dirname, join;
 
 import 'config/advanced.dart';
+import 'config/custom_resources.dart';
 import 'developer.dart';
 import 'dns_leak.dart';
+import 'disclaimer.dart';
 import 'theme.dart';
 
 class ToolsView extends ConsumerStatefulWidget {
@@ -29,31 +110,15 @@ class ToolsView extends ConsumerStatefulWidget {
 
 class _ToolViewState extends ConsumerState<ToolsView> {
   Widget _buildNavigationMenuItem(NavigationItem navigationItem) {
-    final description = navigationItem.label.description;
     return ListItem.open(
-      leading: navigationItem.icon,
+      leading: GlyphIcon(navigationItem.glyph),
       title: Text(navigationItem.label.label),
-      subtitle: description != null ? Text(description) : null,
       widget: navigationItem.builder(context),
-      maxWidth: 400,
-      forceFull: false,
+      forceFull: navigationItem.modes.contains(NavigationItemMode.moreFull),
     );
   }
 
-  Widget _buildNavigationMenu(List<NavigationItem> navigationItems) {
-    return Column(
-      children: [
-        for (final navigationItem in navigationItems) ...[
-          _buildNavigationMenuItem(navigationItem),
-          navigationItems.last != navigationItem
-              ? const Divider(height: 0)
-              : Container(),
-        ],
-      ],
-    );
-  }
-
-  List<Widget> _getOtherList(bool enableDeveloperMode) {
+  Widget _getOtherList(bool enableDeveloperMode) {
     return generateSection(
       title: context.appLocalizations.other,
       items: [
@@ -64,31 +129,33 @@ class _ToolViewState extends ConsumerState<ToolsView> {
     );
   }
 
-  List<Widget> _getSettingList() {
+  Widget _getSettingList() {
+    final appLocalizations = context.appLocalizations;
     return generateSection(
-      title: context.appLocalizations.settings,
+      title: appLocalizations.settings,
       items: [
         const _LocaleItem(),
         const _ThemeItem(),
         const _BackupItem(),
         if (system.isDesktop) const _HotkeyItem(),
-        if (system.isWindows) const _LoopbackItem(),
         if (system.isAndroid) const _AccessItem(),
-        const _ConfigItem(),
         const _AdvancedConfigItem(),
-        // 紧跟在高级配置后面：DNS 上游就在那里改，改完顺手就能在这里验。
+        const _CustomResourcesItem(),
+        const _GeneralItem(),
         const _DnsLeakItem(),
-        const _SettingItem(),
       ],
+      footer: [
+        if (system.isAndroid) appLocalizations.accessControlDesc,
+        appLocalizations.advancedConfigDesc,
+        appLocalizations.customProfileResourcesDesc,
+      ].join('\n'),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final appSetting = ref.watch(
-      appSettingProvider.select(
-        (state) => (locale: state.locale, developerMode: state.developerMode),
-      ),
+    final developerMode = ref.watch(
+      appSettingProvider.select((state) => state.developerMode),
     );
     final items = [
       Consumer(
@@ -97,30 +164,33 @@ class _ToolViewState extends ConsumerState<ToolsView> {
           if (state.navigationItems.isEmpty) {
             return Container();
           }
-          return Column(
-            children: [
-              ListHeader(title: context.appLocalizations.more),
-              _buildNavigationMenu(state.navigationItems),
-            ],
+          return generateSection(
+            items: state.navigationItems.map(_buildNavigationMenuItem),
           );
         },
       ),
-      ..._getSettingList(),
-      ..._getOtherList(appSetting.developerMode),
+      _getSettingList(),
+      _getOtherList(developerMode),
     ];
     return CommonScaffold(
       title: context.appLocalizations.tools,
       // v5 安卓变现：工具页底部固定 Banner（AdsBanner 内部自裁决，非
-      // Android / 位关闭时零高度 shrink）。列表 Expanded 撑起，不用
-      // stretch（01.00.30 教训：Column 下 stretch 会整页布局崩溃）。
+      // Android / 位关闭时零高度 shrink）。不用 stretch（01.00.30 教训）。
       body: Column(
         children: [
           Expanded(
-            child: ListView.builder(
-              key: toolsStoreKey,
-              itemCount: items.length,
-              itemBuilder: (_, index) => items[index],
-              padding: const EdgeInsets.only(bottom: 20),
+            child: Builder(
+        builder: (context) => ListView.builder(
+          key: toolsStoreKey,
+          itemCount: items.length,
+          itemBuilder: (_, index) => items[index],
+          padding: EdgeInsets.only(
+            left: 16,
+            right: 16,
+            top: context.sectionsTopPadding,
+            bottom: 20 + context.bottomInset,
+          ),
+        ),
             ),
           ),
           const AdsBanner(placement: AdsBannerPlacement.tools),
@@ -145,10 +215,8 @@ class _LocaleItem extends ConsumerWidget {
     );
     final currentLocale = getLocaleForString(locale);
     return ListItem<Locale?>.options(
-      leading: const Icon(Icons.language_outlined),
+      leading: const GlyphIcon(AppGlyphs.language),
       title: Text(context.appLocalizations.language),
-      subtitle: Text(_getLocaleString(context, currentLocale)),
-      dialogTitle: context.appLocalizations.language,
       options: [null, ...AppLocalizations.delegate.supportedLocales],
       onChanged: (Locale? locale) {
         ref
@@ -167,9 +235,8 @@ class _ThemeItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListItem.open(
-      leading: const Icon(Icons.style),
+      leading: const GlyphIcon(AppGlyphs.paintbrush),
       title: Text(context.appLocalizations.theme),
-      subtitle: Text(context.appLocalizations.themeDesc),
       widget: const ThemeView(),
     );
   }
@@ -181,9 +248,8 @@ class _BackupItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListItem.open(
-      leading: const Icon(Icons.cloud_sync),
+      leading: const GlyphIcon(AppGlyphs.cloudSync),
       title: Text(context.appLocalizations.backupAndRestore),
-      subtitle: Text(context.appLocalizations.backupAndRestoreDesc),
       widget: const BackupAndRestore(),
     );
   }
@@ -195,29 +261,9 @@ class _HotkeyItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListItem.open(
-      leading: const Icon(Icons.keyboard),
+      leading: const GlyphIcon(AppGlyphs.keyboard),
       title: Text(context.appLocalizations.hotkeyManagement),
-      subtitle: Text(context.appLocalizations.hotkeyManagementDesc),
       widget: const HotKeyView(),
-    );
-  }
-}
-
-class _LoopbackItem extends StatelessWidget {
-  const _LoopbackItem();
-
-  @override
-  Widget build(BuildContext context) {
-    return ListItem(
-      leading: const Icon(Icons.lock),
-      title: Text(context.appLocalizations.loopback),
-      subtitle: Text(context.appLocalizations.loopbackDesc),
-      onTap: () {
-        windows?.runas(
-          '"${join(dirname(Platform.resolvedExecutable), "EnableLoopback.exe")}"',
-          '',
-        );
-      },
     );
   }
 }
@@ -228,24 +274,22 @@ class _AccessItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListItem.open(
-      leading: const Icon(Icons.view_list),
+      leading: const GlyphIcon(AppGlyphs.appsList),
       title: Text(context.appLocalizations.accessControl),
-      subtitle: Text(context.appLocalizations.accessControlDesc),
       widget: const AccessView(),
     );
   }
 }
 
-class _ConfigItem extends StatelessWidget {
-  const _ConfigItem();
+class _GeneralItem extends StatelessWidget {
+  const _GeneralItem();
 
   @override
   Widget build(BuildContext context) {
     return ListItem.open(
-      leading: const Icon(Icons.edit),
-      title: Text(context.appLocalizations.basicConfig),
-      subtitle: Text(context.appLocalizations.basicConfigDesc),
-      widget: const ConfigView(),
+      leading: const GlyphIcon(AppGlyphs.settings),
+      title: Text(context.appLocalizations.general),
+      widget: const GeneralView(),
     );
   }
 }
@@ -256,9 +300,8 @@ class _AdvancedConfigItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListItem.open(
-      leading: const Icon(Icons.build),
+      leading: const GlyphIcon(AppGlyphs.wrench),
       title: Text(context.appLocalizations.advancedConfig),
-      subtitle: Text(context.appLocalizations.advancedConfigDesc),
       widget: const AdvancedConfigView(),
     );
   }
@@ -278,34 +321,28 @@ class _DnsLeakItem extends StatelessWidget {
   }
 }
 
-class _SettingItem extends StatelessWidget {
-  const _SettingItem();
+class _CustomResourcesItem extends StatelessWidget {
+  const _CustomResourcesItem();
 
   @override
   Widget build(BuildContext context) {
     return ListItem.open(
-      leading: const Icon(Icons.settings),
-      title: Text(context.appLocalizations.application),
-      subtitle: Text(context.appLocalizations.applicationDesc),
-      widget: const ApplicationSettingView(),
+      leading: const GlyphIcon(AppGlyphs.customize),
+      title: Text(context.appLocalizations.customProfileResources),
+      widget: const CustomResourcesView(),
     );
   }
 }
 
-class _DisclaimerItem extends ConsumerWidget {
+class _DisclaimerItem extends StatelessWidget {
   const _DisclaimerItem();
 
   @override
-  Widget build(BuildContext context, ref) {
-    return ListItem(
-      leading: const Icon(Icons.gavel),
+  Widget build(BuildContext context) {
+    return ListItem.open(
+      leading: const GlyphIcon(AppGlyphs.gavel),
       title: Text(context.appLocalizations.disclaimer),
-      onTap: () async {
-        final isDisclaimerAccepted = await dialogs.showDisclaimer();
-        if (!isDisclaimerAccepted) {
-          await ref.read(systemActionProvider.notifier).handleExit();
-        }
-      },
+      widget: const DisclaimerView(),
     );
   }
 }
@@ -316,7 +353,7 @@ class _InfoItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListItem.open(
-      leading: const Icon(Icons.info),
+      leading: const GlyphIcon(AppGlyphs.info),
       title: Text(context.appLocalizations.about),
       widget: const AboutView(),
     );
@@ -329,7 +366,7 @@ class _DeveloperItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListItem.open(
-      leading: const Icon(Icons.developer_board),
+      leading: const GlyphIcon(AppGlyphs.cpu),
       title: Text(context.appLocalizations.developerMode),
       widget: const DeveloperView(),
     );

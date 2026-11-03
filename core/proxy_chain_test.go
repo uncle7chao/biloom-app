@@ -1,4 +1,4 @@
-package main
+package core
 
 // 链式代理的形态调研（钉住上游行为，不是自研功能的回归测试）。
 //

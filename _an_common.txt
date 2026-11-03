@@ -1,0 +1,5 @@
+context: 80 dart files
+lib\common\app_localizations.dart:4:warning: Unused import: 'package:fl_clash/common/network_error.dart'.
+lib\common\common.dart:56:warning: Duplicate export.
+lib\common\num.dart:67:error: Undefined name 'precisionErrorTolerance'.
+--- errors=1 warnings=2 infos=0 ---

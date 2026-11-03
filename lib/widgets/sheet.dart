@@ -2,6 +2,11 @@ import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/models/common.dart';
 import 'package:fl_clash/widgets/inherited.dart';
 import 'package:flutter/foundation.dart';
+import 'package:fl_clash/ui/metrics.dart' hide AdaptiveSizeExt;
+import 'package:fl_clash/ui/icons/icons.dart';
+import 'package:fl_clash/ui/navigator.dart';
+import 'package:fl_clash/ui/models.dart';
+import 'package:fl_clash/ui/scroll_behavior.dart';
 import 'package:material_ui/material_ui.dart';
 
 import 'scaffold.dart';
@@ -69,7 +74,6 @@ Future<T?> showSheet<T>({
       context: context,
       backgroundColor: props.backgroundColor,
       constraints: BoxConstraints(maxWidth: props.maxWidth ?? 360),
-      filter: props.blur ? commonFilter : null,
       builder: (_) {
         return SheetProvider(
           type: SheetType.sideSheet,
@@ -95,7 +99,6 @@ Future<T?> showExtend<T>(
       useSafeArea: props.useSafeArea,
       context: context,
       constraints: BoxConstraints(maxWidth: props.maxWidth ?? 360),
-      filter: props.blur ? commonFilter : null,
       builder: (context) {
         return SheetProvider(
           type: SheetType.sideSheet,
@@ -129,21 +132,6 @@ class AdaptiveSheetScaffold extends StatefulWidget {
 }
 
 class _AdaptiveSheetScaffoldState extends State<AdaptiveSheetScaffold> {
-  IconData get backIconData {
-    if (kIsWeb) {
-      return Icons.arrow_back;
-    }
-    switch (Theme.of(context).platform) {
-      case TargetPlatform.android:
-      case TargetPlatform.fuchsia:
-      case TargetPlatform.linux:
-      case TargetPlatform.windows:
-        return Icons.arrow_back;
-      case TargetPlatform.iOS:
-      case TargetPlatform.macOS:
-        return Icons.arrow_back_ios_new_rounded;
-    }
-  }
 
   @override
   void didUpdateWidget(covariant AdaptiveSheetScaffold oldWidget) {
@@ -163,13 +151,13 @@ class _AdaptiveSheetScaffoldState extends State<AdaptiveSheetScaffold> {
   }) {
     if (useCloseIcon) {
       return IconButtonData(
-        icon: Icons.close,
+        glyph: AppGlyphs.close,
         onPressed: context.safeNestedPop,
         tooltip: context.appLocalizations.close,
       );
     }
     return IconButtonData(
-      icon: backIconData,
+      glyph: AppGlyphs.chevronBack,
       onPressed: widget.backAction ?? () => Navigator.of(context).pop(),
       tooltip: context.appLocalizations.back,
     );
@@ -269,7 +257,7 @@ class _SheetIconButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final icon = Icon(data.icon);
+    final icon = GlyphIcon(data.glyph);
     if (filled) {
       return IconButton.filledTonal(
         tooltip: data.tooltip,

@@ -458,7 +458,7 @@ class _GroupIcon extends ConsumerWidget {
       proxiesStyleSettingProvider.select((state) => state.iconStyle),
     );
     return switch (iconStyle) {
-      ProxiesIconStyle.standard => LayoutBuilder(
+      ProxiesIconStyle.filled => LayoutBuilder(
         builder: (_, constraints) {
           return Container(
             margin: const EdgeInsets.only(right: 12),
@@ -483,7 +483,7 @@ class _GroupIcon extends ConsumerWidget {
           );
         },
       ),
-      ProxiesIconStyle.icon => Container(
+      ProxiesIconStyle.plain => Container(
         margin: const EdgeInsets.only(right: 8),
         child: LayoutBuilder(
           builder: (_, constraints) {
@@ -494,7 +494,7 @@ class _GroupIcon extends ConsumerWidget {
           },
         ),
       ),
-      ProxiesIconStyle.none => Container(),
+      ProxiesIconStyle.hidden => Container(),
     };
   }
 }

@@ -13,7 +13,7 @@ list(APPEND FLUTTER_PLUGIN_LIST
   url_launcher_windows
   webview_windows
   wifi_ssid
-  window_manager
+  window
 )
 
 list(APPEND FLUTTER_FFI_PLUGIN_LIST
