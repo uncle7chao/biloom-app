@@ -12,7 +12,6 @@ require (
 	github.com/metacubex/tls v0.1.9
 	github.com/miekg/dns v1.1.63
 	go.yaml.in/yaml/v3 v3.0.5
-	gopkg.in/yaml.v3 v3.0.1 // BiLoom: profile_edit.go 节点编辑器使用
 )
 
 require (
