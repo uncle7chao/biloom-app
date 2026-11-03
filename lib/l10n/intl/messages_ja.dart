@@ -654,7 +654,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "deleteSelected": MessageLookupByLibrary.simpleMessage("選択を削除"),
     "deleteTip": m23,
     "desc": MessageLookupByLibrary.simpleMessage(
-      "ClashMetaベースのマルチプラットフォーム対応プロキシクライアント。シンプルで使いやすく、オープンソースで広告もありません。",
+      "FlClash をベースにカスタマイズしたマルチプラットフォーム対応プロキシクライアント。シンプルで使いやすく、デスクトップ版には広告がありません。",
     ),
     "destination": MessageLookupByLibrary.simpleMessage("宛先"),
     "destinationGeoIP": MessageLookupByLibrary.simpleMessage("宛先GeoIP"),

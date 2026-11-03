@@ -126,7 +126,7 @@
   "project": "프로젝트",
   "core": "코어",
   "tabAnimation": "탭 애니메이션",
-  "desc": "ClashMeta 기반의 멀티 플랫폼 프록시 클라이언트로, 간편하게 사용할 수 있으며 오픈 소스이고 광고가 없습니다.",
+  "desc": "FlClash를 깊이 있게 커스터마이징한 멀티 플랫폼 프록시 클라이언트입니다. 간편하게 사용할 수 있으며 데스크톱 버전에는 광고가 없습니다.",
   "startVpn": "VPN 시작 중…",
   "stopVpn": "VPN 중지 중…",
   "localNetworkDeniedTip": "로컬 네트워크 권한이 거부되었습니다. gvisor 스택을 사용하므로 LAN에 연결할 수 없습니다.",

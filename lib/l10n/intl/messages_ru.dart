@@ -797,7 +797,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "deleteSelected": MessageLookupByLibrary.simpleMessage("Удалить выбранные"),
     "deleteTip": m23,
     "desc": MessageLookupByLibrary.simpleMessage(
-      "Многоплатформенный прокси-клиент на основе ClashMeta: простой и удобный, с открытым исходным кодом и без рекламы.",
+      "Многоплатформенный прокси-клиент на основе FlClash: простой и удобный, без рекламы в версии для ПК.",
     ),
     "destination": MessageLookupByLibrary.simpleMessage("Назначение"),
     "destinationGeoIP": MessageLookupByLibrary.simpleMessage(

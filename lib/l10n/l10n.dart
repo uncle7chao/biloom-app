@@ -1001,10 +1001,10 @@ class AppLocalizations {
     );
   }
 
-  /// `A multi-platform proxy client based on ClashMeta, simple and easy to use, open-source and ad-free.`
+  /// `A multi-platform proxy client, deeply customized from FlClash. Simple and easy to use, with no ads on the desktop version.`
   String get desc {
     return Intl.message(
-      'A multi-platform proxy client based on ClashMeta, simple and easy to use, open-source and ad-free.',
+      'A multi-platform proxy client, deeply customized from FlClash. Simple and easy to use, with no ads on the desktop version.',
       name: 'desc',
       desc: '',
       args: [],

@@ -126,7 +126,7 @@
   "project": "Proyecto",
   "core": "Núcleo",
   "tabAnimation": "Animación de pestañas",
-  "desc": "Un cliente proxy multiplataforma basado en ClashMeta, sencillo de usar, de código abierto y sin anuncios.",
+  "desc": "Un cliente proxy multiplataforma, profundamente personalizado a partir de FlClash. Sencillo y fácil de usar, sin anuncios en la versión de escritorio.",
   "startVpn": "Iniciando VPN…",
   "stopVpn": "Deteniendo VPN…",
   "localNetworkDeniedTip": "Permiso de red local denegado: con la pila gvisor, la LAN no es accesible.",

@@ -589,7 +589,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "deleteSelected": MessageLookupByLibrary.simpleMessage("删除所选"),
     "deleteTip": m23,
     "desc": MessageLookupByLibrary.simpleMessage(
-      "基于ClashMeta的多平台代理客户端，简单易用，开源无广告。",
+      "基于 FlClash 深度定制的多平台代理客户端，简单易用，桌面版不带广告。",
     ),
     "destination": MessageLookupByLibrary.simpleMessage("目标地址"),
     "destinationGeoIP": MessageLookupByLibrary.simpleMessage("目标地理定位"),

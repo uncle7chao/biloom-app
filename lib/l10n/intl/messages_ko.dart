@@ -670,7 +670,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "deleteSelected": MessageLookupByLibrary.simpleMessage("Delete selected"),
     "deleteTip": m23,
     "desc": MessageLookupByLibrary.simpleMessage(
-      "ClashMeta 기반의 멀티 플랫폼 프록시 클라이언트로, 간편하게 사용할 수 있으며 오픈 소스이고 광고가 없습니다.",
+      "FlClash를 깊이 있게 커스터마이징한 멀티 플랫폼 프록시 클라이언트입니다. 간편하게 사용할 수 있으며 데스크톱 버전에는 광고가 없습니다.",
     ),
     "destination": MessageLookupByLibrary.simpleMessage("목적지"),
     "destinationGeoIP": MessageLookupByLibrary.simpleMessage("목적지 GeoIP"),

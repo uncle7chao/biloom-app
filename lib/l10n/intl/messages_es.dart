@@ -814,7 +814,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "deleteSelected": MessageLookupByLibrary.simpleMessage("Delete selected"),
     "deleteTip": m23,
     "desc": MessageLookupByLibrary.simpleMessage(
-      "Un cliente proxy multiplataforma basado en ClashMeta, sencillo de usar, de código abierto y sin anuncios.",
+      "Un cliente proxy multiplataforma, profundamente personalizado a partir de FlClash. Sencillo y fácil de usar, sin anuncios en la versión de escritorio.",
     ),
     "destination": MessageLookupByLibrary.simpleMessage("Destino"),
     "destinationGeoIP": MessageLookupByLibrary.simpleMessage(
