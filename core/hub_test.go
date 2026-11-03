@@ -419,7 +419,9 @@ func TestHandleValidateProxiesLeavesARunningProxysResolverInPlace(t *testing.T) 
 	if got[0] != "" {
 		t.Fatalf("easytier proxy reported %q", got[0])
 	}
-	if !strings.Contains(got[1], "/outside") || strings.Contains(got[1], "\x00") {
+	// Windows resolves the escaped name to a backslash path ("C:\outside"),
+	// so accept the platform separator when asserting the path leaks.
+	if !strings.Contains(got[1], string(filepath.Separator)+"outside") || strings.Contains(got[1], "\x00") {
 		t.Errorf("unsafe state dir reported %q, want the proxy's own name", got[1])
 	}
 	resolvers := dns.NewResolver(dns.Config{

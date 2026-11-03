@@ -16,6 +16,7 @@ import (
 	"github.com/metacubex/mihomo/config"
 	"github.com/metacubex/mihomo/constant"
 	cp "github.com/metacubex/mihomo/constant/provider"
+	"github.com/metacubex/mihomo/component/profile/cachefile"
 	"go.yaml.in/yaml/v3"
 )
 
@@ -271,6 +272,9 @@ func TestLoadSetupConfigReadsConfigYamlWithoutABase(t *testing.T) {
 	previous := constant.Path.HomeDir()
 	constant.SetHomeDir(home)
 	t.Cleanup(func() { constant.SetHomeDir(previous) })
+	// Windows cannot RemoveAll a TempDir while bbolt still holds cache.db
+	// open; close it best-effort last (cleanups run LIFO).
+	t.Cleanup(func() { _ = cachefile.Cache().Close() })
 	profile := "rules:\n  - MATCH,REJECT\n"
 	if err := os.WriteFile(filepath.Join(home, "config.yaml"), []byte(profile), 0o600); err != nil {
 		t.Fatalf("write config: %v", err)
@@ -291,6 +295,9 @@ func TestHandleGetProxyDefinitionReadsTheRunningConfig(t *testing.T) {
 	previous := constant.Path.HomeDir()
 	constant.SetHomeDir(home)
 	t.Cleanup(func() { constant.SetHomeDir(previous) })
+	// Windows cannot RemoveAll a TempDir while bbolt still holds cache.db
+	// open; close it best-effort last (cleanups run LIFO).
+	t.Cleanup(func() { _ = cachefile.Cache().Close() })
 	if err := os.WriteFile(filepath.Join(home, "config.yaml"), []byte(baseProfile), 0o600); err != nil {
 		t.Fatalf("write config: %v", err)
 	}
@@ -325,6 +332,9 @@ func TestHandleGetProxyDefinitionReadsAProviderProxyAsItsProviderBuildsIt(t *tes
 	previous := constant.Path.HomeDir()
 	constant.SetHomeDir(home)
 	t.Cleanup(func() { constant.SetHomeDir(previous) })
+	// Windows cannot RemoveAll a TempDir while bbolt still holds cache.db
+	// open; close it best-effort last (cleanups run LIFO).
+	t.Cleanup(func() { _ = cachefile.Cache().Close() })
 	const subscription = `proxies:
   - {name: a, type: socks5, server: 127.0.0.1, port: 1080}
   - {name: b, type: socks5, server: 127.0.0.2, port: 1080}
