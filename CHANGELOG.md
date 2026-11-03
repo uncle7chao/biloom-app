@@ -1,5 +1,16 @@
 # Changelog
 
+## v01.00.38 (2026-11-03)
+
+**Features**
+
+- **core** Upstream FlClash v0.9.2 merged: the full sync brings the upstream feature set onto BiLoom (new disclaimer page, runtime and tooling updates included), with 189 analyzer errors introduced by the merge fixed to green before shipping (a7ddda72)
+
+**Bug Fixes**
+
+- **ui** The upstream disclaimer page shipped with FlClash branding in all seven locales - every visible string now reads BiLoom (77 replacements, including the core process name BiLoomCore.exe), and the redundant dialog that asked users to retype a 43-character restatement of the disclaimer after tapping agree is removed: tapping agree now proceeds directly, since click-wrap consent already covers it (d2d1230a)
+- **ui** The "last update failed" red badge on profile cards was clipped to half its line: the card height formula did not reserve the badge row, which is shown or hidden per card while mainAxisExtent is uniform for all of them. The formula now always reserves the badge line height, so the badge renders in full whether visible or not (d2d1230a)
+
 ## v01.00.37 (2026-10-10)
 
 **Bug Fixes**
