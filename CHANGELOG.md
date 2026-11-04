@@ -1,5 +1,21 @@
 # Changelog
 
+## v01.00.39 (2026-11-04)
+
+**Features**
+
+- **android** Android gets a brand launch screen: the splash now paints in the BiLoom charcoal base with the centered B mark instead of the stock gray window background, and the brand mark ships as a checked-in SVG source (b571f504)
+
+**Bug Fixes**
+
+- **ui** Tapping back while a side panel or bottom sheet was open could dismiss the wrong layer or close the whole page: the route-level pop accounting that decides whether back is handled inside the page went stale after the merge. Pop handling now counts open back layers per route and re-evaluates on every layer change, so back first closes the panel and only then leaves the page (92ca39a0)
+- **windows** The helper service handshake failed silently: the registry key the helper writes its port under was still named after the old service, so the app could never read the port it needed. The key now matches the BiLoom helper service name (92ca39a0)
+- **ui** Restoring a maximized window to its narrowest width overflowed the profiles page header by 91px: the text-labeled update button did not fit. Below 480px the button now falls back to icon-only, keeping the entry while the layout stays intact (92ca39a0)
+- **tray** The tray delay-test entry appeared even when no hotkey was bound, contradicting the fork rule that tray shortcuts mirror hotkey bindings; it now only shows when a delay-test hotkey exists (92ca39a0)
+- **startup** Resuming a running core no longer re-pushes the whole config (which triggered a needless url-test burst): the startup path distinguishes resume from a real cold-start take-over again (92ca39a0)
+
+## v01.00.38 (2026-11-03)
+
 ## v01.00.38 (2026-11-03)
 
 **Features**
