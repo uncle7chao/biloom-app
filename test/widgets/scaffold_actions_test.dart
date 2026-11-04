@@ -1,5 +1,10 @@
 import 'package:fl_clash/ui/icons/icons.dart';
-import 'package:fl_clash/widgets/widgets.dart';
+import 'package:fl_clash/ui/models.dart';
+import 'package:fl_clash/ui/popup.dart';
+import 'package:fl_clash/ui/scaffold.dart';
+import 'package:fl_clash/ui/inherited.dart' as ui_sa show SheetProvider;
+import 'package:fl_clash/ui/sheet.dart' as ui_sa show SheetType;
+import 'package:fl_clash/widgets/widgets.dart' hide CommonPopupMenuItem, CommonScaffold;
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -240,15 +245,15 @@ void main() {
   });
 
   for (final (type, buttons) in [
-    (SheetType.bottomSheet, ['Close', 'Delay test']),
-    (SheetType.sideSheet, ['Close', 'Search', 'Delay test']),
+    (ui_sa.SheetType.bottomSheet, ['Close', 'Delay test']),
+    (ui_sa.SheetType.sideSheet, ['Close', 'Search', 'Delay test']),
   ]) {
     testWidgets('a ${type.name} leads with its close button, primary action '
         'or not', (tester) async {
       await tester.pumpWidget(
         TestApp(
           wrapInProviderScope: true,
-          child: SheetProvider(
+          child: ui_sa.SheetProvider(
             type: type,
             child: CommonScaffold(
               title: 'Sheet',

@@ -10,6 +10,9 @@ import 'package:fl_clash/state.dart';
 import 'package:fl_clash/views/profiles/custom/groups.dart';
 import 'package:fl_clash/views/profiles/custom/members.dart';
 import 'package:fl_clash/widgets/widgets.dart';
+import 'package:fl_clash/ui/dialog.dart' as ui_dialog;
+import 'package:fl_clash/ui/inherited.dart' as ui_inherited;
+import 'package:fl_clash/ui/list.dart' as ui_list;
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -132,7 +135,7 @@ Finder _bannerText(String text) => find.descendant(
 );
 
 Future<void> _dismissSaveBlocked(WidgetTester tester, String reason) async {
-  final dialog = find.byType(CommonDialog);
+  final dialog = find.byType(ui_dialog.CommonDialog);
   expect(
     find.descendant(
       of: dialog,
@@ -211,7 +214,10 @@ void main() {
         child: TestApp(
           child: SheetProvider(
             type: SheetType.page,
-            child: ProfileIdProvider(profileId: _profileId, child: view),
+            child: ui_inherited.ProfileIdProvider(
+              profileId: _profileId,
+              child: view,
+            ),
           ),
         ),
       ),
@@ -243,7 +249,7 @@ void main() {
   group('group members', () {
     Finder rowOf(String title) => find.ancestor(
       of: find.text(title),
-      matching: find.byType(DecorationListItem),
+      matching: find.byType(ui_list.DecorationListItem),
     );
 
     testWidgets('every member sits in one list that ends in an add row', (
@@ -730,7 +736,7 @@ void main() {
       await tester.pumpAndSettle();
       await _dismissSaveBlocked(tester, l.customIssueNoProxySource);
 
-      expect(find.byType(CommonDialog), findsNothing);
+      expect(find.byType(ui_dialog.CommonDialog), findsNothing);
       expect(find.byType(EditProxyGroupView), findsOneWidget);
       expect(_bannerText(l.customIssueNoProxySource), findsOneWidget);
     });

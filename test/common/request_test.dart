@@ -8,18 +8,6 @@ import 'package:fl_clash/common/constant.dart';
 import 'package:fl_clash/common/request.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-class _StalledHttpClient extends Fake implements HttpClient {
-  @override
-  Duration? connectionTimeout;
-
-  @override
-  String Function(Uri url)? findProxy;
-
-  @override
-  Future<HttpClientRequest> openUrl(String method, Uri url) =>
-      Completer<HttpClientRequest>().future;
-}
-
 class _HostAdapter implements HttpClientAdapter {
   _HostAdapter(this.byHost);
 
@@ -172,10 +160,17 @@ void main() {
   testWidgets('a stalled download fails at the shared download deadline', (
     tester,
   ) async {
-    late final Future<Response<String>> pending;
-    HttpOverrides.runZoned(() {
-      pending = Request().getTextResponseForUrl('http://127.0.0.1/stalled');
-    }, createHttpClient: (_) => _StalledHttpClient());
+    // Stall the response body (not the connection): the fork gives the
+    // connection phase its own 15s connectTimeout, and the shared download
+    // deadline is what governs the receive path.
+    final request = Request()
+      ..downloadDio.httpClientAdapter = _HostAdapter({
+        '127.0.0.1': () => ResponseBody(
+          StreamController<Uint8List>.broadcast().stream,
+          200,
+        ),
+      });
+    final pending = request.getTextResponseForUrl('http://127.0.0.1/stalled');
     var settled = false;
     final outcome = expectLater(
       pending.whenComplete(() => settled = true),

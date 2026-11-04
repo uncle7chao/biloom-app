@@ -33,7 +33,7 @@ void main() {
 
   ProviderContainer buildContainer() {
     final profile = Profile.normal();
-    final proxy = Proxy(name: _proxyName, type: 'Vless');
+    const proxy = Proxy(name: _proxyName, type: 'Vless');
     return ProviderContainer(
       overrides: [
         currentProfileIdProvider.overrideWithBuild((_, _) => profile.id),
@@ -64,7 +64,7 @@ void main() {
     await tester.pumpWidget(
       const TestApp(includeNavigatorKey: false, child: SizedBox.shrink()),
     );
-    final height = getItemHeight(ProxyCardType.shrink);
+    final height = getItemHeight(ProxyCardType.standard);
     await tester.pumpWidget(
       UncontrolledProviderScope(
         container: container,
@@ -74,12 +74,12 @@ void main() {
           child: SizedBox(
             width: width,
             height: height,
-            child: ProxyCard(
+            child: const ProxyCard(
               groupName: kPrimarySelectorGroupName,
               testUrl: null,
               proxy: Proxy(name: _proxyName, type: 'Vless'),
               groupType: GroupType.Selector,
-              type: ProxyCardType.shrink,
+              type: ProxyCardType.standard,
             ),
           ),
         ),

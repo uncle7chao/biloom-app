@@ -132,7 +132,20 @@ void main() {
 
       // 新版默认上游应当是境外 DoH —— 这条断言同时守住了「A 改动没被回退」。
       expect(find.textContaining('https://1.1.1.1/dns-query'), findsOneWidget);
+      // 默认配置不带 nameserver-policy，播种一条验证行会跟着配置渲染。
+      container
+          .read(patchClashConfigProvider.notifier)
+          .update(
+            (state) => state.copyWith(
+              dns: state.dns.copyWith(
+                nameserverPolicy: {'example.com': 'https://1.1.1.1/dns-query'},
+              ),
+            ),
+          );
+      await settle(tester);
+
       expect(find.text('Nameserver policy'), findsOneWidget);
+      expect(find.textContaining('example.com →'), findsOneWidget);
     });
   });
 
@@ -198,6 +211,8 @@ void main() {
     testWidgets('拿到 fake-ip 地址即判定已被内核接管', (tester) async {
       _resolve(['198.18.0.5']);
       await pumpView(tester);
+      // fork 默认 enhanced-mode 是 redirHost，判定只在 fake-ip 模式下成立。
+      await setDnsMode(tester, DnsMode.fakeIp);
       await connect(tester, tun: true);
 
       await runCheck(tester);
@@ -211,6 +226,7 @@ void main() {
       // 这正是「仅系统代理」下的真实结果：系统自己的查询没经过内核。
       _resolve(['93.184.216.34']);
       await pumpView(tester);
+      await setDnsMode(tester, DnsMode.fakeIp);
       await connect(tester, systemProxy: true);
 
       await runCheck(tester);
@@ -237,6 +253,7 @@ void main() {
     testWidgets('问不到任何解析器时与「未被接管」区分开', (tester) async {
       _failEverything();
       await pumpView(tester);
+      await setDnsMode(tester, DnsMode.fakeIp);
       await connect(tester, tun: true);
 
       await runCheck(tester);
@@ -251,6 +268,7 @@ void main() {
     testWidgets('接管方式一变，上一轮结论立刻作废', (tester) async {
       _resolve(['198.18.0.5']);
       await pumpView(tester);
+      await setDnsMode(tester, DnsMode.fakeIp);
       await connect(tester, systemProxy: true);
 
       await runCheck(tester);

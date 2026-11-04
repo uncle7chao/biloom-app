@@ -21,7 +21,86 @@ import 'package:fl_clash/views/profiles/custom/custom_proxies.dart';
 import 'package:fl_clash/views/profiles/custom/dialers.dart';
 import 'package:fl_clash/views/profiles/custom/groups.dart';
 import 'package:fl_clash/views/profiles/custom/rules.dart';
-import 'package:fl_clash/widgets/widgets.dart';
+import 'package:fl_clash/ui/input.dart' as ui_input;
+import 'package:fl_clash/ui/list.dart' as ui_list;
+import 'package:fl_clash/ui/ui.dart' hide CommonCheckBox;
+import 'package:fl_clash/widgets/widgets.dart' hide
+      ActivateBox,
+      AnimatedVisibility,
+      AppBarSearchStateBuilder,
+      BackLayerScope,
+      BaseScaffold,
+      BottomInsetScope,
+      CloseContainerActionCallback,
+      CloseContainerBuilder,
+      ClosedCallback,
+      CommonCard,
+      CommonChip,
+      CommonCircleLoading,
+      CommonDialog,
+      CommonExpandIcon,
+      CommonMinFilledButtonTheme,
+      CommonMinIconButtonTheme,
+      CommonPopupBox,
+      CommonPopupMenu,
+      CommonPopupMenuItem,
+      CommonPopupRoute,
+      CommonScaffold,
+      CommonScaffoldState,
+      CommonScrollBar,
+      DisabledMask,
+      EmojiText,
+      ExtendProps,
+      FadeBox,
+      FadeScaleBox,
+      FadeScaleEnterBox,
+      FadeScaleEnterTransition,
+      FadeSlideEnterTransition,
+      FadeThroughBox,
+      FloatingScrollbar,
+      Info,
+      InfoHeader,
+      InputDialog,
+      ItemPositionProvider,
+      KeepScope,
+      KeyedAnimatedList,
+      LineChart,
+      ListHeader,
+      ListItem,
+      MetaChip,
+      ModalSideSheetRoute,
+      MoreActionButton,
+      NullStatus,
+      NullStatusIllustration,
+      NullStatusSwitcher,
+      OnKeywordsUpdateCallback,
+      OpenContainer,
+      OpenContainerBuilder,
+      PageActivityScope,
+      PageFocusScope,
+      PageTraversalPolicy,
+      PagedSheet,
+      PagedSheetRoute,
+      PopupAnchorResolver,
+      PopupOpen,
+      ProfileIdProvider,
+      ProxyDecoratorProvider,
+      ScrollToEndBox,
+      SelectedDecorationListItem,
+      SettingTextCard,
+      SheetProps,
+      SheetProvider,
+      SheetType,
+      SideSheet,
+      SliderDefaultsM3,
+      TooltipLabel,
+      TooltipText,
+      commonProxyDecorator,
+      genActions,
+      generateSection,
+      showExtend,
+      showModalSideSheet,
+      showSheet;
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -366,7 +445,7 @@ void main() {
   ) async {
     await _pumpRules(tester);
 
-    await tester.tap(find.byType(CommonCheckBox).at(0));
+    await tester.tap(find.byType(ui_input.CommonCheckBox).at(0));
     await tester.pump();
 
     expect(find.byTooltip(AppLocalizations.current.copy), findsNothing);
@@ -386,7 +465,7 @@ void main() {
   ) async {
     await _pumpProxyGroups(tester);
 
-    final rows = find.byType(DecorationListItem);
+    final rows = find.byType(ui_list.DecorationListItem);
     expect(rows, findsNWidgets(3));
     final color = Theme.of(
       tester.element(rows.first),
@@ -564,7 +643,7 @@ void main() {
 
     testWidgets('a row only drags by its handle in sort mode', (tester) async {
       final notifier = await _pumpProxyGroups(tester);
-      final rowHeight = tester.getSize(find.byType(DecorationListItem).first);
+      final rowHeight = tester.getSize(find.byType(ui_list.DecorationListItem).first);
 
       final pressed = await tester.startGesture(
         tester.getCenter(find.text('Group 0')),
@@ -1077,7 +1156,7 @@ void main() {
     await tester.pumpAndSettle();
     Finder row(String name) => find.ancestor(
       of: find.text(name),
-      matching: find.byType(DecorationListItem),
+      matching: find.byType(ui_list.DecorationListItem),
     );
     final handle = find.descendant(
       of: row('provider'),

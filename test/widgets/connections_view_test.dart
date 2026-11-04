@@ -7,7 +7,7 @@ import 'package:fl_clash/providers/core.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/views/connection/connections.dart';
 import 'package:fl_clash/features/features.dart';
-import 'package:fl_clash/widgets/widgets.dart';
+import 'package:fl_clash/ui/ui.dart' as ui_cv show PageActivityScope;
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -62,7 +62,7 @@ void main() {
       UncontrolledProviderScope(
         container: container,
         child: _TestApp(
-          child: PageActivityScope(
+          child: ui_cv.PageActivityScope(
             isActive: isPageActive,
             child: ConnectionsView(connectionsReader: connectionsReader),
           ),
@@ -173,7 +173,7 @@ void main() {
       UncontrolledProviderScope(
         container: container,
         child: _TestApp(
-          child: PageActivityScope(
+          child: ui_cv.PageActivityScope(
             isActive: true,
             child: ConnectionsView(connectionsReader: readConnections),
           ),
@@ -193,7 +193,7 @@ void main() {
       UncontrolledProviderScope(
         container: container,
         child: _TestApp(
-          child: PageActivityScope(
+          child: ui_cv.PageActivityScope(
             isActive: false,
             child: ConnectionsView(connectionsReader: readConnections),
           ),

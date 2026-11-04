@@ -125,7 +125,9 @@ void main() {
     });
 
     test('unwraps the url of an install-config link for every scheme', () {
-      for (final scheme in ['clash', 'clashmeta', 'flclash']) {
+      // fork 品牌化：flclash:// 已弃用，协议族是 protocolSchemes
+      // （clash / clashmeta / biloom）。
+      for (final scheme in ['clash', 'clashmeta', 'biloom']) {
         expect(
           profileUrlFromQrCodes([
             '$scheme://install-config?url=https%3A%2F%2Fexample.com%2Fa.yaml',
@@ -164,7 +166,7 @@ void main() {
       expect(
         profileUrlFromQrCodes([
           'plain text',
-          'flclash://install-config?url=https://example.com/first.yaml',
+          'biloom://install-config?url=https://example.com/first.yaml',
           'https://example.com/second.yaml',
         ]),
         'https://example.com/first.yaml',

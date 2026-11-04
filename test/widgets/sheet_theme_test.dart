@@ -1,5 +1,9 @@
 import 'package:fl_clash/providers/app.dart';
-import 'package:fl_clash/widgets/widgets.dart';
+import 'package:fl_clash/ui/inherited.dart' as ui_st show SheetProvider;
+import 'package:fl_clash/ui/scaffold.dart' as ui_st show CommonScaffold;
+import 'package:fl_clash/ui/sheet.dart';
+import 'package:fl_clash/widgets/widgets.dart'
+    hide CommonScaffold, SheetType, showSheet;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
@@ -33,7 +37,7 @@ Future<ValueNotifier<ThemeMode>> _openFromPage(
           theme: _theme(Brightness.light),
           darkTheme: _theme(Brightness.dark),
           themeMode: themeMode,
-          child: CommonScaffold(
+          child: ui_st.CommonScaffold(
             title: 'Page',
             body: Builder(
               builder: (context) => TextButton(
@@ -76,7 +80,10 @@ void main() {
         open: (context) =>
             show<void>(context: context, builder: (_) => const Text('sheet')),
       );
-      expect(SheetProvider.of(tester.element(find.text('sheet')))?.type, type);
+      expect(
+        ui_st.SheetProvider.of(tester.element(find.text('sheet')))?.type,
+        type,
+      );
       expect(_sheetColor(tester), isNot(darkSheetColor));
 
       mode.value = ThemeMode.dark;

@@ -13,6 +13,7 @@ import 'package:fl_clash/state.dart';
 import 'package:fl_clash/ui/icons/icons.dart';
 import 'package:fl_clash/views/proxies/providers.dart';
 import 'package:fl_clash/widgets/widgets.dart';
+import 'package:fl_clash/ui/ui.dart' as ui_pv;
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -215,9 +216,9 @@ void main() {
     ]);
     await pump(tester, container);
 
-    expect(find.byType(ListHeader), findsOne);
+    expect(find.byType(ui_pv.ListHeader), findsOne);
     expect(
-      find.widgetWithText(ListHeader, currentAppLocalizations.providers),
+      find.widgetWithText(ui_pv.ListHeader, currentAppLocalizations.providers),
       findsOne,
     );
     expect(find.text('proxy-a'), findsOne);
@@ -283,7 +284,7 @@ void main() {
     ]) {
       final row = find.ancestor(
         of: find.text(name),
-        matching: find.byType(DecorationListItem),
+        matching: find.byType(ui_pv.DecorationListItem),
       );
       final subtitle = find.descendant(of: row, matching: find.text(count));
       final time = find.descendant(of: row, matching: find.text(updated));
@@ -300,7 +301,7 @@ void main() {
         moreOrLessEquals(tester.getCenter(row).dy, epsilon: 1),
       );
     }
-    expect(find.byType(TonalChip), findsNothing);
+    expect(find.byType(ui_pv.TonalChip), findsNothing);
     expect(tester.takeException(), null);
   });
 
@@ -323,7 +324,7 @@ void main() {
     final l10n = currentAppLocalizations;
     Finder rowOf(String name) => find.ancestor(
       of: find.text(name),
-      matching: find.byType(DecorationListItem),
+      matching: find.byType(ui_pv.DecorationListItem),
     );
     final metered = rowOf('metered');
     final usage = find.descendant(
@@ -337,7 +338,7 @@ void main() {
     expect(
       find.descendant(
         of: metered,
-        matching: find.widgetWithText(TonalChip, '128'),
+        matching: find.widgetWithText(ui_pv.TonalChip, '128'),
       ),
       findsOne,
     );
@@ -364,7 +365,7 @@ void main() {
       findsOne,
     );
     expect(
-      find.descendant(of: unmetered, matching: find.byType(TonalChip)),
+      find.descendant(of: unmetered, matching: find.byType(ui_pv.TonalChip)),
       findsNothing,
     );
     expect(find.byType(LinearProgressIndicator), findsOne);
@@ -443,7 +444,7 @@ void main() {
     final container = containerFor(tester, [provider]);
     await pump(tester, container);
 
-    expect(find.byType(CommonCircleLoading), findsNothing);
+    expect(find.byType(ui_pv.CommonCircleLoading), findsNothing);
 
     final updating = container.read(updatingKeysProvider.notifier);
     updating.start(provider.updatingKey);
@@ -451,7 +452,7 @@ void main() {
     await rightClick(tester, find.text('http-one'));
     await settleTrailing(tester);
 
-    expect(find.byType(CommonCircleLoading), findsOne);
+    expect(find.byType(ui_pv.CommonCircleLoading), findsOne);
     expect(find.byType(CommonPopupMenu), findsNothing);
   });
 
@@ -477,12 +478,12 @@ void main() {
 
     final providerRow = find.ancestor(
       of: find.text(offscreenProvider.name),
-      matching: find.byType(DecorationListItem),
+      matching: find.byType(ui_pv.DecorationListItem),
     );
     expect(
       find.descendant(
         of: providerRow,
-        matching: find.byType(CommonCircleLoading),
+        matching: find.byType(ui_pv.CommonCircleLoading),
       ),
       findsOneWidget,
     );
@@ -515,16 +516,16 @@ void main() {
     await tester.tap(find.byGlyph(AppGlyphs.sync));
     await tester.pump();
 
-    final header = find.byType(ListHeader);
+    final header = find.byType(ui_pv.ListHeader);
     final pendingRow = find.ancestor(
       of: find.text('proxy-a'),
-      matching: find.byType(DecorationListItem),
+      matching: find.byType(ui_pv.DecorationListItem),
     );
     for (final pending in [header, pendingRow]) {
       expect(
         find.descendant(
           of: pending,
-          matching: find.byType(CommonCircleLoading),
+          matching: find.byType(ui_pv.CommonCircleLoading),
         ),
         findsOne,
       );
@@ -536,7 +537,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.pump(const Duration(milliseconds: 700));
 
-    expect(find.byType(CommonCircleLoading), findsNothing);
+    expect(find.byType(ui_pv.CommonCircleLoading), findsNothing);
     expect(find.byGlyph(AppGlyphs.sync), findsOne);
     verify(() => core.updateExternalProvider('proxy-a')).called(1);
     verify(() => core.updateExternalProvider('rule-a')).called(1);
@@ -777,18 +778,18 @@ void main() {
     final container = containerFor(tester, [provider]);
     await pump(tester, container);
 
-    expect(find.byType(CommonCircleLoading), findsNothing);
+    expect(find.byType(ui_pv.CommonCircleLoading), findsNothing);
 
     await openMenu(tester, 'http-one');
     await tester.tap(find.text(currentAppLocalizations.sync));
     await settleTrailing(tester);
 
-    expect(find.byType(CommonCircleLoading), findsOne);
+    expect(find.byType(ui_pv.CommonCircleLoading), findsOne);
 
     completer.complete('');
     await tester.pumpAndSettle();
     await tester.pump(const Duration(milliseconds: 700));
 
-    expect(find.byType(CommonCircleLoading), findsNothing);
+    expect(find.byType(ui_pv.CommonCircleLoading), findsNothing);
   });
 }

@@ -1,3 +1,4 @@
+import 'package:fl_clash/ui/inherited.dart' as ui_ae show ItemPositionProvider;
 import 'package:fl_clash/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -15,7 +16,7 @@ void main() {
                 height: 40,
                 child: Builder(
                   builder: (context) => Text(
-                    '$item ${ItemPositionProvider.of(context)?.position.name}',
+                    '$item ${ui_ae.ItemPositionProvider.of(context)?.position.name}',
                   ),
                 ),
               ),

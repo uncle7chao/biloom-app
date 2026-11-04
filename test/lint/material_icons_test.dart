@@ -2,6 +2,8 @@ import 'dart:io';
 
 import 'package:test/test.dart';
 
+import 'upstream_snapshot.dart';
+
 final _materialIcon = RegExp(r'\b(?:Animated)?Icons\.\w+');
 
 void main() {
@@ -11,7 +13,8 @@ void main() {
     for (final entity in Directory('lib').listSync(recursive: true)) {
       if (entity is! File ||
           !entity.path.endsWith('.dart') ||
-          entity.path.contains('/generated/')) {
+          entity.path.contains('/generated/') ||
+          isUpstreamSnapshot(entity.path)) {
         continue;
       }
       final lines = entity.readAsLinesSync();

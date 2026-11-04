@@ -8,6 +8,9 @@ import 'package:fl_clash/providers/database.dart';
 import 'package:fl_clash/providers/state.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/ui/icons/icons.dart';
+// The access view renders the ui CommonPopupMenu (fork keeps both
+// implementations side by side).
+import 'package:fl_clash/ui/popup.dart' as ui_ax show CommonPopupMenu;
 import 'package:fl_clash/views/access.dart';
 import 'package:fl_clash/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
@@ -178,7 +181,7 @@ void main() {
       await pumpAccessView(tester);
       final l10n = AppLocalizations.current;
       Finder inMenu(Finder finder) =>
-          find.descendant(of: find.byType(CommonPopupMenu), matching: finder);
+          find.descendant(of: find.byType(ui_ax.CommonPopupMenu), matching: finder);
 
       await openBarMenu(tester);
       await tester.tap(inMenu(find.text(l10n.settings)).last);
@@ -190,7 +193,7 @@ void main() {
       final state = container.read(accessControlStateProvider);
       expect(state.isFilterSystemApp, isFalse);
       expect(state.isFilterNonInternetApp, isTrue);
-      expect(find.byType(CommonPopupMenu), findsNothing);
+      expect(find.byType(ui_ax.CommonPopupMenu), findsNothing);
       expect(find.text('Settings'), findsOneWidget);
 
       await teardownView(tester);
@@ -201,7 +204,7 @@ void main() {
       await pumpAccessView(tester);
       final l10n = AppLocalizations.current;
       Finder inMenu(Finder finder) =>
-          find.descendant(of: find.byType(CommonPopupMenu), matching: finder);
+          find.descendant(of: find.byType(ui_ax.CommonPopupMenu), matching: finder);
 
       await openBarMenu(tester);
       await tester.tap(inMenu(find.text(l10n.settings)).last);
@@ -399,7 +402,7 @@ void main() {
       await pumpAccessView(tester);
       final l10n = AppLocalizations.current;
       Finder inMenu(Finder finder) =>
-          find.descendant(of: find.byType(CommonPopupMenu), matching: finder);
+          find.descendant(of: find.byType(ui_ax.CommonPopupMenu), matching: finder);
       Finder checkOn(String label) => inMenu(
         find.descendant(
           of: find.ancestor(of: find.text(label), matching: find.byType(Row)),

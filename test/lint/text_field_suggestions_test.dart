@@ -13,10 +13,13 @@ void main() {
     final offenders = <String>[];
 
     for (final entity in Directory('lib').listSync(recursive: true)) {
-      if (entity is! File ||
-          !entity.path.endsWith('.dart') ||
-          entity.path.contains('/generated/') ||
-          _secretFields.contains(entity.path)) {
+      if (entity is! File || !entity.path.endsWith('.dart')) {
+        continue;
+      }
+      // `Directory.listSync` yields `\`-separated paths on Windows while
+      // `_secretFields` is written POSIX-style; normalize before comparing.
+      final path = entity.path.replaceAll(r'\', '/');
+      if (path.contains('/generated/') || _secretFields.contains(path)) {
         continue;
       }
       final lines = entity.readAsLinesSync();

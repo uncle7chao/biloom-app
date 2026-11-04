@@ -15,6 +15,8 @@ import 'package:fl_clash/providers/routed_probe.dart';
 import 'package:fl_clash/providers/service_status.dart';
 import 'package:fl_clash/providers/state.dart';
 import 'package:fl_clash/ui/icons/icons.dart';
+import 'package:fl_clash/ui/list.dart' as ui_list;
+import 'package:fl_clash/ui/scaffold.dart' as ui_scaffold;
 import 'package:fl_clash/views/dashboard/layout.dart';
 import 'package:fl_clash/views/dashboard/widget_registry.dart';
 import 'package:fl_clash/views/dashboard/widgets/card.dart';
@@ -487,7 +489,15 @@ void main() {
         await tester.tap(find.byType(ServiceStatusCard));
         await tester.pumpAndSettle();
         final sheet = find.byType(ServiceStatusSheet);
-        double height() => tester.getSize(find.byType(PagedSheet)).height;
+        // fork 的 SnapSheet 用 paint 位移实现 detent 高度，量裁剪框顶边推出可见高度。
+        double height() {
+          final clip = find
+              .byWidgetPredicate(
+                (widget) => widget.runtimeType.toString() == 'ClipRSuperellipse',
+              )
+              .first;
+          return tester.view.physicalSize.height - tester.getTopLeft(clip).dy;
+        }
 
         await tester.tap(
           find.descendant(of: sheet, matching: find.text('203.0.113.7')).first,
@@ -528,7 +538,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.byType(ServiceStatusCard));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('\u{1F1FA}\u{1F1F8}').first);
+      await tester.tap(find.text('203.0.113.7').first);
       await tester.pump();
       await tester.pump(commonDuration * 2);
       final height = tester
@@ -536,7 +546,7 @@ void main() {
             find
                 .ancestor(
                   of: find.text('Outbound IP'),
-                  matching: find.byType(CommonScaffold),
+                  matching: find.byType(ui_scaffold.CommonScaffold),
                 )
                 .first,
           )
@@ -792,10 +802,10 @@ void main() {
     await tester.tap(find.byType(ServiceStatusCard));
     await tester.pumpAndSettle();
 
-    final rows = tester.widgetList<DecorationListItem>(
+    final rows = tester.widgetList<ui_list.DecorationListItem>(
       find.descendant(
         of: find.byType(ServiceStatusSheet),
-        matching: find.byType(DecorationListItem),
+        matching: find.byType(ui_list.DecorationListItem),
       ),
     );
     expect(rows, isNotEmpty);
@@ -815,7 +825,7 @@ void main() {
   }
 
   Finder switchOf(ServiceTarget target) => find.descendant(
-    of: find.widgetWithText(DecorationListItem, target.label),
+    of: find.widgetWithText(ui_list.DecorationListItem, target.label),
     matching: find.byType(CommonSwitch),
   );
 
@@ -900,7 +910,7 @@ void main() {
     await openManage(tester);
 
     Finder marked(ServiceTarget target) => find.descendant(
-      of: find.widgetWithText(DecorationListItem, target.label),
+      of: find.widgetWithText(ui_list.DecorationListItem, target.label),
       matching: find.text('Shown on the dashboard'),
     );
     for (final target in [ServiceTarget.google, ServiceTarget.youtube]) {
@@ -979,7 +989,7 @@ void main() {
 
     expect(find.byGlyph(AppGlyphs.dragHandle), findsNothing);
     final row = find.widgetWithText(
-      DecorationListItem,
+      ui_list.DecorationListItem,
       ServiceTarget.google.label,
     );
     final rowHeight = tester.getSize(row).height;

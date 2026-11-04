@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 
+import 'upstream_snapshot.dart';
+
 const _roots = ['lib', 'test', 'tool', 'plugins'];
 
 const _forbiddenImports = <String, String>{
@@ -45,7 +47,7 @@ void main() {
           continue;
         }
         final relative = _posix(p.relative(entity.path));
-        if (_isGenerated(relative)) {
+        if (_isGenerated(relative) || isUpstreamSnapshot(relative)) {
           continue;
         }
         final lines = entity.readAsLinesSync();

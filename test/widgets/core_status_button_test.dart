@@ -2,8 +2,8 @@ import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/ui/icons/icons.dart';
+import 'package:fl_clash/ui/ui.dart' as ui_cb;
 import 'package:fl_clash/views/dashboard/widgets/core_status_button.dart';
-import 'package:fl_clash/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -33,26 +33,26 @@ void main() {
       await tester.pump();
 
       expect(find.byGlyph(AppGlyphs.check), findsOneWidget);
-      expect(find.byType(CommonCircleLoading), findsNothing);
+      expect(find.byType(ui_cb.CommonCircleLoading), findsNothing);
 
       container.read(coreStatusProvider.notifier).value = CoreStatus.connecting;
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 400));
-      expect(find.byType(CommonCircleLoading), findsOneWidget);
+      expect(find.byType(ui_cb.CommonCircleLoading), findsOneWidget);
       expect(find.byGlyph(AppGlyphs.check), findsNothing);
 
       container.read(coreStatusProvider.notifier).value = CoreStatus.connected;
       await tester.pump();
-      expect(find.byType(CommonCircleLoading), findsOneWidget);
+      expect(find.byType(ui_cb.CommonCircleLoading), findsOneWidget);
       expect(find.byGlyph(AppGlyphs.check), findsNothing);
 
       await tester.pump(const Duration(milliseconds: 199));
-      expect(find.byType(CommonCircleLoading), findsOneWidget);
+      expect(find.byType(ui_cb.CommonCircleLoading), findsOneWidget);
 
       await tester.pump(const Duration(milliseconds: 1));
       await tester.pump(const Duration(milliseconds: 400));
       expect(find.byGlyph(AppGlyphs.check), findsOneWidget);
-      expect(find.byType(CommonCircleLoading), findsNothing);
+      expect(find.byType(ui_cb.CommonCircleLoading), findsNothing);
 
       await tester.pump(const Duration(seconds: 1));
       expect(find.byGlyph(AppGlyphs.check), findsOneWidget);
@@ -82,7 +82,7 @@ void main() {
       container.read(coreStatusProvider.notifier).value = CoreStatus.connecting;
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 400));
-      expect(find.byType(CommonCircleLoading), findsOneWidget);
+      expect(find.byType(ui_cb.CommonCircleLoading), findsOneWidget);
 
       container.read(coreStatusProvider.notifier).value =
           CoreStatus.disconnected;
@@ -91,11 +91,11 @@ void main() {
 
       await tester.pump(const Duration(milliseconds: 400));
       expect(find.byGlyph(AppGlyphs.refresh), findsOneWidget);
-      expect(find.byType(CommonCircleLoading), findsNothing);
+      expect(find.byType(ui_cb.CommonCircleLoading), findsNothing);
 
       await tester.pump(const Duration(seconds: 1));
       expect(find.byGlyph(AppGlyphs.refresh), findsOneWidget);
-      expect(find.byType(CommonCircleLoading), findsNothing);
+      expect(find.byType(ui_cb.CommonCircleLoading), findsNothing);
     },
   );
 
@@ -137,7 +137,7 @@ void main() {
     await tester.pump(const Duration(seconds: 1));
     expect(find.text('Connecting…'), findsNothing);
     expect(find.byType(IconButton), findsOneWidget);
-    expect(find.byType(CommonCircleLoading), findsOneWidget);
+    expect(find.byType(ui_cb.CommonCircleLoading), findsOneWidget);
   });
 
   testWidgets('does not clip a connecting state longer than the hold', (
@@ -163,13 +163,13 @@ void main() {
     container.read(coreStatusProvider.notifier).value = CoreStatus.connecting;
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 700));
-    expect(find.byType(CommonCircleLoading), findsOneWidget);
+    expect(find.byType(ui_cb.CommonCircleLoading), findsOneWidget);
 
     container.read(coreStatusProvider.notifier).value = CoreStatus.connected;
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 400));
     expect(find.byGlyph(AppGlyphs.check), findsOneWidget);
-    expect(find.byType(CommonCircleLoading), findsNothing);
+    expect(find.byType(ui_cb.CommonCircleLoading), findsNothing);
 
     await tester.pump(const Duration(seconds: 1));
     expect(find.byGlyph(AppGlyphs.check), findsOneWidget);
@@ -200,20 +200,20 @@ void main() {
     container.read(coreStatusProvider.notifier).value = CoreStatus.connecting;
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 400));
-    expect(find.byType(CommonCircleLoading), findsOneWidget);
+    expect(find.byType(ui_cb.CommonCircleLoading), findsOneWidget);
     expect(find.byGlyph(AppGlyphs.refresh), findsNothing);
 
     container.read(coreStatusProvider.notifier).value = CoreStatus.connected;
     await tester.pump();
-    expect(find.byType(CommonCircleLoading), findsOneWidget);
+    expect(find.byType(ui_cb.CommonCircleLoading), findsOneWidget);
 
     await tester.pump(const Duration(milliseconds: 199));
-    expect(find.byType(CommonCircleLoading), findsOneWidget);
+    expect(find.byType(ui_cb.CommonCircleLoading), findsOneWidget);
 
     await tester.pump(const Duration(milliseconds: 1));
     await tester.pump(const Duration(milliseconds: 400));
     expect(find.byGlyph(AppGlyphs.check), findsOneWidget);
-    expect(find.byType(CommonCircleLoading), findsNothing);
+    expect(find.byType(ui_cb.CommonCircleLoading), findsNothing);
 
     await tester.pump(const Duration(seconds: 1));
     expect(find.byGlyph(AppGlyphs.check), findsOneWidget);

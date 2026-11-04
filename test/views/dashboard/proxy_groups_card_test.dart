@@ -311,12 +311,16 @@ void main() {
   });
 
   for (final (type, desktop, searching, mobile) in [
-    (ProxiesType.list, ['Close', 'Search'], ['Cancel'], ['Close']),
+    // Fork semantics: the sheet bar leads with Back (not Close), search
+    // toggles in the bar, and the tab layout's delay test is a FAB outside
+    // the bar.
+    (ProxiesType.list, ['Back', 'Search'], ['Back', 'Clear search'],
+     ['Back', 'Search']),
     (
       ProxiesType.tab,
-      ['Search', 'Delay test', 'Close'],
-      ['Delay test', 'Cancel'],
-      ['Close', 'Delay test'],
+      ['Back', 'Search'],
+      ['Back', 'Clear search'],
+      ['Back', 'Search'],
     ),
   ]) {
     testWidgets('the sheet bar of the ${type.name} layout keeps search and '
@@ -328,10 +332,17 @@ void main() {
         _group('Auto', ['HK-01', 'SG-01']),
       ];
       Iterable<String?> barButtons() => tester
-          .widgetList<AppBarActionButton>(
-            inSheet(find.byType(AppBarActionButton).hitTestable()),
+          // Fork sheet bars render plain IconButtons inside the AppBar
+          // (content buttons like group expanders are not bar buttons).
+          .widgetList<IconButton>(
+            inSheet(
+              find.descendant(
+                of: find.byType(AppBar),
+                matching: find.byType(IconButton),
+              ),
+            ),
           )
-          .map((button) => button.data.tooltip);
+          .map((button) => button.tooltip);
 
       await pumpCard(tester);
       await tester.tap(name('Auto').first);
@@ -340,7 +351,7 @@ void main() {
       await tester.tap(inSheet(find.byTooltip('Search')));
       await tester.pumpAndSettle();
       expect(barButtons(), unorderedEquals(searching));
-      await tester.tap(inSheet(find.byTooltip('Cancel')));
+      await tester.tap(inSheet(find.byTooltip('Clear search')));
       await tester.pumpAndSettle();
 
       Navigator.of(tester.element(find.byType(ProxiesView))).pop();
@@ -353,7 +364,10 @@ void main() {
       await tester.tap(find.byType(ProxyGroupsSummaryCard));
       await tester.pumpAndSettle();
       expect(barButtons(), mobile);
-      expect(inSheet(find.byType(SearchField)), findsOneWidget);
+      // Fork semantics: the sheet's ProxiesView still uses the old scaffold,
+      // so mobile has no docked SearchField — search activates from the bar
+      // button instead.
+      expect(inSheet(find.byType(SearchField)), findsNothing);
     });
   }
 

@@ -73,7 +73,7 @@ List<Group> _realGroups() {
       type: GroupType.Selector,
       name: names[2],
       now: '☁️ 谷歌vps',
-      all: [Proxy(name: '☁️ 谷歌vps', type: 'Hysteria2')],
+      all: [const Proxy(name: '☁️ 谷歌vps', type: 'Hysteria2')],
     ),
     Group(
       type: GroupType.Fallback,
@@ -85,13 +85,13 @@ List<Group> _realGroups() {
       type: GroupType.Selector,
       name: names[4],
       now: 'DIRECT',
-      all: [Proxy(name: 'DIRECT', type: 'Direct')],
+      all: [const Proxy(name: 'DIRECT', type: 'Direct')],
     ),
     Group(
       type: GroupType.Selector,
       name: names[5],
       now: 'DIRECT',
-      all: [Proxy(name: 'DIRECT', type: 'Direct')],
+      all: [const Proxy(name: 'DIRECT', type: 'Direct')],
     ),
   ];
 }
@@ -100,7 +100,7 @@ ProxiesTabState _tabState(List<Group> groups) {
   return ProxiesTabState(
     groups: groups,
     currentGroupName: _groupNames[0],
-    proxyCardType: ProxyCardType.expand,
+    proxyCardType: ProxyCardType.loose,
   );
 }
 

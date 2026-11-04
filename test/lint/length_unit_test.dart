@@ -2,6 +2,8 @@ import 'dart:io';
 
 import 'package:test/test.dart';
 
+import 'upstream_snapshot.dart';
+
 final _pxLength = RegExp(r'\b\d+(?:\.\d+)?\s?px\b', caseSensitive: false);
 
 void main() {
@@ -13,7 +15,8 @@ void main() {
         if (entity is! File ||
             !entity.path.endsWith('.dart') ||
             entity.path.endsWith('.g.dart') ||
-            entity.path.contains('/generated/')) {
+            entity.path.contains('/generated/') ||
+            isUpstreamSnapshot(entity.path)) {
           continue;
         }
         final lines = entity.readAsLinesSync();

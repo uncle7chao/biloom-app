@@ -12,7 +12,10 @@ import 'package:fl_clash/state.dart';
 import 'package:fl_clash/views/font_family.dart';
 import 'package:fl_clash/views/theme.dart';
 import 'package:fl_clash/views/theme_preview.dart';
-import 'package:fl_clash/widgets/widgets.dart';
+import 'package:fl_clash/ui/inherited.dart' as ui_th show SheetProvider;
+import 'package:fl_clash/ui/sheet.dart' as ui_th show SheetType;
+import 'package:fl_clash/ui/null_status.dart';
+import 'package:fl_clash/widgets/widgets.dart' hide NullStatusIllustration;
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -82,13 +85,15 @@ void main() {
           widget is Semantics && widget.properties.label == Color(color).hex,
     );
 
-    testWidgets('starts on blue among the system colors', (tester) async {
+    testWidgets('starts on the brand color among the system colors', (
+      tester,
+    ) async {
       container
           .read(themeSettingProvider.notifier)
           .update((_) => defaultThemeProps);
       await pumpThemeView(tester);
 
-      expect(readTheme().primaryColor, 0xFF007AFF);
+      expect(readTheme().primaryColor, defaultPrimaryColor);
       for (final color in defaultPrimaryColors) {
         expect(swatch(color), findsOneWidget);
       }
@@ -170,16 +175,16 @@ void main() {
       tester,
     ) async {
       await pumpThemeView(tester);
-      await tester.tap(swatch(0xFF007AFF));
+      await tester.tap(swatch(0xFFFFCC00));
       await tester.pumpAndSettle();
       final count = readTheme().primaryColors.length;
 
-      await editColor(tester, 0xFFCB30E0, '007AFF');
+      await editColor(tester, 0xFFCB30E0, 'FFCC00');
 
       expect(readTheme().primaryColors, hasLength(count - 1));
       expect(readTheme().primaryColors, isNot(contains(0xFFCB30E0)));
-      expect(readTheme().primaryColor, 0xFF007AFF);
-      expect(swatch(0xFF007AFF), findsOneWidget);
+      expect(readTheme().primaryColor, 0xFFFFCC00);
+      expect(swatch(0xFFFFCC00), findsOneWidget);
     });
 
     testWidgets('adds a custom color once and selects it', (tester) async {
@@ -396,8 +401,9 @@ void main() {
 
       await openFonts(tester);
       expect(
-        SheetProvider.of(tester.element(find.byType(FontFamilyView)))?.type,
-        SheetType.sideSheet,
+        ui_th.SheetProvider.of(tester.element(find.byType(FontFamilyView)))
+            ?.type,
+        ui_th.SheetType.sideSheet,
       );
       expect(inPage('Installed fonts'), findsOneWidget);
       expect(previewFamilyOf(tester, 'Beta Serif'), 'Beta Serif');

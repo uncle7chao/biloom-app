@@ -2,7 +2,9 @@ import 'dart:math' as math;
 
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/ui/icons/icons.dart';
-import 'package:fl_clash/widgets/widgets.dart';
+import 'package:fl_clash/ui/popup.dart';
+import 'package:fl_clash/widgets/widgets.dart' hide CommonPopupMenuItem;
+import 'package:fl_clash/ui/ui.dart' as ui_scm;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
@@ -37,7 +39,7 @@ class _HarnessState extends State<_Harness> {
             onPressed: () => widget.pressed.add('delete $item'),
           ),
         ],
-        child: DecorationListItem(
+        child: ui_scm.DecorationListItem(
           title: Text(item),
           trailing: const GlyphIcon(AppGlyphs.info),
           onPressed: () => widget.pressed.add(item),
@@ -259,7 +261,7 @@ void main() {
                 sorting: value,
                 child: const SortableItem(
                   index: 0,
-                  child: DecorationListItem(
+                  child: ui_scm.DecorationListItem(
                     title: Text('a'),
                     trailing: GlyphIcon(AppGlyphs.info),
                   ),

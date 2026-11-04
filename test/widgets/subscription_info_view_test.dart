@@ -2,6 +2,7 @@ import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/widgets/widgets.dart';
+import 'package:fl_clash/ui/ui.dart' as ui_si;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -119,6 +120,6 @@ void main() {
     expect(find.text(appLocalizations.expireTime), findsOneWidget);
     expect(find.text('3KB'), findsOneWidget);
     expect(find.text('1GB'), findsOneWidget);
-    expect(find.byType(DecorationListItem), findsNWidgets(3));
+    expect(find.byType(ui_si.DecorationListItem), findsNWidgets(3));
   });
 }

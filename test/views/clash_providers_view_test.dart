@@ -12,6 +12,7 @@ import 'package:fl_clash/state.dart';
 import 'package:fl_clash/pages/editor.dart';
 import 'package:fl_clash/views/config/providers.dart';
 import 'package:fl_clash/widgets/widgets.dart';
+import 'package:fl_clash/ui/ui.dart' as ui_pv;
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -361,7 +362,7 @@ void main() {
     expect(find.text('classical'), findsOneWidget);
     expect(find.text('Local'), findsOneWidget);
 
-    await rightClick(tester, find.byType(DecorationListItem));
+    await rightClick(tester, find.byType(ui_pv.DecorationListItem));
     await tester.pumpAndSettle();
     expect(find.text('Edit'), findsOneWidget);
     expect(find.text('Sync'), findsNothing);
@@ -398,7 +399,7 @@ void main() {
     expect(find.text('domain'), findsOneWidget);
     expect(find.text('Remote'), findsOneWidget);
     expect(find.textContaining(appRules.url), findsNothing);
-    await rightClick(tester, find.byType(DecorationListItem));
+    await rightClick(tester, find.byType(ui_pv.DecorationListItem));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Sync'));
     await tester.pumpAndSettle();
@@ -456,7 +457,7 @@ void main() {
     );
     await tester.pump();
 
-    await rightClick(tester, find.byType(DecorationListItem));
+    await rightClick(tester, find.byType(ui_pv.DecorationListItem));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Options'));
     await tester.pumpAndSettle();
@@ -495,7 +496,7 @@ void main() {
     );
     await tester.pump();
 
-    await rightClick(tester, find.byType(DecorationListItem));
+    await rightClick(tester, find.byType(ui_pv.DecorationListItem));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Delete'));
     await tester.pumpAndSettle();
@@ -529,7 +530,7 @@ void main() {
       );
       await tester.pump();
 
-      await rightClick(tester, find.byType(DecorationListItem));
+      await rightClick(tester, find.byType(ui_pv.DecorationListItem));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Delete'));
       await tester.pumpAndSettle();

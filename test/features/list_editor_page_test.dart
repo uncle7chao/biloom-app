@@ -2,6 +2,8 @@ import 'package:fl_clash/features/form/form.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/providers/app.dart';
 import 'package:fl_clash/ui/icons/icons.dart';
+import 'package:fl_clash/ui/inherited.dart' as ui_le show SheetProvider;
+import 'package:fl_clash/ui/sheet.dart' as ui_le show SheetType;
 import 'package:fl_clash/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -49,7 +51,10 @@ class _EditorHarness extends StatelessWidget {
       ],
       child: inBottomSheet
           ? Material(
-              child: SheetProvider(type: SheetType.bottomSheet, child: page),
+              child: ui_le.SheetProvider(
+                type: ui_le.SheetType.bottomSheet,
+                child: page,
+              ),
             )
           : page,
     );
@@ -176,6 +181,7 @@ void main() {
     await tester.drag(find.text('item 0'), const Offset(0, -5000));
     await tester.pumpAndSettle();
 
+    // fork 的 docked search 常驻在 sheet 底部，无需先打开搜索层。
     expect(
       tester.getBottomLeft(find.widgetWithText(ListTile, 'item 39')).dy,
       lessThanOrEqualTo(tester.getTopLeft(find.byType(SearchField)).dy),

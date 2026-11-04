@@ -13,6 +13,9 @@ import 'package:fl_clash/views/profiles/profiles.dart';
 import 'package:fl_clash/views/profiles/custom/custom.dart';
 import 'package:fl_clash/views/profiles/custom/rules.dart';
 import 'package:fl_clash/views/proxies/providers.dart';
+import 'package:fl_clash/ui/card.dart' as ui_pc show CommonCard;
+import 'package:fl_clash/ui/null_status.dart' as ui_pc show NullStatus;
+import 'package:fl_clash/ui/paged_sheet.dart' as ui_pc show PagedSheetRoute;
 import 'package:fl_clash/widgets/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -495,15 +498,19 @@ void main() {
       findsNothing,
     );
     expect(
+      // The custom profile view renders ui CommonCards (fork keeps both
+      // implementations side by side).
       find.descendant(
         of: find.byType(CustomProfileView),
-        matching: find.byType(CommonCard),
+        matching: find.byType(ui_pc.CommonCard),
       ),
       findsWidgets,
     );
 
     await tester.pumpAndSettle();
-    expect(find.byType(NullStatus), findsOneWidget);
+    // The custom profile view renders the ui NullStatus (fork keeps both
+    // implementations side by side).
+    expect(find.byType(ui_pc.NullStatus), findsOneWidget);
     expect(find.byType(ProfileDetailSheet), findsNothing);
     final sheet = find.byType(NestedPagedSheet);
     expect(
@@ -512,13 +519,17 @@ void main() {
     );
 
     await tester.tap(
-      find.ancestor(of: find.text('Rule'), matching: find.byType(CommonCard)),
+      find.ancestor(
+        of: find.text('Rule'),
+        matching: find.byType(ui_pc.CommonCard),
+      ),
     );
     await tester.pumpAndSettle();
 
     expect(
+      // The custom profile flow pushes the ui PagedSheetRoute.
       ModalRoute.of(tester.element(find.byType(CustomRulesView))),
-      isA<PagedSheetRoute<void>>(),
+      isA<ui_pc.PagedSheetRoute<void>>(),
     );
   });
 

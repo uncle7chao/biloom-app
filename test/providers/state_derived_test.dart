@@ -44,11 +44,8 @@ void main() {
         all: [Proxy(name: 'Selected', type: 'Trojan', now: 'runtime')],
       ),
       const Group(name: 'Hidden', type: GroupType.Selector, hidden: true),
-      Group(
-        name: GroupName.GLOBAL.name,
-        type: GroupType.Selector,
-        hidden: true,
-      ),
+      // 内核回传的 GLOBAL 组不带 hidden 标记（与推导层的假设一致）。
+      Group(name: GroupName.GLOBAL.name, type: GroupType.Selector),
     ];
     container.read(groupsProvider.notifier).update((_) => groups);
     container
@@ -314,6 +311,8 @@ void main() {
         .read(proxiesStyleSettingProvider.notifier)
         .update((state) => state.copyWith(hideTimeoutProxies: true));
 
+    // 2026-09-27 拍板：策略组不再作为组成员卡片出现（filterGroupMemberCards），
+    // 所以 HK 即使被别的组收编也不会回到页签，列表只剩真实节点。
     expect(
       container
           .read(visibleGroupsStateProvider)
@@ -321,7 +320,7 @@ void main() {
           .single
           .all
           .map((proxy) => proxy.name),
-      ['a', 'HK'],
+      ['a'],
     );
   });
 
@@ -683,8 +682,10 @@ void main() {
               type: GroupType.Selector,
               hidden: false,
               all: [
-                Proxy(name: 'Leaf', type: 'Direct'),
-                Proxy(name: 'Idle', type: 'Direct'),
+                // 真实节点类型：内置出站不进页签成员卡（2026-09-27 拍板），
+                // 托盘延迟跟随同一份过滤后的分组。
+                Proxy(name: 'Leaf', type: 'ss'),
+                Proxy(name: 'Idle', type: 'ss'),
               ],
             ),
             Group(
@@ -692,7 +693,7 @@ void main() {
               type: GroupType.URLTest,
               hidden: false,
               testUrl: probeUrl,
-              all: [Proxy(name: 'Leaf', type: 'Direct')],
+              all: [Proxy(name: 'Leaf', type: 'ss')],
             ),
           ],
         );

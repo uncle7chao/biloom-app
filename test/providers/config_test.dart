@@ -169,7 +169,8 @@ void main() {
   group('ProxiesStyleSetting provider', () {
     test('default values', () {
       final value = container.read(proxiesStyleSettingProvider);
-      expect(value.type, ProxiesType.list);
+      // Fork 拍板：代理页默认页签布局（models/config.dart 默认 tab）。
+      expect(value.type, ProxiesType.tab);
     });
 
     test('can update state', () {

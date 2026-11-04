@@ -3,6 +3,7 @@ import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/views/profiles/profiles.dart';
 import 'package:fl_clash/widgets/widgets.dart';
+import 'package:fl_clash/ui/ui.dart' as ui_pr;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -47,7 +48,7 @@ void main() {
     return tester
         .widgetList<Text>(
           find.descendant(
-            of: find.byType(DecorationListItem),
+            of: find.byType(ui_pr.DecorationListItem),
             matching: find.byType(Text),
           ),
         )

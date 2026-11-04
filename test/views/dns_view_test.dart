@@ -8,6 +8,9 @@ import 'package:fl_clash/providers/config.dart';
 import 'package:fl_clash/providers/database.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/views/config/dns.dart';
+// The dns view renders the ui ListHeader (fork keeps both implementations
+// side by side).
+import 'package:fl_clash/ui/list.dart' as ui_dv show ListHeader;
 import 'package:fl_clash/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -348,7 +351,7 @@ void main() {
 
       final l = currentAppLocalizations;
       double header(String title) =>
-          tester.getTopLeft(find.widgetWithText(ListHeader, title)).dy;
+          tester.getTopLeft(find.widgetWithText(ui_dv.ListHeader, title)).dy;
       final headers = [
         l.options,
         'Fake-IP',

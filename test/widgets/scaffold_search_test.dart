@@ -2,7 +2,10 @@ import 'dart:async';
 
 import 'package:fl_clash/providers/app.dart';
 import 'package:fl_clash/ui/icons/icons.dart';
-import 'package:fl_clash/widgets/widgets.dart';
+import 'package:fl_clash/ui/models.dart';
+import 'package:fl_clash/ui/inherited.dart' as ui_ss show PageActivityScope;
+import 'package:fl_clash/ui/scaffold.dart';
+import 'package:fl_clash/widgets/widgets.dart' hide CommonScaffold;
 import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -106,9 +109,12 @@ void main() {
     await tester.pumpWidget(
       TestApp(
         wrapInProviderScope: true,
-        child: PageActivityScope(
+        child: ui_ss.PageActivityScope(
           isActive: false,
-          child: _page(onSearch: searches.add),
+          child: PageActivityScope(
+            isActive: false,
+            child: _page(onSearch: searches.add),
+          ),
         ),
       ),
     );

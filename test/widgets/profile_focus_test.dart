@@ -3,6 +3,8 @@ import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/state.dart';
+import 'package:fl_clash/ui/ui.dart' as ui_pfo
+    show CommonCircleLoading, CommonPopupMenu;
 import 'package:fl_clash/views/profiles/profiles.dart';
 import 'package:fl_clash/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
@@ -131,14 +133,14 @@ void main() {
 
       expect(
         find.descendant(
-          of: find.byType(CommonPopupMenu),
+          of: find.byType(ui_pfo.CommonPopupMenu),
           matching: find.text(currentAppLocalizations.delete),
         ),
         findsOneWidget,
       );
       await tester.sendKeyEvent(LogicalKeyboardKey.escape);
       await tester.pumpAndSettle();
-      expect(find.byType(CommonPopupMenu), findsNothing);
+      expect(find.byType(ui_pfo.CommonPopupMenu), findsNothing);
     }
   });
 
@@ -165,7 +167,7 @@ void main() {
           of: find.text('url'),
           matching: find.byType(ProfileItem),
         ),
-        matching: find.byType(CommonCircleLoading),
+        matching: find.byType(ui_pfo.CommonCircleLoading),
       ),
       findsOneWidget,
     );

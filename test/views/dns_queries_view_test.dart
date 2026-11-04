@@ -9,6 +9,7 @@ import 'package:fl_clash/state.dart';
 import 'package:fl_clash/ui/icons/icons.dart';
 import 'package:fl_clash/views/dns_queries.dart';
 import 'package:fl_clash/widgets/widgets.dart';
+import 'package:fl_clash/ui/ui.dart' as ui_dq;
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -110,7 +111,7 @@ void main() {
   testWidgets('shows the empty state without any query', (tester) async {
     await pumpDnsQueries(tester);
 
-    expect(find.byType(NullStatus), findsOneWidget);
+    expect(find.byType(ui_dq.NullStatus), findsOneWidget);
     expect(find.text('No DNS queries yet'), findsOneWidget);
 
     await teardownView(tester);
@@ -362,7 +363,7 @@ void main() {
 
     final errorHeader = find.descendant(
       of: find.byType(DnsQueryDetailView),
-      matching: find.widgetWithText(ListHeader, 'Error'),
+      matching: find.widgetWithText(ui_dq.ListHeader, 'Error'),
     );
     expect(errorHeader, findsOneWidget);
     final errorText = find.descendant(

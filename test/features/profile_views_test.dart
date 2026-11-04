@@ -5,6 +5,8 @@ import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/state.dart';
+import 'package:fl_clash/ui/input.dart' as ui_input;
+import 'package:fl_clash/ui/list.dart' as ui_list;
 import 'package:fl_clash/views/config/tun.dart';
 import 'package:fl_clash/views/profiles/add.dart';
 import 'package:fl_clash/views/profiles/custom/custom.dart';
@@ -210,7 +212,7 @@ void main() {
       expect(
         find.ancestor(
           of: find.byType(SelectionBadge),
-          matching: find.widgetWithText(DecorationListItem, l10n.standard),
+          matching: find.widgetWithText(ui_list.DecorationListItem, l10n.standard),
         ),
         findsOneWidget,
       );
@@ -219,7 +221,7 @@ void main() {
       expect(
         find.ancestor(
           of: find.byType(SelectionBadge),
-          matching: find.widgetWithText(DecorationListItem, l10n.script),
+          matching: find.widgetWithText(ui_list.DecorationListItem, l10n.script),
         ),
         findsOneWidget,
       );
@@ -366,7 +368,7 @@ void main() {
     }
 
     Finder tile(String label) =>
-        find.ancestor(of: find.text(label), matching: find.byType(ListItem));
+        find.ancestor(of: find.text(label), matching: find.byType(ui_list.ListItem));
 
     String? statusOf(WidgetTester tester, String label) {
       final l = currentAppLocalizations;
@@ -406,7 +408,7 @@ void main() {
         ),
         findsOneWidget,
       );
-      final header = find.widgetWithText(ListHeader, l.proxyGroup);
+      final header = find.widgetWithText(ui_list.ListHeader, l.proxyGroup);
       expect(
         tester.getTopLeft(header).dy,
         lessThan(tester.getTopLeft(find.text('Proxy')).dy),
@@ -512,7 +514,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.enterText(
         find.descendant(
-          of: find.byType(InputDialog),
+          of: find.byType(ui_input.InputDialog),
           matching: find.byType(EditableText),
         ),
         'theirs',
@@ -633,6 +635,7 @@ void main() {
         UncontrolledProviderScope(
           container: container,
           child: TestApp(
+            includeNavigatorKey: false,
             child: Navigator(
               key: tabNavigator,
               pages: [MaterialPage(child: addMenu())],
@@ -702,7 +705,7 @@ void main() {
       );
 
       await leave(tester);
-      expect(find.byType(InputDialog), findsOneWidget);
+      expect(find.byType(ui_input.InputDialog), findsOneWidget);
       await tester.tap(find.text(currentAppLocalizations.cancel));
       await tester.pumpAndSettle();
 
@@ -723,7 +726,7 @@ void main() {
 
       await leave(tester);
       final field = find.descendant(
-        of: find.byType(InputDialog),
+        of: find.byType(ui_input.InputDialog),
         matching: find.byType(EditableText),
       );
       final editable = tester.widget<EditableText>(field);
@@ -762,7 +765,7 @@ void main() {
       await leave(tester);
 
       expect(container.read(profilesProvider).single.label, 'Mine');
-      expect(find.byType(InputDialog), findsNothing);
+      expect(find.byType(ui_input.InputDialog), findsNothing);
     });
 
     testWidgets('an existing profile is kept when left untouched', (

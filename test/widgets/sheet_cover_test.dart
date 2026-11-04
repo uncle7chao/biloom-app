@@ -1,6 +1,8 @@
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/state.dart';
-import 'package:fl_clash/widgets/widgets.dart';
+import 'package:fl_clash/ui/sheet.dart';
+import 'package:fl_clash/ui/ui.dart' as ui_cov show CommonScaffold;
+import 'package:fl_clash/widgets/widgets.dart' hide showSheet;
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -8,7 +10,8 @@ import 'package:flutter_test/flutter_test.dart';
 import '../helpers/test_app.dart';
 
 Widget _scaffold(String name, {Widget? body}) {
-  return CommonScaffold(
+  // The cover behavior lives in the ui scaffold, which the app's views use.
+  return ui_cov.CommonScaffold(
     title: name,
     actions: [TextButton(onPressed: () {}, child: Text('$name action'))],
     body: body ?? const SizedBox.expand(),

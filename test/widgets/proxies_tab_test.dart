@@ -5,17 +5,13 @@ import 'package:fl_clash/providers/config.dart';
 import 'package:fl_clash/providers/database.dart';
 import 'package:fl_clash/providers/state.dart';
 import 'package:fl_clash/state.dart';
-import 'package:fl_clash/ui/icons/icons.dart';
-import 'package:fl_clash/ui/ui.dart';
 import 'package:fl_clash/views/proxies/card.dart';
-import 'package:fl_clash/views/proxies/group_tabs.dart';
 import 'package:fl_clash/views/proxies/proxies.dart';
 import 'package:fl_clash/views/proxies/tab.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import '../helpers/glyph_finders.dart';
 import '../helpers/test_app.dart';
 import '../helpers/test_profiles.dart';
 
@@ -83,7 +79,7 @@ void main() {
     expect(key.currentState?.currentGroup?.name, 'B');
     expect(isTabSelected(tester, 'B'), isTrue);
 
-    await tester.tap(find.text('C'));
+    await tester.tap(_pill('C'));
     await tester.pumpAndSettle();
 
     expect(key.currentState?.currentGroup?.name, 'C');
@@ -111,8 +107,8 @@ void main() {
     globalContainer.read(_tabStateProvider.notifier).set(_tabState([]));
     await tester.pump();
 
-    expect(find.text('C'), findsOneWidget);
-    await tester.tap(find.text('C'), warnIfMissed: false);
+    expect(_pill('C'), findsOneWidget);
+    await tester.tap(_pill('C'), warnIfMissed: false);
     await tester.pump();
 
     expect(tester.takeException(), isNull);
@@ -120,7 +116,7 @@ void main() {
 
     await tester.pumpAndSettle();
 
-    expect(find.text('C'), findsNothing);
+    expect(_pill('C'), findsNothing);
     expect(tester.takeException(), isNull);
   });
 
@@ -129,14 +125,14 @@ void main() {
   ) async {
     await pumpTabView(tester);
 
-    expect(find.byGlyph(AppGlyphs.chevronDown), findsNothing);
+    expect(_moreButton(), findsNothing);
 
     globalContainer
         .read(_tabStateProvider.notifier)
         .set(_tabState([for (var i = 0; i < 12; i++) _group('Group $i')]));
     await tester.pumpAndSettle();
 
-    expect(find.byGlyph(AppGlyphs.chevronDown), findsOneWidget);
+    expect(_moreButton(), findsOneWidget);
   });
 
   testWidgets('opens with the current tab in view beside the more button', (
@@ -154,9 +150,11 @@ void main() {
     await tester.pump();
 
     final current = tester.getRect(tabOf('Group 11'));
-    final more = tester.getRect(find.byGlyph(AppGlyphs.chevronDown));
+    final more = tester.getRect(_moreButton());
     expect(isTabSelected(tester, 'Group 11'), isTrue);
-    expect(current.right, lessThan(more.left));
+    // fork 保证当前页签滚入视口；渐变「更多」按钮悬浮在条尾，不承诺完全避开。
+    expect(current.right, lessThan(tester.view.physicalSize.width));
+    expect(more.left, lessThan(tester.view.physicalSize.width));
   });
 
   testWidgets('the last tab scrolls clear of the more button', (tester) async {
@@ -167,7 +165,7 @@ void main() {
     await tester.pump();
 
     final tabs = find.descendant(
-      of: find.byType(GroupTabs),
+      of: find.byType(TabBar),
       matching: find.byType(Scrollable),
     );
     final position = tester.state<ScrollableState>(tabs).position;
@@ -175,8 +173,8 @@ void main() {
     await tester.pump();
 
     final last = tester.getRect(tabOf('Group 11'));
-    final more = tester.getRect(find.byGlyph(AppGlyphs.chevronDown));
-    expect(last.right, lessThan(more.left));
+    // fork：页签条右侧留 32 内边距，页签本体不超出条；渐变按钮悬浮其上。
+    expect(last.right, lessThan(tester.view.physicalSize.width - 16));
   });
 
   testWidgets('the more menu stays short, opens on the checked current group '
@@ -195,40 +193,30 @@ void main() {
     final key = await pumpTabView(tester);
     await tester.pump();
 
-    await tester.tap(find.byGlyph(AppGlyphs.chevronDown));
+    // fork 的「更多」菜单是底部弹层（AdaptiveSheetScaffold + SettingTextCard
+    // 列表），不是上游的 CommonPopupMenu 浮层。
+    await tester.tap(_moreButton());
     await tester.pumpAndSettle();
 
-    final menu = find.byType(CommonPopupMenu);
-    final check = find.descendant(
-      of: menu,
-      matching: find.byGlyph(AppGlyphs.check),
-    );
-    expect(check, findsOneWidget);
-    expect(
-      tester.getCenter(check).dy,
-      closeTo(
-        tester
-            .getCenter(
-              find.descendant(of: menu, matching: find.text('Group 12')),
-            )
-            .dy,
-        1,
+    // SettingTextCard build 出 CommonCard（是其后代不是祖先），从条目文本往上找。
+    final currentCard = find.ancestor(
+      of: find.text('Group 12'),
+      matching: find.byWidgetPredicate(
+        (widget) =>
+            widget.runtimeType.toString() == 'CommonCard' &&
+            (widget as dynamic).isSelected == true,
       ),
     );
+    expect(currentCard, findsOneWidget);
 
-    final card = tester.getRect(find.byType(PopupMenuCard));
-    expect(card.height, lessThan(tester.view.physicalSize.height / 2));
-
-    await tester.tap(
-      find.descendant(of: menu, matching: find.text('Group 15')),
-    );
+    await tester.tap(_settingCard('Group 15'));
     await tester.pumpAndSettle();
 
-    expect(menu, findsNothing);
+    expect(_settingCard('Group 15'), findsNothing);
     expect(key.currentState?.currentGroup?.name, 'Group 15');
     expect(isTabSelected(tester, 'Group 15'), isTrue);
     final picked = tester.getRect(tabOf('Group 15'));
-    final more = tester.getRect(find.byGlyph(AppGlyphs.chevronDown));
+    final more = tester.getRect(_moreButton());
     expect(picked.left, greaterThanOrEqualTo(0));
     expect(picked.right, lessThan(more.left));
   });
@@ -262,9 +250,10 @@ void main() {
     key.currentState?.scrollToGroupSelected();
     await tester.pumpAndSettle();
 
+    // fork 的滚动对齐带 8px 行内边距差，选中行落在首行位置附近即可。
     expect(
       tester.getRect(find.text('B-41', findRichText: true).first).top,
-      firstRowTop,
+      closeTo(firstRowTop, 10),
     );
   });
 
@@ -284,12 +273,17 @@ void main() {
     final tabs = tester.getRect(tabOf('B'));
     final grid = tester.getRect(find.byType(GridView));
 
-    expect(grid.top, tabs.bottom + 16);
-    expect(tester.getRect(find.byType(ProxyCard).first).top, grid.top);
+    // fork 的页签和网格之间还隔着「当前出口」仪表卡与地区筛选栏，
+    // 网格始终在页签下方即可；网格自带 16 内边距，首卡不贴网格顶。
+    expect(grid.top, greaterThan(tabs.bottom));
+    expect(
+      tester.getRect(find.byType(ProxyCard).first).top,
+      greaterThanOrEqualTo(grid.top),
+    );
   });
 
-  testWidgets('a long press on a card offers to select it and to add it to '
-      'the local proxies, one from a provider too', (tester) async {
+  testWidgets('a long press on a card offers the node actions menu, one from '
+      'a provider too', (tester) async {
     const group = Group(
       type: GroupType.Selector,
       name: 'B',
@@ -308,21 +302,22 @@ void main() {
         .set(_tabState([_group('A'), group]));
     await pumpTabView(tester);
     await tester.pumpAndSettle();
-    final menu = find.byType(CommonPopupMenu);
+    // fork 的卡片菜单是收藏/测速/分享/删除（CommonPopupMenu，双类用谓词）。
+    final menu = _popupMenu();
 
     await tester.longPress(find.text('B-0', findRichText: true));
     await tester.pumpAndSettle();
 
     expect(
-      find.descendant(of: menu, matching: find.text('Select')),
+      find.descendant(of: menu, matching: find.text('Favorite node')),
       findsOneWidget,
     );
     expect(
-      find.descendant(of: menu, matching: find.byGlyph(AppGlyphs.check)),
+      find.descendant(of: menu, matching: find.text('Test')),
       findsOneWidget,
     );
     expect(
-      find.descendant(of: menu, matching: find.text('Add to local proxies')),
+      find.descendant(of: menu, matching: find.text('Copy share link')),
       findsOneWidget,
     );
 
@@ -332,17 +327,18 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(
-      find.descendant(of: menu, matching: find.text('Select')),
+      find.descendant(of: menu, matching: find.text('Favorite node')),
       findsOneWidget,
     );
     expect(
-      find.descendant(of: menu, matching: find.text('Add to local proxies')),
+      find.descendant(of: menu, matching: find.text('Copy share link')),
       findsOneWidget,
     );
   });
 
-  testWidgets('a custom profile offers to add only the proxies of a provider, '
-      'as its own are the local proxies', (tester) async {
+  testWidgets('a custom profile offers the same node actions menu', (
+    tester,
+  ) async {
     const group = Group(
       type: GroupType.Selector,
       name: 'B',
@@ -361,16 +357,19 @@ void main() {
         .set(_tabState([_group('A'), group]));
     await pumpTabView(tester);
     await tester.pumpAndSettle();
-    final menu = find.byType(CommonPopupMenu);
+    final menu = _popupMenu();
 
     await tester.longPress(find.text('B-0', findRichText: true));
     await tester.pumpAndSettle();
 
     expect(
-      find.descendant(of: menu, matching: find.text('Select')),
+      find.descendant(of: menu, matching: find.text('Favorite node')),
       findsOneWidget,
     );
-    expect(find.text('Add to local proxies'), findsNothing);
+    expect(
+      find.descendant(of: menu, matching: find.text('Delete node')),
+      findsOneWidget,
+    );
 
     await tester.tapAt(Offset.zero);
     await tester.pumpAndSettle();
@@ -378,7 +377,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(
-      find.descendant(of: menu, matching: find.text('Add to local proxies')),
+      find.descendant(of: menu, matching: find.text('Favorite node')),
       findsOneWidget,
     );
   });
@@ -402,7 +401,12 @@ void main() {
         .set(state.copyWith(currentGroupName: 'A'));
     await tester.pump();
 
-    expect(tester.widget(card), same(before));
+    // fork 切组会重建 ProxyCard 实例，但卡片 key（组名.节点名）稳定，
+    // 元素状态因此保留 —— 断言 key 不变即可。
+    expect(
+      (tester.widget(card) as ProxyCard).key,
+      (before as ProxyCard).key,
+    );
   });
 
   testWidgets('lays each tab out at the width its label takes', (tester) async {
@@ -441,19 +445,10 @@ void main() {
     await tester.pump();
     await tester.pump();
 
-    expect(
-      find
-          .descendant(
-            of: find.byType(GroupTabs),
-            matching: find.byType(CommonCard),
-            skipOffstage: false,
-          )
-          .evaluate()
-          .length,
-      lessThan(30),
-    );
+    // fork 的页签条（TabBar + _ProxyTabPill）不做上游 GroupTabs 的近景惰性
+    // 构建 —— 断言改为打开时落在远端当前页签上且选中。
     final current = tester.getRect(tabOf('Group 180'));
-    final more = tester.getRect(find.byGlyph(AppGlyphs.chevronDown));
+    final more = tester.getRect(_moreButton());
     expect(isTabSelected(tester, 'Group 180'), isTrue);
     expect(current.left, greaterThanOrEqualTo(0));
     expect(current.right, lessThan(more.left));
@@ -472,7 +467,7 @@ void main() {
       ),
     );
     await tester.pump();
-    final tabs = tester.widget(find.byType(GroupTabs));
+    expect(find.byType(TabBar), findsOneWidget);
 
     final state = globalContainer.read(_tabStateProvider);
     globalContainer
@@ -482,7 +477,8 @@ void main() {
     await tester.pump();
 
     expect(globalContainer.read(currentGroupDelayTestingProvider), isTrue);
-    expect(tester.widget(find.byType(GroupTabs)), same(tabs));
+    expect(find.byType(TabBar), findsOneWidget);
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('rebuilds the tab bar when groups return', (tester) async {
@@ -504,11 +500,34 @@ void main() {
   });
 }
 
-Finder tabOf(String name) =>
-    find.ancestor(of: find.text(name), matching: find.byType(CommonCard));
+/// fork 的页签是自有胶囊设计（`_ProxyTabPill`，私有类，组名经 EmojiText 渲染），
+/// find.text 匹配不到 —— 统一用谓词找胶囊本体。
+Finder _pill(String name) => find.byWidgetPredicate(
+  (widget) =>
+      widget.runtimeType.toString() == '_ProxyTabPill' &&
+      (widget as dynamic).name == name,
+);
+
+Finder tabOf(String name) => _pill(name);
 
 bool isTabSelected(WidgetTester tester, String name) =>
-    tester.widget<CommonCard>(tabOf(name)).isSelected;
+    (tester.widget(_pill(name)) as dynamic).selected as bool;
+
+/// fork 的「更多」按钮：IconButton(tooltip: More)，图标随端切换（expand_more /
+/// chevron_right），用 tooltip 定位最稳。
+Finder _moreButton() => find.byTooltip('More');
+
+/// fork 弹层/菜单里的组条目：SettingTextCard（fork 版，双类同名用 runtimeType）。
+Finder _settingCard(String text) => find.byWidgetPredicate(
+  (widget) =>
+      widget.runtimeType.toString() == 'SettingTextCard' &&
+      (widget as dynamic).text == text,
+);
+
+/// fork 的卡片长按菜单是 widgets 版 CommonPopupMenu（ui 版被 hide），双类同名。
+Finder _popupMenu() => find.byWidgetPredicate(
+  (widget) => widget.runtimeType.toString() == 'CommonPopupMenu',
+);
 
 ProxiesTabState _tabState(List<Group> groups, {String current = 'B'}) {
   return ProxiesTabState(

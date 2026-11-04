@@ -4,6 +4,7 @@ import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/ui/icons/icons.dart';
+import 'package:fl_clash/ui/ui.dart' as ui_rules;
 import 'package:fl_clash/views/config/rules.dart';
 import 'package:fl_clash/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
@@ -99,14 +100,14 @@ void main() {
   testWidgets('shows the empty state without any rule', (tester) async {
     await pumpRules(tester, const []);
 
-    expect(find.byType(NullStatus), findsOneWidget);
+    expect(find.byType(ui_rules.NullStatus), findsOneWidget);
     expect(find.byTooltip(currentAppLocalizations.add), findsOneWidget);
   });
 
   testWidgets('lists every rule when the store is populated', (tester) async {
     await pumpRules(tester, [_rule(1, 'a.com'), _rule(2, 'b.com')]);
 
-    expect(find.byType(NullStatus), findsNothing);
+    expect(find.byType(ui_rules.NullStatus), findsNothing);
     expect(find.text('a.com'), findsOneWidget);
     expect(find.text('b.com'), findsOneWidget);
   });
@@ -116,7 +117,7 @@ void main() {
 
     expect(_barAction(currentAppLocalizations.delete), findsNothing);
 
-    await tester.tap(find.byType(CommonCheckBox).first);
+    await tester.tap(find.byType(ui_rules.CommonCheckBox).first);
     await tester.pumpAndSettle();
 
     expect(_barAction(currentAppLocalizations.selectAll), findsOneWidget);
@@ -135,7 +136,7 @@ void main() {
   ) async {
     await pumpRules(tester, [_rule(1, 'a.com'), _rule(2, 'b.com')]);
 
-    await tester.tap(find.byType(CommonCheckBox).first);
+    await tester.tap(find.byType(ui_rules.CommonCheckBox).first);
     await tester.pumpAndSettle();
     await _tapBarAction(tester, currentAppLocalizations.selectAll);
     await _tapBarAction(tester, currentAppLocalizations.delete);
@@ -150,7 +151,7 @@ void main() {
   testWidgets('declining the delete dialog keeps every rule', (tester) async {
     await pumpRules(tester, [_rule(1, 'a.com'), _rule(2, 'b.com')]);
 
-    await tester.tap(find.byType(CommonCheckBox).first);
+    await tester.tap(find.byType(ui_rules.CommonCheckBox).first);
     await tester.pumpAndSettle();
     await _tapBarAction(tester, currentAppLocalizations.delete);
     await tester.tap(find.text(currentAppLocalizations.cancel));
@@ -163,7 +164,7 @@ void main() {
   testWidgets('deleting only removes the selected rule', (tester) async {
     await pumpRules(tester, [_rule(1, 'a.com'), _rule(2, 'b.com')]);
 
-    await tester.tap(find.byType(CommonCheckBox).last);
+    await tester.tap(find.byType(ui_rules.CommonCheckBox).last);
     await tester.pumpAndSettle();
     await _tapBarAction(tester, currentAppLocalizations.delete);
     await tester.tap(find.text(currentAppLocalizations.delete));
@@ -187,12 +188,12 @@ void main() {
       await tester.pumpAndSettle();
     }
 
-    await tester.tap(find.byType(CommonCheckBox));
+    await tester.tap(find.byType(ui_rules.CommonCheckBox));
     await tester.pumpAndSettle();
     await dragBack();
     expect(find.text('a.com'), findsOneWidget);
 
-    await tester.tap(find.byType(CommonCheckBox));
+    await tester.tap(find.byType(ui_rules.CommonCheckBox));
     await tester.pumpAndSettle();
     await dragBack();
     expect(find.text('a.com'), findsNothing);
@@ -249,7 +250,7 @@ void main() {
       ]);
 
       await search(tester, 'com');
-      await tester.tap(find.byType(CommonCheckBox).first);
+      await tester.tap(find.byType(ui_rules.CommonCheckBox).first);
       await tester.pumpAndSettle();
       await _tapBarAction(tester, currentAppLocalizations.selectAll);
       await _tapBarAction(tester, currentAppLocalizations.delete);

@@ -43,6 +43,16 @@ void main() {
   setUp(() {
     core = _MockCoreHandlerInterface();
     when(() => core.validateConfig(any())).thenAnswer((_) async => '');
+    // The save path converts content through the core; share-link profiles
+    // save Clash yaml that needs no conversion.
+    when(() => core.convertSubscription(any())).thenAnswer(
+      (_) async => const ConvertSubscriptionResult(
+        yaml: '',
+        format: 'clash',
+        nodeCount: 0,
+        changed: false,
+      ),
+    );
     container = ProviderContainer(
       overrides: [
         profilesProvider.overrideWith(TestProfiles.new),

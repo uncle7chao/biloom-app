@@ -4,7 +4,9 @@ import 'package:fl_clash/features/form/form.dart';
 import 'package:fl_clash/models/common.dart';
 import 'package:fl_clash/providers/app.dart';
 import 'package:fl_clash/ui/icons/icons.dart';
-import 'package:fl_clash/widgets/widgets.dart';
+import 'package:fl_clash/ui/ui.dart' as ui_in;
+import 'package:fl_clash/ui/list.dart' show generateSection;
+import 'package:fl_clash/widgets/widgets.dart' hide generateSection;
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -45,7 +47,7 @@ void main() {
       TestApp(
         overrides: [_viewSizeOverride],
         child: Scaffold(
-          body: ListItem.toggle(title: const Text('Disabled'), value: false),
+          body: ui_in.ListItem.toggle(title: const Text('Disabled'), value: false),
         ),
       ),
     );
@@ -71,14 +73,14 @@ void main() {
         child: Scaffold(
           body: generateSection(
             items: [
-              ListItem.toggle(
+              ui_in.ListItem.toggle(
                 title: const Text('Grouped'),
                 value: false,
                 onChanged: (value) {
                   changedValue = value;
                 },
               ),
-              ListItem.open(
+              ui_in.ListItem.open(
                 title: const Text('Opens'),
                 widget: const SizedBox(),
               ),
@@ -89,17 +91,17 @@ void main() {
     );
 
     ItemPosition positionOf(String text) => tester
-        .widget<ItemPositionProvider>(
+        .widget<ui_in.ItemPositionProvider>(
           find
               .ancestor(
                 of: find.text(text),
-                matching: find.byType(ItemPositionProvider),
+                matching: find.byType(ui_in.ItemPositionProvider),
               )
               .first,
         )
         .position;
 
-    expect(find.byType(DecorationListItem), findsNWidgets(2));
+    expect(find.byType(ui_in.DecorationListItem), findsNWidgets(2));
     expect(positionOf('Grouped'), ItemPosition.start);
     expect(positionOf('Opens'), ItemPosition.end);
 
@@ -214,7 +216,7 @@ void main() {
       TestApp(
         overrides: [_viewSizeOverride],
         child: Scaffold(
-          body: ListItem<String?>.options(
+          body: ui_in.ListItem<String?>.options(
             title: const Text('Language'),
             options: const [null, 'en'],
             value: 'en',
@@ -231,10 +233,10 @@ void main() {
     await tester.tap(find.text('Language'));
     await tester.pumpAndSettle();
 
-    expect(find.byType(CommonPopupMenu), findsOneWidget);
+    expect(find.byType(ui_in.CommonPopupMenu), findsOneWidget);
     expect(
       find.descendant(
-        of: find.byType(CommonPopupMenu),
+        of: find.byType(ui_in.CommonPopupMenu),
         matching: find.byGlyph(AppGlyphs.check),
       ),
       findsOneWidget,
@@ -268,7 +270,7 @@ void main() {
               onPressed: () async {
                 result = await showDialog<String>(
                   context: context,
-                  builder: (_) => InputDialog(
+                  builder: (_) => ui_in.InputDialog(
                     title: 'Value',
                     value: 'changed',
                     resetValue: 'default',
@@ -315,7 +317,7 @@ void main() {
             return FilledButton(
               onPressed: () => showDialog<String>(
                 context: context,
-                builder: (_) => const InputDialog(
+                builder: (_) => const ui_in.InputDialog(
                   title: 'Value',
                   value: 'changed',
                   resetValue: 'default',
@@ -353,7 +355,7 @@ void main() {
             return FilledButton(
               onPressed: () => showDialog<String>(
                 context: context,
-                builder: (_) => const InputDialog(title: 'Value', value: ''),
+                builder: (_) => const ui_in.InputDialog(title: 'Value', value: ''),
               ),
               child: const Text('Open'),
             );

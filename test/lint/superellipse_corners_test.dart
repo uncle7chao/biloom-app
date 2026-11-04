@@ -2,6 +2,8 @@ import 'dart:io';
 
 import 'package:test/test.dart';
 
+import 'upstream_snapshot.dart';
+
 final _circularApi = RegExp(
   r'\b(?:RoundedRectangleBorder|ContinuousRectangleBorder|StadiumBorder'
   r'|ClipRRect|drawRRect|drawDRRect|addRRect|clipRRect)\b|\bRRect\.',
@@ -41,7 +43,8 @@ void main() {
     for (final entity in Directory('lib').listSync(recursive: true)) {
       if (entity is! File ||
           !entity.path.endsWith('.dart') ||
-          entity.path.contains('/generated/')) {
+          entity.path.contains('/generated/') ||
+          isUpstreamSnapshot(entity.path)) {
         continue;
       }
       final source = entity.readAsStringSync();

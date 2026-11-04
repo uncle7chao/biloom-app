@@ -3,6 +3,7 @@ import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/views/profiles/profiles.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -61,7 +62,12 @@ void main() {
   testWidgets('订阅卡片的 ⋮ 菜单里有「更新订阅」', (tester) async {
     await pumpProfiles(tester, [Profile.normal(label: '机场', url: 'https://a/b')]);
 
-    await tester.tap(find.byIcon(Icons.more_vert).first);
+    // fork 的卡片菜单由 ContextMenuRegion 承载：桌面右键打开。
+    await tester.tap(
+      find.text('机场'),
+      buttons: kSecondaryButton,
+      kind: PointerDeviceKind.mouse,
+    );
     await tester.pumpAndSettle();
 
     expect(
@@ -75,7 +81,11 @@ void main() {
     // 本地配置没有可拉取的来源，给它一个「更新订阅」只会点了没反应。
     await pumpProfiles(tester, [Profile.normal(label: '本地')]);
 
-    await tester.tap(find.byIcon(Icons.more_vert).first);
+    await tester.tap(
+      find.text('本地').first,
+      buttons: kSecondaryButton,
+      kind: PointerDeviceKind.mouse,
+    );
     await tester.pumpAndSettle();
 
     expect(find.text('更新订阅'), findsNothing);

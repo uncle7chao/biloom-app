@@ -7,6 +7,7 @@ import 'package:fl_clash/state.dart';
 import 'package:fl_clash/views/config/scripts.dart';
 import 'package:fl_clash/views/profiles/extend/script.dart';
 import 'package:fl_clash/widgets/widgets.dart';
+import 'package:fl_clash/ui/ui.dart' as ui_sc;
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -56,7 +57,7 @@ void main() {
       UncontrolledProviderScope(
         container: container,
         child: const TestApp(
-          child: ProfileIdProvider(
+          child: ui_sc.ProfileIdProvider(
             profileId: _profileId,
             child: CustomScrollView(slivers: [ScriptContent()]),
           ),
@@ -107,12 +108,12 @@ void main() {
 
     await pumpScriptContent(tester);
 
-    final listBottom = tester.getBottomLeft(find.byType(DecorationListItem)).dy;
+    final listBottom = tester.getBottomLeft(find.byType(ui_sc.DecorationListItem)).dy;
     final entryTop = tester
         .getTopLeft(
           find.descendant(
-            of: find.byType(MoreActionButton),
-            matching: find.byType(CommonCard),
+            of: find.byType(ui_sc.MoreActionButton),
+            matching: find.byType(ui_sc.CommonCard),
           ),
         )
         .dy;
@@ -125,7 +126,7 @@ void main() {
     await pumpScriptContent(tester);
 
     expect(find.text(currentAppLocalizations.extendScript), findsOneWidget);
-    expect(find.byType(DecorationListItem), findsNothing);
+    expect(find.byType(ui_sc.DecorationListItem), findsNothing);
   });
 
   testWidgets('checks only the profile script', (tester) async {
@@ -137,7 +138,7 @@ void main() {
     await pumpScriptContent(tester);
 
     Finder checkIn(String label) => find.descendant(
-      of: find.widgetWithText(DecorationListItem, label),
+      of: find.widgetWithText(ui_sc.DecorationListItem, label),
       matching: find.byType(SelectionCheck),
     );
     expect(checkIn('beta'), findsOneWidget);

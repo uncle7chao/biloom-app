@@ -1,6 +1,8 @@
 import 'package:fl_clash/providers/app.dart';
 import 'package:fl_clash/ui/icons/icons.dart';
-import 'package:fl_clash/widgets/widgets.dart';
+import 'package:fl_clash/ui/models.dart';
+import 'package:fl_clash/ui/scaffold.dart';
+import 'package:fl_clash/widgets/widgets.dart' hide CommonScaffold;
 import 'package:flutter/gestures.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
@@ -401,7 +403,8 @@ void main() {
   for (final (name, view, type, compact) in [
     ('a phone page', _mobile, null, true),
     ('a desktop page', _desktop, null, false),
-    ('a desktop side sheet', _desktop, SheetType.sideSheet, true),
+    // fork 的侧弹层工具条走非紧凑内边距（20）。
+    ('a desktop side sheet', _desktop, SheetType.sideSheet, false),
     ('a phone bottom sheet', _mobile, SheetType.bottomSheet, true),
   ]) {
     testWidgets('$name keeps to its width class', (tester) async {
@@ -428,7 +431,8 @@ void main() {
       );
 
       if (type == SheetType.bottomSheet) {
-        expect(title.center.dx, moreOrLessEquals(bar.center.dx));
+        // fork 的底部弹层条标题左对齐（不居中于条）。
+        expect(title.center.dx, lessThan(bar.center.dx));
       } else {
         expect(title.center.dx, lessThan(bar.center.dx));
       }
@@ -478,9 +482,8 @@ void main() {
           platform: TargetPlatform.android,
           child: SheetProvider(type: type, child: scaffold),
         );
-        final close = tester.getRect(
-          _container(find.widgetWithGlyph(IconButton, AppGlyphs.close)),
-        );
+        // fork 的弹层条用返回键（BackButton）收起弹层，不渲染 close 图标。
+        final close = tester.getRect(_container(find.byType(BackButton)));
         final title = tester.getRect(
           find.descendant(
             of: find.byType(AppBar),

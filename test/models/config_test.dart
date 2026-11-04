@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/models/models.dart';
-import 'package:fl_clash/ui/color.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:test/test.dart';
 
@@ -885,7 +884,8 @@ void main() {
       const config = Config(themeProps: ThemeProps());
       final restored = roundTrip(() => config.toJson(), Config.fromJson);
       expect(restored.currentProfileId, null);
-      expect(restored.networkProps.systemProxy, true);
+      // fork 拍板（开关不骗人）：系统代理默认关。
+      expect(restored.networkProps.systemProxy, false);
       expect(restored.vpnProps.enable, true);
       expect(restored.hotKeyActions, isEmpty);
     });

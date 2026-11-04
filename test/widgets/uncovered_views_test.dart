@@ -19,6 +19,7 @@ import 'package:fl_clash/views/config/scripts.dart';
 import 'package:fl_clash/views/profiles/extend/standard.dart';
 import 'package:fl_clash/views/proxies/proxies.dart';
 import 'package:fl_clash/widgets/widgets.dart';
+import 'package:fl_clash/ui/ui.dart' as ui_uv;
 import 'package:flutter/gestures.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -142,10 +143,11 @@ void main() {
   });
 
   Future<void> openProxiesMenu(WidgetTester tester) async {
+    // fork 的 more 按钮是 Material 图标 + tooltip，不是 GlyphIcon。
     await tester.tap(
       find.descendant(
         of: find.byType(AppBar),
-        matching: find.byGlyph(AppGlyphs.more),
+        matching: find.byTooltip(AppLocalizations.current.more),
       ),
     );
     await tester.pumpAndSettle();
@@ -154,7 +156,7 @@ void main() {
   Finder inMenu(Finder finder) =>
       find.descendant(of: find.byType(CommonPopupMenu), matching: finder);
 
-  testWidgets('the proxies menu picks the style from a sub menu', (
+  testWidgets('the proxies menu opens the setting sheet that picks the style', (
     tester,
   ) async {
     final container = _containerFor(tester);
@@ -168,33 +170,20 @@ void main() {
     await tester.pump();
     final l10n = AppLocalizations.current;
 
+    // fork 的样式选择不在 more 菜单里，而在「设置」打开的 sheet 中。
     await openProxiesMenu(tester);
-    expect(inMenu(find.text(l10n.iconStyle)), findsOneWidget);
+    expect(inMenu(find.text(l10n.iconStyle)), findsNothing);
 
-    await tester.tap(inMenu(find.text(l10n.style)));
+    await tester.tap(inMenu(find.text(l10n.settings)));
     await tester.pumpAndSettle();
-    await tester.tap(inMenu(find.text(ProxiesType.tab.label)));
+    await tester.tap(find.text(ProxiesType.tab.label).last);
     await tester.pumpAndSettle();
 
     expect(container.read(proxiesStyleSettingProvider).type, ProxiesType.tab);
-    expect(find.byType(CommonPopupMenu), findsNothing);
-
-    await openProxiesMenu(tester);
-    expect(inMenu(find.text(l10n.iconStyle)), findsNothing);
-    expect(
-      tester.getTopLeft(inMenu(find.text(l10n.scrollToSelected))).dy,
-      lessThan(tester.getTopLeft(inMenu(find.byType(Divider)).first).dy),
-    );
-    expect(
-      tester.getTopLeft(inMenu(find.byType(Divider)).first).dy,
-      lessThan(tester.getTopLeft(inMenu(find.text(l10n.style))).dy),
-    );
     expect(tester.takeException(), null);
   });
 
-  testWidgets('the proxies menu sorts by delay and hides timed-out proxies', (
-    tester,
-  ) async {
+  testWidgets('the proxies sort menu sorts by delay', (tester) async {
     final container = _containerFor(tester);
 
     await tester.pumpWidget(
@@ -206,36 +195,15 @@ void main() {
     await tester.pump();
     final l10n = AppLocalizations.current;
 
-    await openProxiesMenu(tester);
-    await tester.tap(inMenu(find.text(l10n.sort)));
+    // fork 的排序是 AppBar 上的独立菜单；hideTimeoutProxies 无 UI 入口。
+    await tester.tap(find.byTooltip(l10n.sort));
     await tester.pumpAndSettle();
-    await tester.tap(inMenu(find.text(l10n.delay)));
+    await tester.tap(find.text(l10n.delay));
     await tester.pumpAndSettle();
 
     expect(
       container.read(proxiesStyleSettingProvider).sortType,
       ProxiesSortType.delay,
-    );
-
-    await openProxiesMenu(tester);
-    expect(
-      inMenu(
-        find.descendant(
-          of: find.ancestor(
-            of: find.text(l10n.hideTimeoutProxies),
-            matching: find.byType(Row),
-          ),
-          matching: find.byGlyph(AppGlyphs.check),
-        ),
-      ),
-      findsNothing,
-    );
-    await tester.tap(inMenu(find.text(l10n.hideTimeoutProxies)));
-    await tester.pumpAndSettle();
-
-    expect(
-      container.read(proxiesStyleSettingProvider).hideTimeoutProxies,
-      isTrue,
     );
     expect(find.byType(CommonPopupMenu), findsNothing);
   });
@@ -252,7 +220,6 @@ void main() {
     await tester.pump();
 
     expect(find.byType(AboutView), findsOneWidget);
-    expect(find.text('Telegram'), findsOneWidget);
     final hero = find.byWidgetPredicate(
       (widget) => widget.runtimeType.toString() == '_AboutHero',
     );
@@ -263,7 +230,8 @@ void main() {
     // The upstream Telegram row pointed at the FlClash community and was dropped
     // with the fork, so the name/version header carries the assertion now.
     expect(find.text('BiLoom'), findsOneWidget);
-    expect(find.text('0.0.0'), findsOneWidget);
+    // fork 的版本 label 带 v 前缀（v0.0.0）。
+    expect(find.textContaining('0.0.0'), findsOneWidget);
     expect(tester.takeException(), null);
 
     final scrollables = find.byType(Scrollable);
@@ -568,7 +536,7 @@ void main() {
       UncontrolledProviderScope(
         container: container,
         child: TestApp(
-          child: ProfileIdProvider(
+          child: ui_uv.ProfileIdProvider(
             profileId: profile.id,
             child: const Scaffold(
               body: CustomScrollView(slivers: [StandardContent()]),
@@ -626,7 +594,7 @@ void main() {
       UncontrolledProviderScope(
         container: container,
         child: TestApp(
-          child: ProfileIdProvider(
+          child: ui_uv.ProfileIdProvider(
             profileId: profile.id,
             child: const Scaffold(
               body: CustomScrollView(slivers: [StandardContent()]),
@@ -677,7 +645,7 @@ void main() {
       UncontrolledProviderScope(
         container: container,
         child: TestApp(
-          child: ProfileIdProvider(
+          child: ui_uv.ProfileIdProvider(
             profileId: profile.id,
             child: const Scaffold(
               body: CustomScrollView(slivers: [StandardContent()]),

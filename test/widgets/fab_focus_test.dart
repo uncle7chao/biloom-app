@@ -1,7 +1,8 @@
 import 'dart:async';
 
+import 'package:fl_clash/ui/focus.dart' as ui_fb
+    show PageFocusScope, PageTraversalPolicy;
 import 'package:fl_clash/ui/icons/icons.dart';
-import 'package:fl_clash/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -23,9 +24,9 @@ Widget _buildPage({bool wrapNavigator = false}) {
       child: const GlyphIcon(AppGlyphs.add, fill: 1),
     ),
   );
-  final scopedPage = PageFocusScope(child: page);
+  final scopedPage = ui_fb.PageFocusScope(child: page);
   return FocusTraversalGroup(
-    policy: PageTraversalPolicy(),
+    policy: ui_fb.PageTraversalPolicy(),
     child: wrapNavigator
         ? Navigator(
             pages: [MaterialPage(child: scopedPage)],

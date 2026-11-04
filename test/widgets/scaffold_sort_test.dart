@@ -1,7 +1,9 @@
 import 'dart:async';
 
 import 'package:fl_clash/ui/icons/icons.dart';
-import 'package:fl_clash/widgets/widgets.dart';
+import 'package:fl_clash/ui/models.dart';
+import 'package:fl_clash/ui/scaffold.dart';
+import 'package:fl_clash/widgets/widgets.dart' hide CommonScaffold;
 import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';

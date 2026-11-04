@@ -6,6 +6,7 @@ import 'package:fl_clash/state.dart';
 import 'package:fl_clash/ui/icons/icons.dart';
 import 'package:fl_clash/views/profiles/custom/icon.dart';
 import 'package:fl_clash/widgets/widgets.dart';
+import 'package:fl_clash/ui/ui.dart' as ui_ip;
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -231,7 +232,7 @@ void main() {
     await tester.enterText(find.byType(TextField), 'nothing like it');
     await tester.pumpAndSettle();
 
-    expect(find.byType(NullStatus), findsOne);
+    expect(find.byType(ui_ip.NullStatus), findsOne);
   });
 
   testWidgets('a search shows an icon once, under the first source with it', (
@@ -294,7 +295,7 @@ void main() {
     await _pumpPicker(tester, iconSets: [many], groupName: 'YouTube');
 
     expect(find.text('Suggested'), findsNothing);
-    expect(find.byType(NullStatus), findsNothing);
+    expect(find.byType(ui_ip.NullStatus), findsNothing);
 
     for (var attempt = 0; attempt < 40; attempt++) {
       await tester.runAsync(

@@ -37,7 +37,7 @@ final _rowCases = <_RowCase>[
     const NetworkTakeoverCard(),
     'System proxy',
     (container) => container.read(networkSettingProvider).systemProxy,
-    initial: true,
+    // fork 拍板「开关不骗人」：systemProxy 默认关（拨开即连接）。
   ),
   _RowCase(
     'TUN',
@@ -155,12 +155,17 @@ void main() {
   testWidgets('a row says what it is set to', (tester) async {
     await pumpCard(tester, const NetworkTakeoverCard());
 
+    // fork 默认全关：两行都如实显示 disabled，系统代理行不开时不报端口。
+    expect(find.text('Port 7890'), findsNothing);
+    expect(find.text(currentAppLocalizations.disabled), findsNWidgets(2));
+
+    // 打开系统代理后，行副标题如实显示它的端口；打开 TUN 后显示 enabled。
+    await tester.tap(switchOf(_rowCases[0]));
+    await tester.pumpAndSettle();
     expect(find.text('Port 7890'), findsOneWidget);
-    expect(find.text(currentAppLocalizations.disabled), findsOneWidget);
 
     await tester.tap(switchOf(_rowCases[1]));
     await tester.pumpAndSettle();
-
     expect(find.text(currentAppLocalizations.enabled), findsOneWidget);
   });
 

@@ -7,6 +7,7 @@ import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/views/profiles/edit.dart';
 import 'package:fl_clash/widgets/widgets.dart';
+import 'package:fl_clash/ui/ui.dart' as ui_ep;
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -153,7 +154,7 @@ void main() {
     (tester) async {
       await pumpEditProfile(tester);
       final row = find.widgetWithText(
-        DecorationListItem,
+        ui_ep.DecorationListItem,
         currentAppLocalizations.profile,
       );
       for (var i = 0; i < 20 && row.evaluate().isEmpty; i++) {

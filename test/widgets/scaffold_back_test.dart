@@ -9,7 +9,10 @@ import 'package:fl_clash/views/access.dart';
 import 'package:fl_clash/views/dashboard/dashboard.dart';
 import 'package:fl_clash/views/dashboard/edit.dart';
 import 'package:fl_clash/views/logs.dart';
-import 'package:fl_clash/widgets/widgets.dart';
+import 'package:fl_clash/ui/models.dart';
+import 'package:fl_clash/ui/inherited.dart' as ui_sb show PageActivityScope;
+import 'package:fl_clash/ui/scaffold.dart';
+import 'package:fl_clash/widgets/widgets.dart' hide CommonScaffold;
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -454,7 +457,12 @@ class _PageActivityTestScope extends StatelessWidget {
     return ValueListenableBuilder(
       valueListenable: isActive,
       builder: (_, value, child) {
-        return PageActivityScope(isActive: value, child: child!);
+        // Two scopes with the same value: the ui scaffold layers read the ui
+        // scope, while old BackLayerScope layers read the widgets scope.
+        return ui_sb.PageActivityScope(
+          isActive: value,
+          child: PageActivityScope(isActive: value, child: child!),
+        );
       },
       child: child,
     );

@@ -9,7 +9,7 @@ import 'package:fl_clash/providers/app.dart';
 import 'package:fl_clash/providers/core.dart';
 import 'package:fl_clash/views/dashboard/layout.dart';
 import 'package:fl_clash/views/dashboard/widgets/memory_info.dart';
-import 'package:fl_clash/widgets/widgets.dart';
+import 'package:fl_clash/ui/ui.dart' as ui_mi;
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -256,7 +256,7 @@ void main() {
     Widget buildApp({required bool isPageActive}) {
       return TestApp(
         wrapInProviderScope: true,
-        child: PageActivityScope(
+        child: ui_mi.PageActivityScope(
           isActive: isPageActive,
           child: MemoryInfo(memoryReader: readMemory),
         ),
@@ -697,12 +697,12 @@ void main() {
       await tester.pump();
 
       verify(() => coreInterface.forceGc()).called(1);
-      expect(find.byType(CommonCircleLoading), findsOneWidget);
+      expect(find.byType(ui_mi.CommonCircleLoading), findsOneWidget);
 
       await tester.pump(const Duration(milliseconds: 600));
       await tester.pump();
 
-      expect(find.byType(CommonCircleLoading), findsNothing);
+      expect(find.byType(ui_mi.CommonCircleLoading), findsNothing);
 
       await tester.pumpWidget(const SizedBox.shrink());
     });

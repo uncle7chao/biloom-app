@@ -70,7 +70,8 @@ Widget wrapAppScopes(BuildContext context, Widget child) {
   globalState.measure = measure;
   final hasProviders =
       context.findAncestorWidgetOfExactType<UncontrolledProviderScope>() !=
-      null;
+          null ||
+      context.findAncestorWidgetOfExactType<ProviderScope>() != null;
   return MeasureScope(
     measure: measure,
     child: hasProviders ? AppViewScope(child: child) : child,

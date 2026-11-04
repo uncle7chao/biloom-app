@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 
+import 'upstream_snapshot.dart';
+
 final _scopeRead = RegExp(r'BottomInsetScope\.of\(');
 
 final _insetRead = RegExp(r'(\w+)\.bottomInset\b');
@@ -71,7 +73,7 @@ void main() {
         continue;
       }
       final path = p.relative(entity.path);
-      if (p.isWithin('lib/ui', path)) {
+      if (p.isWithin('lib/ui', path) || isUpstreamSnapshot(path)) {
         continue;
       }
       final lines = entity.readAsLinesSync();

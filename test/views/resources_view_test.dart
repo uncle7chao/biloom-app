@@ -10,6 +10,7 @@ import 'package:fl_clash/state.dart';
 import 'package:fl_clash/ui/icons/icons.dart';
 import 'package:fl_clash/views/resources.dart';
 import 'package:fl_clash/widgets/widgets.dart';
+import 'package:fl_clash/ui/ui.dart' as ui_rv;
 import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -100,11 +101,11 @@ void main() {
     for (final type in GeoResource.values) {
       final row = find.ancestor(
         of: find.text(type.name),
-        matching: find.byType(DecorationListItem),
+        matching: find.byType(ui_rv.DecorationListItem),
       );
       expect(row, findsOneWidget);
       expect(
-        find.ancestor(of: row, matching: find.byType(ItemPositionProvider)),
+        find.ancestor(of: row, matching: find.byType(ui_rv.ItemPositionProvider)),
         findsOneWidget,
       );
       expect(
@@ -243,10 +244,10 @@ void main() {
     await tester.pump(const Duration(seconds: 1));
     final geoItem = find.ancestor(
       of: find.text(GeoResource.MMDB.name),
-      matching: find.byType(DecorationListItem),
+      matching: find.byType(ui_rv.DecorationListItem),
     );
     expect(
-      find.descendant(of: geoItem, matching: find.byType(CommonCircleLoading)),
+      find.descendant(of: geoItem, matching: find.byType(ui_rv.CommonCircleLoading)),
       findsOneWidget,
     );
     expect(find.text(1.traffic.show), findsNothing);
@@ -261,7 +262,7 @@ void main() {
 
     expect(find.text(l10n.justNow), findsOneWidget);
     expect(find.text(l10n.daysAgo(3)), findsNothing);
-    expect(find.byType(CommonCircleLoading), findsNothing);
+    expect(find.byType(ui_rv.CommonCircleLoading), findsNothing);
     expect(tester.takeException(), null);
 
     await tester.pumpWidget(const SizedBox.shrink());
@@ -402,7 +403,7 @@ void main() {
     }
     final iconSetItem = find.ancestor(
       of: find.text('Remote icons'),
-      matching: find.byType(DecorationListItem),
+      matching: find.byType(ui_rv.DecorationListItem),
     );
     final iconCount = find.descendant(
       of: iconSetItem,
@@ -419,12 +420,12 @@ void main() {
       find.descendant(
         of: find.ancestor(
           of: find.text('Remote set'),
-          matching: find.byType(DecorationListItem),
+          matching: find.byType(ui_rv.DecorationListItem),
         ),
         matching: find.text(l10n.unknown),
       ),
     );
-    expect(find.byType(CommonCircleLoading), findsNothing);
+    expect(find.byType(ui_rv.CommonCircleLoading), findsNothing);
     expect(find.byGlyph(AppGlyphs.sync), findsOneWidget);
 
     container
@@ -435,7 +436,7 @@ void main() {
     expect(
       find.descendant(
         of: iconSetItem,
-        matching: find.byType(CommonCircleLoading),
+        matching: find.byType(ui_rv.CommonCircleLoading),
       ),
       findsOneWidget,
     );

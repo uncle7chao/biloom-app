@@ -1,3 +1,5 @@
+import 'package:fl_clash/ui/focus.dart' as ui_rt
+    show PageFocusScope, PageTraversalPolicy;
 import 'package:fl_clash/widgets/widgets.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -30,7 +32,7 @@ Widget _buildApp({
   ValueListenable<bool>? showPage,
 }) {
   Widget buildPage() {
-    final scoped = PageFocusScope(child: page);
+    final scoped = ui_rt.PageFocusScope(child: page);
     if (!nested) {
       return scoped;
     }
@@ -56,7 +58,7 @@ Widget _buildApp({
           ),
           Expanded(
             child: FocusTraversalGroup(
-              policy: PageTraversalPolicy(),
+              policy: ui_rt.PageTraversalPolicy(),
               child: showPage == null
                   ? buildPage()
                   : ValueListenableBuilder(

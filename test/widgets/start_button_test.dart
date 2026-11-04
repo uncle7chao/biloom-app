@@ -93,7 +93,6 @@ void main() {
         container: container,
         child: TestApp(
           includeNavigatorKey: false,
-          setTheme: false,
           homeBuilder: (child) => Scaffold(floatingActionButton: child),
           child: const StartButton(),
         ),
@@ -141,7 +140,6 @@ void main() {
         container: container,
         child: TestApp(
           includeNavigatorKey: false,
-          setTheme: false,
           homeBuilder: (child) => Scaffold(floatingActionButton: child),
           child: const StartButton(),
         ),
@@ -217,7 +215,6 @@ void main() {
         container: container,
         child: TestApp(
           includeNavigatorKey: false,
-          setTheme: false,
           homeBuilder: (child) => Scaffold(floatingActionButton: child),
           child: const StartButton(),
         ),

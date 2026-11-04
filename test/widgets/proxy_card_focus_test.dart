@@ -126,7 +126,24 @@ void main() {
     await tester.sendKeyEvent(LogicalKeyboardKey.tab);
     await tester.pump();
 
-    final context = FocusManager.instance.primaryFocus?.context;
+    // fork 的卡片有两个操作（测落地、测速）：tab 可以停在测落地按钮上，
+    // 但绝不停在测速控件上；继续走最终落到下一张卡。
+    var hops = 0;
+    var context = FocusManager.instance.primaryFocus?.context;
+    while (context?.findAncestorWidgetOfExactType<ProxyCard>()?.key ==
+        const ValueKey('proxy 0')) {
+      expect(
+        context?.findAncestorWidgetOfExactType<ProxyDelayButton>(),
+        isNull,
+        reason: 'tab must not stop on the delay control',
+      );
+      await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+      await tester.pump();
+      context = FocusManager.instance.primaryFocus?.context;
+      if (++hops > 5) {
+        fail('tab never reached the next card');
+      }
+    }
     expect(
       context?.findAncestorWidgetOfExactType<ProxyCard>()?.key,
       const ValueKey('proxy 1'),

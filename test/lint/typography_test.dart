@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 
+import 'upstream_snapshot.dart';
+
 const _typography = 'lib/ui/typography.dart';
 
 // The code editor sizes its text from the editor font-size setting.
@@ -11,6 +13,13 @@ const _editorSizes = ['lib/pages/editor.dart', 'lib/features/editor/'];
 final _textTheme = RegExp(r'\btextTheme\b');
 final _fontSize = RegExp(r'\bfontSize:');
 final _fontWeight = RegExp(r'\bfontWeight:');
+
+/// `p.relative` — and `Directory.listSync` — yield `\`-separated paths on
+/// Windows, but every path literal in this file is written POSIX-style. Without
+/// this the lib/ui and lib/l10n exemptions silently stop matching on Windows
+/// and the typography definition itself gets flagged as a hand-written
+/// violation.
+String _posix(String path) => path.replaceAll(r'\', '/');
 
 bool _isGenerated(String path) =>
     path.contains('/generated/') ||
@@ -22,8 +31,11 @@ void main() {
     final offenders = <String>[];
 
     for (final entity in Directory('lib').listSync(recursive: true)) {
-      final path = p.relative(entity.path);
-      if (entity is! File || !path.endsWith('.dart') || _isGenerated(path)) {
+      final path = _posix(p.relative(entity.path));
+      if (entity is! File ||
+          !path.endsWith('.dart') ||
+          _isGenerated(path) ||
+          isUpstreamSnapshot(path)) {
         continue;
       }
       final checksSize =

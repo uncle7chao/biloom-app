@@ -1,5 +1,6 @@
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/state.dart';
+import 'package:fl_clash/ui/sheet.dart' as ui_br show showSheet;
 import 'package:fl_clash/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -25,12 +26,12 @@ Future<void> _pumpStackedSheets(WidgetTester tester, Size size) async {
           body: Builder(
             builder: (context) => FilledButton(
               onPressed: () {
-                showSheet<void>(
+                ui_br.showSheet<void>(
                   context: context,
                   builder: (_) => Builder(
                     builder: (context) => FilledButton(
                       onPressed: () {
-                        showSheet<void>(
+                        ui_br.showSheet<void>(
                           context: context,
                           builder: (_) => const Text('inner'),
                         );

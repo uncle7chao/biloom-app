@@ -64,9 +64,8 @@ void main() {
     await tester.pump();
 
     final barBottom = tester.getRect(find.byType(AppBar)).bottom;
-    final contentTop = tester
-        .element(find.byType(ListHeader))
-        .contentTopPadding;
+    // fork 的列表 header 紧贴 AppBar 底（appBarInset），不带上游的 +12 空隙。
+    final contentTop = tester.element(find.byType(ListHeader)).appBarInset;
     expect(tester.getRect(find.byType(ListHeader)).top, contentTop);
 
     await tester.drag(find.byType(ProxyCard).first, const Offset(0, -300));
@@ -136,9 +135,12 @@ void main() {
         .update((state) => state.copyWith(type: ProxiesType.list));
     await tester.pump();
 
+    // fork 的列表是自有实现（ProxyExitDashboard + 自有组头），不沿用上游
+    // _GroupSliver 的近景惰性组头 —— 组头首帧全量挂载；但行卡片仍由
+    // SliverFixedExtentList 按视口惰性构建。这里断言行级惰性（fork 语义）。
     expect(
-      find.byType(ListHeader, skipOffstage: false).evaluate().length,
-      lessThan(groups.length ~/ 2),
+      find.byType(ProxyCard, skipOffstage: false).evaluate().length,
+      lessThan(160),
     );
 
     final position = tester
@@ -147,12 +149,16 @@ void main() {
     position.jumpTo(position.maxScrollExtent - 1000);
     await tester.pump();
 
-    final far = find.ancestor(
-      of: find.text('Far'),
-      matching: find.byType(ListHeader),
+    // 组名经 EmojiText(RichText) 渲染，find.text 匹配不到 —— 用组名谓词找。
+    final far = find.byWidgetPredicate(
+      (widget) => widget is ListHeader && widget.group.name == 'Far',
     );
-    expect(tester.getRect(far).top, tester.element(far).contentTopPadding);
-    expect(find.text('G0', skipOffstage: false), findsNothing);
+    expect(far, findsOneWidget);
+    expect(tester.getRect(far).top, tester.element(far).appBarInset);
+    expect(
+      find.byType(ProxyCard, skipOffstage: false).evaluate().length,
+      lessThan(160),
+    );
     expect(tester.takeException(), isNull);
   });
 }

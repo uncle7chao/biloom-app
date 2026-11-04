@@ -7,7 +7,11 @@ import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/state.dart';
-import 'package:fl_clash/widgets/widgets.dart';
+import 'package:fl_clash/ui/sheet.dart';
+import 'package:fl_clash/ui/paged_sheet.dart' as ui_ps show PagedSheetRoute;
+import 'package:fl_clash/ui/inherited.dart' as ui_nf show SheetProvider;
+import 'package:fl_clash/ui/ui.dart' as ui_nf show CommonScaffold;
+import 'package:fl_clash/widgets/widgets.dart' hide SheetType, showSheet;
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -35,12 +39,12 @@ class _ProbeFormState extends ConsumerState<_ProbeForm> {
   @override
   Widget build(BuildContext context) {
     final isBottomSheet =
-        SheetProvider.of(context)?.type == SheetType.bottomSheet;
+        ui_nf.SheetProvider.of(context)?.type == SheetType.bottomSheet;
     final name = ref.watch(proxyGroupProvider.select((state) => state.name));
     final height = isBottomSheet
         ? ref.read(viewSizeProvider).height * 0.6
         : double.maxFinite;
-    return CommonScaffold(
+    return ui_nf.CommonScaffold(
       body: Container(
         constraints: BoxConstraints(maxHeight: height),
         child: ListView(
@@ -61,7 +65,7 @@ class _ProbeFormState extends ConsumerState<_ProbeForm> {
             FilledButton(
               onPressed: () {
                 Navigator.of(context).push(
-                  PagedSheetRoute(
+                  ui_ps.PagedSheetRoute(
                     builder: (_) => const Center(child: Text('nested page')),
                   ),
                 );
@@ -238,7 +242,7 @@ void main() {
     unawaited(
       Navigator.of(
         tester.element(find.text('row 0')),
-      ).push(PagedSheetRoute(builder: (_) => const Text('nested page'))),
+      ).push(ui_ps.PagedSheetRoute(builder: (_) => const Text('nested page'))),
     );
     await tester.pumpAndSettle();
     expect(find.text('nested page'), findsOneWidget);
@@ -299,9 +303,9 @@ void main() {
           barrierColor: Colors.black26,
           barrierLabel: 'sheet',
           builder: (_) => Navigator(
-            onGenerateRoute: (_) => PagedSheetRoute<void>(
-              builder: (_) => const Material(child: TextField(autofocus: true)),
-            ),
+          onGenerateRoute: (_) => ui_ps.PagedSheetRoute<void>(
+            builder: (_) => const Material(child: TextField(autofocus: true)),
+          ),
           ),
         ),
       ),

@@ -34,7 +34,7 @@ void main() {
       await expectLater(
         profile.saveFile(
           bytes,
-          validate: (_) async => 'invalid config',
+          validate: (_, _) async => 'invalid config',
           convert: (data, {fromRemote}) async => data,
         ),
         throwsA(
@@ -56,7 +56,7 @@ void main() {
 
       final saved = await profile.saveFile(
         bytes,
-        validate: (_) async => '',
+        validate: (_, _) async => '',
         convert: (data, {fromRemote}) async => data,
       );
 
@@ -78,6 +78,7 @@ void main() {
           ageSecretKey = key;
           return '';
         },
+        convert: (data, {fromRemote}) async => data,
       );
 
       expect(ageSecretKey, 'AGE-SECRET-KEY-1A');
@@ -92,7 +93,7 @@ void main() {
 
       final saved = await profile.saveFile(
         raw,
-        validate: (_) async => '',
+        validate: (_, _) async => '',
         convert: (data, {fromRemote}) async {
           expect(utf8.decode(data), 'dmxlc3M6Ly94');
           return Uint8List.fromList(utf8.encode('proxies: []'));
@@ -114,7 +115,7 @@ void main() {
 
       final saved = await profile.saveFile(
         Uint8List(0),
-        validate: (_) async => '',
+        validate: (_, _) async => '',
         convert: (data, {fromRemote}) async => data,
       );
 
@@ -132,7 +133,7 @@ void main() {
       await profile.saveFile(
         Uint8List.fromList(utf8.encode('proxies: []')),
         fromRemote: true,
-        validate: (_) async => '',
+        validate: (_, _) async => '',
         convert: (data, {fromRemote}) async {
           seen = fromRemote;
           return data;
@@ -148,7 +149,7 @@ void main() {
 
       await profile.saveFile(
         Uint8List.fromList(utf8.encode('proxies: []')),
-        validate: (_) async => '',
+        validate: (_, _) async => '',
         convert: (data, {fromRemote}) async {
           seen = fromRemote;
           return data;

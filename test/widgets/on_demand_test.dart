@@ -7,8 +7,8 @@ import 'package:fl_clash/providers/state.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/ui/icons/icons.dart';
+import 'package:fl_clash/ui/ui.dart' as ui_od;
 import 'package:fl_clash/views/config/on_demand.dart';
-import 'package:fl_clash/widgets/widgets.dart';
 import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -128,7 +128,7 @@ void main() {
     await pumpView(tester, ssids: ['Home', 'Office']);
     expect(find.byGlyph(AppGlyphs.delete), findsNothing);
 
-    await tester.tap(find.byType(CommonCheckBox).first);
+    await tester.tap(find.byType(ui_od.CommonCheckBox).first);
     await tester.pumpAndSettle();
 
     expect(find.byGlyph(AppGlyphs.delete), findsOneWidget);
@@ -140,7 +140,7 @@ void main() {
     tester,
   ) async {
     await pumpView(tester, ssids: ['Home', 'Office']);
-    await tester.tap(find.byType(CommonCheckBox).first);
+    await tester.tap(find.byType(ui_od.CommonCheckBox).first);
     await tester.pumpAndSettle();
 
     await tester.tap(find.byTooltip('Select all'));
@@ -160,7 +160,7 @@ void main() {
     tester,
   ) async {
     await pumpView(tester, ssids: ['Home', 'Office']);
-    await tester.tap(find.byType(CommonCheckBox).first);
+    await tester.tap(find.byType(ui_od.CommonCheckBox).first);
     await tester.pumpAndSettle();
 
     await tester.tap(find.byGlyph(AppGlyphs.delete));
@@ -283,7 +283,7 @@ void main() {
     await pumpView(tester, isAndroid: true);
     final batteryItem = find.ancestor(
       of: find.text('Ignore battery optimization'),
-      matching: find.byType(DecorationListItem),
+      matching: find.byType(ui_od.DecorationListItem),
     );
 
     await tester.tap(
@@ -308,7 +308,7 @@ void main() {
     await pumpView(tester, isAndroid: true, batteryIgnored: true);
     final batteryItem = find.ancestor(
       of: find.text('Ignore battery optimization'),
-      matching: find.byType(DecorationListItem),
+      matching: find.byType(ui_od.DecorationListItem),
     );
 
     await tester.tap(
@@ -345,7 +345,7 @@ void main() {
     final appLocalizations = AppLocalizations.of(
       tester.element(find.byType(OnDemandView)),
     );
-    final row = tester.getRect(find.byType(DecorationListItem).first);
+    final row = tester.getRect(find.byType(ui_od.DecorationListItem).first);
     final desc = find.text(appLocalizations.locationPermissionDesc);
     final button = tester.getRect(
       find

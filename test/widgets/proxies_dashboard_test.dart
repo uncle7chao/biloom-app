@@ -53,7 +53,7 @@ void main() {
         profilesProvider.overrideWith(() => TestProfiles([profile])),
         groupsProvider.overrideWithValue([
           selectorGroup(
-            [Proxy(name: 'HK-01', type: 'Trojan')],
+            [const Proxy(name: 'HK-01', type: 'Trojan')],
             now: 'HK-01',
           ),
         ]),
@@ -84,7 +84,7 @@ void main() {
         profilesProvider.overrideWith(() => TestProfiles([profile])),
         groupsProvider.overrideWithValue([
           selectorGroup(
-            [Proxy(name: 'HK-01', type: 'Trojan')],
+            [const Proxy(name: 'HK-01', type: 'Trojan')],
             now: 'HK-01',
           ),
         ]),
@@ -96,10 +96,10 @@ void main() {
       UncontrolledProviderScope(
         container: container,
         child: TestApp(
-          child: Column(
+          child: const Column(
             children: [
-              const ProxyExitDashboard(),
-              const Expanded(child: SizedBox.shrink()),
+              ProxyExitDashboard(),
+              Expanded(child: SizedBox.shrink()),
             ],
           ),
           homeBuilder: (child) => Scaffold(body: child),

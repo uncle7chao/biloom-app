@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 
+import 'upstream_snapshot.dart';
+
 final _reorderableList = RegExp(
   r'\b(?:ReorderableListView(?:\.\w+)?|ReorderableList|SliverReorderableList|'
   r'SuperSliverReorderableList)\(',
@@ -44,8 +46,10 @@ void main() {
             entity.path.contains('/generated/')) {
           continue;
         }
-        final path = p.relative(entity.path);
-        if (_allowed.contains(path)) {
+        // `p.relative` yields `\`-separated paths on Windows while `_allowed`
+        // is written POSIX-style; normalize before comparing.
+        final path = p.relative(entity.path).replaceAll(r'\', '/');
+        if (_allowed.contains(path) || isUpstreamSnapshot(path)) {
           continue;
         }
         final source = entity.readAsStringSync();

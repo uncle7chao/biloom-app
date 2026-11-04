@@ -24,6 +24,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../helpers/glyph_finders.dart';
 import '../../helpers/test_app.dart';
@@ -475,6 +476,12 @@ void main() {
 
   group('the start button', () {
     late ProviderContainer container;
+
+    setUp(() {
+      // Fork semantics: skip the one-time best-preset guide so taps go
+      // straight through to the connection flow.
+      SharedPreferences.setMockInitialValues({'bestPresetGuideDone': true});
+    });
 
     ProviderContainer containerWith({
       List<Profile> profiles = const [_profile],

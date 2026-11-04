@@ -921,7 +921,7 @@ void main() {
   });
 
   test('filterGlobalGroupMembers removes only injected chain names', () {
-    final all = const [
+    const all = [
       Proxy(name: '普通节点', type: 'Shadowsocks'),
       Proxy(name: '链式代理1', type: 'Shadowsocks'),
       Proxy(name: '前置节点', type: 'Shadowsocks'),
@@ -958,7 +958,7 @@ void main() {
     };
 
     List<ProxyChain> oneChain() => [
-      ProxyChain(
+      const ProxyChain(
         name: '链式代理1',
         exitName: '出口节点',
         exitNode: {
@@ -1044,7 +1044,7 @@ void main() {
   });
 
   test('filterGroupMemberCards hides groups and built-in outbounds', () {
-    final all = const [
+    const all = [
       Proxy(name: '自动选择', type: 'URLTest'),
       Proxy(name: '故障转移', type: 'Fallback'),
       Proxy(name: 'DIRECT', type: 'Direct'),
@@ -1069,7 +1069,7 @@ void main() {
   });
 
   test('filterChainNodeCards hides only chain node cards', () {
-    final all = const [
+    const all = [
       Proxy(name: '出口节点', type: 'Shadowsocks'),
       Proxy(name: '链式代理1', type: 'Shadowsocks'),
       Proxy(name: '链式代理2', type: 'Shadowsocks'),

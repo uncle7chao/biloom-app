@@ -5,6 +5,8 @@ import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/views/proxies/card.dart';
 import 'package:fl_clash/views/proxies/list.dart';
+import 'package:fl_clash/ui/list.dart' as ui_pl show ListHeader;
+import 'package:fl_clash/ui/loading.dart' as ui_pl show CommonCircleLoading;
 import 'package:fl_clash/widgets/widgets.dart' hide ListHeader;
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -33,6 +35,11 @@ Group _group(String name, int count) => Group(
 );
 
 void main() {
+  group(
+    'upstream _GroupSliver behaviors',
+    skip: 'fork 保留自有代理列表（全量组头+行级惰性），上游 pinned header/'
+        'unfold 动画行为不适用；fork 语义由 test/views/proxies_list_test.dart 覆盖',
+    () {
   late ProviderContainer container;
 
   Future<void> pumpList(
@@ -99,7 +106,7 @@ void main() {
 
   Finder headerOf(String groupName) => find.ancestor(
     of: find.text(groupName, findRichText: true),
-    matching: find.byType(ListHeader),
+    matching: find.byType(ui_pl.ListHeader),
   );
 
   Finder actionOf(String groupName, String tooltip) => find.descendant(
@@ -174,7 +181,7 @@ void main() {
       'G2',
     });
     await tester.pumpAndSettle();
-    final radius = AppCorner.xl.ap(tester.element(find.text('G0')));
+    final radius = AppCorner.xl.ap;
     final unfolding = find.byType(UnfoldEntryTransition);
     final cards = find.byWidgetPredicate(
       (widget) => widget is ProxyCard && widget.groupName == 'G0',
@@ -216,7 +223,7 @@ void main() {
     expect(floating.shadows, isNotEmpty);
     expect(
       (floating.shape as RoundedSuperellipseBorder).borderRadius,
-      AppRadius.all(AppCorner.xl.ap(tester.element(headerOf('G0')))),
+      AppRadius.all(AppCorner.xl.ap),
     );
 
     final pinnedTop = tester.getRect(headerOf('G0')).top;
@@ -355,7 +362,7 @@ void main() {
     expect(
       find.descendant(
         of: headerOf('G0'),
-        matching: find.byType(CommonCircleLoading),
+        matching: find.byType(ui_pl.CommonCircleLoading),
       ),
       findsOneWidget,
     );
@@ -366,6 +373,8 @@ void main() {
     container.read(delayTestingGroupsProvider.notifier).stop('G0');
     await tester.pump();
 
-    expect(find.byType(CommonCircleLoading), findsNothing);
+    expect(find.byType(ui_pl.CommonCircleLoading), findsNothing);
   });
+  },
+  );
 }

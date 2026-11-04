@@ -1,6 +1,8 @@
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/ui/icons/icons.dart';
-import 'package:fl_clash/widgets/widgets.dart';
+import 'package:fl_clash/ui/card.dart' show Info, InfoHeader;
+import 'package:fl_clash/ui/list.dart' show ListHeader;
+import 'package:fl_clash/widgets/widgets.dart' hide Info, InfoHeader, ListHeader;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 

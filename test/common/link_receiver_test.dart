@@ -120,6 +120,10 @@ void main() {
       expect(page, contains('Sent'));
       expect(await receiver.link, link);
 
+      // close() runs after the handover response is already on the wire;
+      // give the listener socket a moment to actually shut down before
+      // asserting it refuses connections.
+      await Future<void>.delayed(const Duration(milliseconds: 100));
       await expectLater(
         _request(receiver.address),
         throwsA(isA<SocketException>()),

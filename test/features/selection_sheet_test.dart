@@ -2,10 +2,14 @@ import 'package:fl_clash/features/form/form.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/providers/app.dart';
 import 'package:fl_clash/state.dart';
+import 'package:fl_clash/ui/icons/icons.dart';
+import 'package:fl_clash/ui/sheet.dart' as ui_ss show showSheet;
+import 'package:fl_clash/ui/snap_sheet.dart' as ui_det show snapSheetDetents;
 import 'package:fl_clash/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../helpers/glyph_finders.dart';
 import '../helpers/test_app.dart';
 
 final _proxyTypes = {
@@ -64,7 +68,10 @@ void main() {
 
   testWidgets('narrows the sections by label and subtitle', (tester) async {
     final picked = await _pumpSheet(tester, proxies: _proxyTypes.keys.toList());
-    expect(find.byType(SearchField), findsOneWidget);
+    // fork 的搜索是 AppBar 搜索层，不是常驻 SearchField。
+    expect(find.byType(SearchField), findsNothing);
+    await tester.tap(find.byGlyph(AppGlyphs.search));
+    await tester.pumpAndSettle();
 
     await tester.enterText(find.byType(TextField), 'vmess 4');
     await tester.pump();
@@ -138,10 +145,14 @@ void main() {
   testWidgets('keeps the field above the no-results state', (tester) async {
     await _pumpSheet(tester, proxies: _proxyTypes.keys.toList());
 
+    // fork 的搜索在 AppBar 搜索层里打开。
+    await tester.tap(find.byGlyph(AppGlyphs.search));
+    await tester.pumpAndSettle();
     await tester.enterText(find.byType(TextField), 'missing');
     await tester.pumpAndSettle();
 
     expect(find.text(AppLocalizations.current.noSearchResults), findsOneWidget);
+    // fork 的搜索层内就是 SearchField 承载输入。
     expect(find.byType(SearchField), findsOneWidget);
 
     await tester.tap(find.byTooltip(AppLocalizations.current.clearSearch));
@@ -161,7 +172,7 @@ void main() {
         overrides: [viewSizeProvider.overrideWithBuild((_, _) => view)],
         child: Builder(
           builder: (context) => TextButton(
-            onPressed: () => showSheet<void>(
+            onPressed: () => ui_ss.showSheet<void>(
               context: context,
               builder: (_) => SelectionSheet<String>(
                 title: 'Add',
@@ -182,13 +193,24 @@ void main() {
     );
     await tester.tap(find.text('open'));
     await tester.pumpAndSettle();
-    double sheetTop() => tester.getTopLeft(find.byType(SheetDragHandle)).dy;
+    // fork 的 sheet 是私有 _SnapSheet（paint 位移实现 detent），无 SheetDragHandle；
+    // 量法取 sheet 裁剪框（ClipRSuperellipse）的最高顶边。
+    double sheetTop() {
+      final tops = find
+          .byWidgetPredicate(
+            (widget) => widget.runtimeType.toString() == 'ClipRSuperellipse',
+          )
+          .evaluate()
+          .map((element) => tester.getTopLeft(find.byWidget(element.widget)).dy)
+          .toList();
+      return tops.reduce((a, b) => a < b ? a : b);
+    }
     final list = find.byType(CustomScrollView);
-    expect(sheetTop(), closeTo(view.height * (1 - snapSheetDetents.first), 1));
+    expect(sheetTop(), closeTo(view.height * (1 - ui_det.snapSheetDetents.first), 1));
 
     await tester.fling(list, const Offset(0, -200), 2000);
     await tester.pumpAndSettle();
-    expect(sheetTop(), closeTo(view.height * (1 - snapSheetDetents.last), 1));
+    expect(sheetTop(), closeTo(view.height * (1 - ui_det.snapSheetDetents.last), 1));
     expect(tester.widget<CustomScrollView>(list).controller!.offset, 0);
   });
 }

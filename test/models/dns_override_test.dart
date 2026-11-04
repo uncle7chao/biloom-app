@@ -54,7 +54,10 @@ void main() {
     expect(valueOf('UseSystemHosts'), '${defaultDns.useSystemHosts}');
     expect(valueOf('IPv6Timeout'), '${defaultDns.ipv6Timeout}');
     expect(valueOf('FakeIPTTL'), '${defaultDns.fakeIpTtl}');
-    expect(valueOf('GeoIP'), '${defaultDns.fallbackFilter.geoip}');
+    // fork 拍板：fallback-filter.geoip 默认**关**（内核出厂是 true）——开着会把
+    // 「nameserver 答了非 geoip-code 地区的 IP」当成污染，国内自建上游常被误杀。
+    // 与 GeoIPCode 一样属于「模型与内核允许不同」的例外，不参与比对。
+    expect(valueOf('GeoIP'), 'true');
     expect(valueOf('EnhancedMode'), 'C.DNSMapping');
     expect(defaultDns.enhancedMode, DnsMode.redirHost);
     expect(valueOf('FakeIPFilterMode'), 'C.FilterBlackList');
@@ -63,16 +66,30 @@ void main() {
     expect(stringOf('GeoIPCode'), isNotEmpty);
     expect(stringsOf('FakeIPFilter'), defaultDns.fakeIpFilter);
     expect(stringsOf('DefaultNameserver'), defaultDns.defaultNameserver);
-    expect(stringsOf('NameServer'), defaultDns.nameserver);
+    // fork 拍板：模型默认上游走境外 DoH（1.1.1.1），内核出厂仍是国内
+    // doh.pub —— 刻意分叉，守住「A 改动没被回退」。
+    expect(stringsOf('NameServer'), [
+      'https://doh.pub/dns-query',
+      'tls://223.5.5.5:853',
+    ]);
+    expect(defaultDns.nameserver.first, 'https://1.1.1.1/dns-query');
     expect(body, isNot(contains('Listen:')));
     expect(body, isNot(contains('FakeIPRange6:')));
+    // listen / fakeIpRange6 在内核 RawDNS 里没有对应字段，模型默认空串
+    // （_isUnset 判 unset）→ 覆盖它们不产出任何片段。geoip-code 则不同：
+    // fork 刻意保留 'CN' 真值（仅当 geoip 开时才有意义，但迁移只关 geoip
+    // 不动它），用户显式选中该覆盖键时就该输出 —— 这正是用例名里
+    // "GeoIP code aside" 的分叉点（断言写于 geoipCode 默认还是 '' 的年代，
+    // 默认值改成 'CN' 后原 isEmpty 断言随之失效）。
     expect(
       defaultDns.overrideJson({
         DnsOverrideKey.listen,
         DnsOverrideKey.fakeIpRange6,
         DnsOverrideKey.fallbackFilterGeoipCode,
       }),
-      isEmpty,
+      {
+        'fallback-filter': {'geoip-code': 'CN'},
+      },
     );
   });
 

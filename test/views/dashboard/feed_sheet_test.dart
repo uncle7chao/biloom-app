@@ -7,6 +7,7 @@ import 'package:fl_clash/ui/icons/icons.dart';
 import 'package:fl_clash/views/dashboard/widgets/connection_stats.dart';
 import 'package:fl_clash/views/dns_queries.dart';
 import 'package:fl_clash/widgets/widgets.dart';
+import 'package:fl_clash/ui/ui.dart' as ui_fs;
 import 'package:flutter/gestures.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -392,7 +393,7 @@ void main() {
 
     final detail = find.byType(DnsQueryDetailView);
     expect(detail, findsOneWidget);
-    expect(ModalRoute.of(tester.element(detail)), isA<PagedSheetRoute>());
+    expect(ModalRoute.of(tester.element(detail)), isA<ui_fs.PagedSheetRoute>());
     expect(sheetTop(tester), closeTo(_shortTop, 1));
 
     await tester.pageBack();
@@ -419,7 +420,7 @@ void main() {
 
     final detail = find.byType(DnsQueryDetailView);
     expect(detail, findsOneWidget);
-    expect(ModalRoute.of(tester.element(detail)), isA<PagedSheetRoute>());
+    expect(ModalRoute.of(tester.element(detail)), isA<ui_fs.PagedSheetRoute>());
 
     await tester.pageBack();
     await tester.pumpAndSettle();
