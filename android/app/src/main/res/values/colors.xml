@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="shortcut_background">#6666FB</color>
+    <!-- BiLoom 品牌炭黑：启动屏与品牌启动页同底色 -->
+    <color name="launch_background">#101010</color>
 </resources>
