@@ -9,6 +9,28 @@ import 'package:material_ui/material_ui.dart' show ThemeMode;
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  group('ThemeProps.safeFromJson brand seed migration', () {
+    test('migrates the legacy default seed to the brand color', () {
+      final props = ThemeProps.safeFromJson({
+        'primaryColor': legacyDefaultPrimaryColor,
+        'primaryColors': [legacyDefaultPrimaryColor],
+      });
+      expect(props.primaryColor, defaultPrimaryColor);
+    });
+
+    test('keeps a customized seed untouched', () {
+      final props = ThemeProps.safeFromJson({'primaryColor': 0xFF123456});
+      expect(props.primaryColor, 0xFF123456);
+    });
+
+    test('falls back to the brand default on missing config', () {
+      expect(
+        ThemeProps.safeFromJson(null).primaryColor,
+        defaultPrimaryColor,
+      );
+    });
+  });
+
   group('Migration', () {
     test('returns current config without rewriting storage', () async {
       final configMap = _createConfigMap(

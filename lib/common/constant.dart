@@ -168,7 +168,13 @@ const proxiesListStoreKey = PageStorageKey<String>('proxies_list');
 const toolsStoreKey = PageStorageKey<String>('tools');
 const profilesStoreKey = PageStorageKey<String>('profiles');
 
-const defaultPrimaryColor = 0XFFD8C0C3;
+// BiLoom 品牌青绿（与 biloom-mark.svg / 启动图标 / 品牌启动页同源，
+// 恒定 #00E5AF；主题色全部经 fromSeed 派生，全走 colorScheme.primary）。
+const defaultPrimaryColor = 0XFF00E5AF;
+
+// 01.00.40 之前的默认种子色（iOS 灰粉）。存量配置里若仍存此值，
+// 说明用户从未主动选过主题色，加载时迁移到新品牌色（见 ThemeProps.safeFromJson）。
+const legacyDefaultPrimaryColor = 0XFFD8C0C3;
 
 double getWidgetHeight(num lines) {
   // 间隙和下面对齐（dashboard 的栅格间距也是 18），行高提到 88 是为了让卡片里的

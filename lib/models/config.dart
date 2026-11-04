@@ -507,7 +507,14 @@ abstract class ThemeProps with _$ThemeProps {
     if (json == null) {
       return defaultThemeProps;
     }
-    return decodeSalvaging('theme settings', json, ThemeProps.fromJson);
+    final props = decodeSalvaging('theme settings', json, ThemeProps.fromJson);
+    // 品牌色迁移：默认种子色由 iOS 灰粉换成品牌青绿后，存量配置里
+    // 仍等于旧默认值的 primaryColor 一并迁移（无法与「主动选了旧默认色」
+    // 区分，按「从未动过主题色」处理）。
+    if (props.primaryColor == legacyDefaultPrimaryColor) {
+      return props.copyWith(primaryColor: defaultPrimaryColor);
+    }
+    return props;
   }
 }
 
