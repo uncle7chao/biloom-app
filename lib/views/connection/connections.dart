@@ -10,7 +10,6 @@ import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/ui/icons/icons.dart';
 import 'package:fl_clash/widgets/widgets.dart' hide
       ActivateBox,
-      AdaptiveSizeExt,
       AnimatedVisibility,
       AppBarSearchStateBuilder,
       BackLayerScope,
@@ -91,7 +90,6 @@ import 'package:fl_clash/widgets/widgets.dart' hide
       showSheet;
 import 'package:fl_clash/ui/ui.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class ConnectionsView extends ConsumerStatefulWidget {
@@ -128,7 +126,7 @@ class _ConnectionsViewState extends ConsumerState<ConnectionsView>
   }
 
   /// 最近一次内核快照（未筛选）—— 结构化筛选的选项与筛选都基于它。
-  List<TrackerInfo> _snapshot = const [];
+  final List<TrackerInfo> _snapshot = const [];
 
   /// 结构化筛选：进程 / 节点链 / 规则类型。null = 不过滤该维度。
   /// 与搜索关键词（keywords/query）独立，两层过滤叠加生效。

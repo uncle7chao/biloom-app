@@ -147,18 +147,6 @@ GroupsState currentGroupsState(Ref ref) {
   );
 }
 
-Group _withoutSelection(Group group) {
-  final all = group.all.any(_hasSelection)
-      ? [
-          for (final proxy in group.all)
-            _hasSelection(proxy) ? proxy.copyWith(now: '') : proxy,
-        ]
-      : group.all;
-  return group.copyWith(now: '', all: all);
-}
-
-bool _hasSelection(Proxy proxy) => proxy.now?.isNotEmpty ?? false;
-
 @riverpod
 ProxyState proxyState(Ref ref) {
   final suspend = ref.watch(suspendProvider);

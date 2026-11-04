@@ -1,8 +1,28 @@
 import 'dart:async';
+import 'dart:math' as math;
 
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart';
 
 import 'inherited.dart';
+
+/// Per-route count of live back-layer entries.
+///
+/// [ModalRoute.popDisposition] consults `_popEntries` before local history,
+/// and `_ModalScopeStatus` does not rebuild on local-history changes, so a
+/// [PopScope] cannot react to entries added after it built. BackLayerScope
+/// bumps this counter when it attaches an entry, and CommonPopScope listens
+/// to keep [PopScope.canPop] in sync.
+final Expando<ValueNotifier<int>> _routeBackLayers =
+    Expando<ValueNotifier<int>>();
+final ValueNotifier<int> _noRouteBackLayers = ValueNotifier(0);
+
+ValueNotifier<int> routeBackLayersOf(Route<dynamic>? route) {
+  if (route == null) {
+    return _noRouteBackLayers;
+  }
+  return _routeBackLayers[route] ??= ValueNotifier(0);
+}
 
 class CommonPopScope extends StatelessWidget {
   final Widget child;
@@ -22,34 +42,38 @@ class CommonPopScope extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final route = ModalRoute.of(context);
-    final hasBackLayer = route?.willHandlePopInternally == true;
-    return PopScope(
-      canPop: onPop == null || hasBackLayer,
-      onPopInvokedWithResult: onPop == null
-          ? null
-          : (didPop, _) async {
-              if (didPop) {
-                return;
-              }
-              // BackLayerScope adds its entry a frame after this builds, which
-              // rebuilds nothing here on a route with another below it.
-              if (route?.willHandlePopInternally == true) {
-                Navigator.of(context).pop();
-                return;
-              }
-              final res = await onPop!(context);
-              if (!context.mounted) {
-                return;
-              }
-              if (!res) {
-                return;
-              }
-              Navigator.of(context).pop();
-              if (onPopSuccess != null) {
-                await onPopSuccess!();
-              }
-            },
-      child: child,
+    return ValueListenableBuilder<int>(
+      valueListenable: routeBackLayersOf(route),
+      builder: (context, backLayers, _) {
+        final hasBackLayer =
+            backLayers > 0 || route?.willHandlePopInternally == true;
+        return PopScope(
+          canPop: onPop == null || hasBackLayer,
+          onPopInvokedWithResult: onPop == null
+              ? null
+              : (didPop, _) async {
+                  if (didPop) {
+                    return;
+                  }
+                  if (route?.willHandlePopInternally == true) {
+                    Navigator.of(context).pop();
+                    return;
+                  }
+                  final res = await onPop!(context);
+                  if (!context.mounted) {
+                    return;
+                  }
+                  if (!res) {
+                    return;
+                  }
+                  Navigator.of(context).pop();
+                  if (onPopSuccess != null) {
+                    await onPopSuccess!();
+                  }
+                },
+          child: child,
+        );
+      },
     );
   }
 }
@@ -111,11 +135,27 @@ class _BackLayerScopeState extends State<BackLayerScope> {
       );
       _entry = entry;
       route.addLocalHistoryEntry(entry);
+      routeBackLayersOf(route).value++;
     });
   }
 
   void _handleRemove() {
     _entry = null;
+    final route = _route;
+    if (route != null) {
+      final notifier = routeBackLayersOf(route);
+      void decrement() => notifier.value = math.max(0, notifier.value - 1);
+      if (SchedulerBinding.instance.schedulerPhase ==
+          SchedulerPhase.persistentCallbacks) {
+        // Detach can run inside didChangeDependencies during a build; defer
+        // the decrement so ValueListenableBuilder is not marked dirty
+        // mid-build. Pop-driven removals happen outside a frame and stay
+        // synchronous so canPop is fresh for the next back press.
+        WidgetsBinding.instance.addPostFrameCallback((_) => decrement());
+      } else {
+        decrement();
+      }
+    }
     if (!_isDetaching && mounted) {
       widget.onBack();
     }

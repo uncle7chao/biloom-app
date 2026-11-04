@@ -1,8 +1,5 @@
 import 'package:fl_clash/common/common.dart';
-import 'package:fl_clash/models/common.dart';
 import 'package:fl_clash/widgets/inherited.dart';
-import 'package:flutter/foundation.dart';
-import 'package:fl_clash/ui/metrics.dart' hide AdaptiveSizeExt;
 import 'package:fl_clash/ui/icons/icons.dart';
 import 'package:fl_clash/ui/navigator.dart';
 import 'package:fl_clash/ui/models.dart';

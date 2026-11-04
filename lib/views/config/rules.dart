@@ -5,7 +5,6 @@ import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/ui/icons/icons.dart';
 import 'package:fl_clash/widgets/widgets.dart' hide
       ActivateBox,
-      AdaptiveSizeExt,
       AnimatedVisibility,
       AppBarSearchStateBuilder,
       BackLayerScope,

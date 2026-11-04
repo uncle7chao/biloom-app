@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/providers/providers.dart';
@@ -52,28 +54,22 @@ class ConnectionHero extends ConsumerWidget {
           Colors.white,
           0.2,
         );
-        leading = Icon(
-          Icons.check_circle,
-          color: stateColor,
-          size: 28.ap,
-        );
+        // B 方案 B2-b：连接成功 = 三弧线外扩淡出 + 对勾弹入（品牌图形语言）。
+        leading = _ConnectionMark(phase: phase, color: stateColor!);
         title = appLocalizations.connectionStateConnected;
         subtitle = appLocalizations.connectionHeroTapToDisconnect;
       case ConnectionPhase.connecting:
-        leading = SizedBox(
-          width: 28.ap,
-          height: 28.ap,
-          child: CircularProgressIndicator(strokeWidth: 2.4),
+        // 连接中 = 三弧线旋转（与启动图标同源的 arcs 图形语言），取代
+        // 通用 CircularProgressIndicator。
+        leading = _ConnectionMark(
+          phase: phase,
+          color: context.colorScheme.primary,
         );
         title = appLocalizations.connectionStateConnecting;
         subtitle = appLocalizations.connectionHeroTapToDisconnect;
       case ConnectionPhase.disconnected:
         stateColor = _disconnectedColor;
-        leading = Icon(
-          Icons.power_settings_new,
-          color: stateColor,
-          size: 28.ap,
-        );
+        leading = _ConnectionMark(phase: phase, color: stateColor);
         title = appLocalizations.connectionStateDisconnected;
         subtitle = hasProfile
             ? appLocalizations.connectionHeroTapToConnect
@@ -164,4 +160,162 @@ class ConnectionHero extends ConsumerWidget {
       ),
     );
   }
+}
+
+/// 连接主卡的状态标记（B 方案 B2-b）：三条信号弧线 + 对勾。
+///
+/// 图形语言与启动图标同源（design/logo 的 biloom-arcs）——连接中三弧线
+/// 旋转，连接成功弧线外扩淡出、对勾弹入；未连接维持电源图标。颜色一律
+/// 由调用方传（连接中 = primary、已连接 = primary 混白 20%、未连接 =
+/// 状态红），本组件不引入新色。
+class _ConnectionMark extends StatefulWidget {
+  const _ConnectionMark({required this.phase, required this.color});
+
+  final ConnectionPhase phase;
+  final Color color;
+
+  @override
+  State<_ConnectionMark> createState() => _ConnectionMarkState();
+}
+
+class _ConnectionMarkState extends State<_ConnectionMark>
+    with TickerProviderStateMixin {
+  // 双动画控制器（spin + settle），必须用多 ticker 的 TickerProviderStateMixin；
+  // 单 ticker 版在编辑态同时挂两张连接卡时会直接抛断言。
+  late final AnimationController _spin = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 1200),
+  );
+  late final AnimationController _settle = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 600),
+  );
+
+  @override
+  void initState() {
+    super.initState();
+    _applyPhase();
+  }
+
+  @override
+  void didUpdateWidget(covariant _ConnectionMark oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.phase != widget.phase) {
+      _applyPhase();
+    }
+  }
+
+  void _applyPhase() {
+    switch (widget.phase) {
+      case ConnectionPhase.connecting:
+        _settle.stop();
+        _settle.value = 0;
+        if (!_spin.isAnimating) {
+          _spin.repeat();
+        }
+      case ConnectionPhase.connected:
+        _spin.stop();
+        _settle.forward(from: 0);
+      case ConnectionPhase.disconnected:
+        _spin.stop();
+        _settle.stop();
+        _settle.value = 0;
+    }
+  }
+
+  @override
+  void dispose() {
+    _spin.dispose();
+    _settle.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final size = 28.ap;
+    if (widget.phase == ConnectionPhase.disconnected) {
+      return Icon(Icons.power_settings_new, color: widget.color, size: size);
+    }
+    return AnimatedBuilder(
+      animation: Listenable.merge([_spin, _settle]),
+      builder: (_, _) => CustomPaint(
+        size: Size.square(size),
+        painter: _ArcsCheckPainter(
+          progress: widget.phase == ConnectionPhase.connected
+              ? _settle.value
+              : 0,
+          spin: _spin.value,
+          color: widget.color,
+        ),
+      ),
+    );
+  }
+}
+
+/// 三弧线 + 对勾的画笔：[progress] 0 = 连接中（弧线满 alpha 旋转），
+/// 1 = 弧线完全外扩淡出、对勾落定；[spin] 是弧线相位（0~1 一圈）。
+class _ArcsCheckPainter extends CustomPainter {
+  const _ArcsCheckPainter({
+    required this.progress,
+    required this.spin,
+    required this.color,
+  });
+
+  final double progress;
+  final double spin;
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = size.center(Offset.zero);
+    // 三条信号弧线：连接完成时半径外扩、alpha 走零 —— 信号「发出去了」。
+    final radius = size.shortestSide * 0.42 * (1 + 0.55 * progress);
+    final arcAlpha = (1 - progress).clamp(0.0, 1.0);
+    if (arcAlpha > 0) {
+      final arcPaint = Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.4
+        ..strokeCap = StrokeCap.round
+        ..color = color.withValues(alpha: arcAlpha);
+      const sweep = 64 * math.pi / 180;
+      const gap = (2 * math.pi - 3 * sweep) / 3;
+      for (var i = 0; i < 3; i++) {
+        final start =
+            -math.pi / 2 + spin * 2 * math.pi + i * (sweep + gap);
+        canvas.drawArc(
+          Rect.fromCircle(center: center, radius: radius),
+          start,
+          sweep,
+          false,
+          arcPaint,
+        );
+      }
+    }
+    // 对勾：随进度放大弹入（easeOutBack 的回弹感用轻量近似）。
+    if (progress > 0) {
+      final t = Curves.easeOutBack.transform(progress.clamp(0.0, 1.0));
+      final checkPaint = Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.6
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round
+        ..color = color.withValues(alpha: progress.clamp(0.0, 1.0));
+      final path = Path()
+        ..moveTo(center.dx - 5.5, center.dy + 0.5)
+        ..lineTo(center.dx - 1.5, center.dy + 4.5)
+        ..lineTo(center.dx + 6, center.dy - 4.5);
+      canvas.save();
+      canvas.translate(center.dx, center.dy);
+      canvas.scale(0.5 + 0.5 * t);
+      canvas.translate(-center.dx, -center.dy);
+      canvas.drawPath(path, checkPaint);
+      canvas.restore();
+    }
+  }
+
+  @override
+  bool shouldRepaint(_ArcsCheckPainter oldDelegate) =>
+      oldDelegate.progress != progress ||
+      oldDelegate.spin != spin ||
+      oldDelegate.color != color;
 }

@@ -10,7 +10,6 @@ import 'package:fl_clash/views/config/override.dart';
 import 'package:fl_clash/views/config/tun.dart';
 import 'package:fl_clash/widgets/widgets.dart' hide
       ActivateBox,
-      AdaptiveSizeExt,
       AnimatedVisibility,
       AppBarSearchStateBuilder,
       BackLayerScope,
@@ -148,7 +147,6 @@ ConfigToggleItem _networkToggle({
   required ConfigLabel title,
   required bool Function(NetworkProps state) select,
   required _NetworkUpdate<bool> update,
-  ConfigLabel? subtitle,
   bool takeover = false,
 }) {
   final writer = _networkWriter(update);

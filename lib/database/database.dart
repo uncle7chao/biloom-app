@@ -315,12 +315,23 @@ class Database extends _$Database {
       for (final row in await customSelect('SELECT id FROM profiles').get())
         row.read<int>('id'),
     };
-    final ruleRows = (await _columnsOf('rules')).isEmpty
+    final ruleColumns = await _columnsOf('rules');
+    final hasRuleOwner = ruleColumns.contains('profile_id');
+    final ruleRows = ruleColumns.isEmpty
         ? const <QueryRow>[]
         : await customSelect(
             'SELECT id, rule_action, content, rule_target, rule_provider, '
-            'sub_rule, no_resolve, src FROM rules',
+            'sub_rule, no_resolve, src'
+            '${hasRuleOwner ? ', profile_id' : ''} FROM rules',
           ).get();
+    // Drift 回退版本只倒退 user_version、保留加过的列 —— rules 已带
+    // profile_id 时（降级又升回来的库），归属以表里现值为准，别丢。
+    final existingOwners = ruleRows.isEmpty || !hasRuleOwner
+        ? const <int, int?>{}
+        : {
+            for (final row in ruleRows)
+              row.read<int>('id'): row.readNullable<int>('profile_id'),
+          };
     final linkRows = await customSelect(
       'SELECT profile_id, rule_id, scene, "order" FROM profile_rule_mapping '
       'ORDER BY profile_id IS NOT NULL, "order"',
@@ -379,8 +390,17 @@ class Database extends _$Database {
     final keptRuleIds = <int>{};
     for (final row in ruleRows) {
       final id = row.read<int>('id');
-      final owner = owners[id];
-      if (owner == null) {
+      final mapped = owners[id];
+      final int? owner;
+      final String? order;
+      if (mapped != null) {
+        owner = mapped.$1;
+        order = mapped.$2;
+      } else {
+        owner = existingOwners[id];
+        order = null;
+      }
+      if (mapped == null && owner == null) {
         continue;
       }
       keptRuleIds.add(id);
@@ -390,7 +410,7 @@ class Database extends _$Database {
         'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
         [
           id,
-          owner.$1,
+          owner,
           row.read<String>('rule_action'),
           row.readNullable<String>('content'),
           row.readNullable<String>('rule_target'),
@@ -398,7 +418,7 @@ class Database extends _$Database {
           row.readNullable<String>('sub_rule'),
           row.read<int>('no_resolve'),
           row.read<int>('src'),
-          owner.$2,
+          order,
         ],
       );
     }

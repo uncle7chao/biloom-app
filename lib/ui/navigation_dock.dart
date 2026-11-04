@@ -1459,9 +1459,12 @@ class _Lens extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = context.colorScheme;
     final lifted = lift.clamp(0.0, 1.0);
-    final tone = colorScheme.brightness == Brightness.dark ? 4.0 : 90.0;
-    final hct = Hct.fromInt(colorScheme.secondary.toARGB32())..tone = tone;
-    final platter = Color(hct.toInt()).withValues(alpha: 0.85);
+    // B 方案 B2-a：选中 platter 从 secondary 改品牌 primary —— 沉底的
+    // 品牌胶囊，暗色下 tone 提到 20 让绿可辨；亮色 tone 88 压暗同理。
+    // 内容本身仍由 [_LensTint] 染成 primary，底与内容同族。
+    final tone = colorScheme.brightness == Brightness.dark ? 20.0 : 88.0;
+    final hct = Hct.fromInt(colorScheme.primary.toARGB32())..tone = tone;
+    final platter = Color(hct.toInt()).withValues(alpha: 0.28);
     return PositionedDirectional(
       start: rect.left,
       top: rect.top,
@@ -1472,10 +1475,13 @@ class _Lens extends StatelessWidget {
           color: glass
               ? platter.withValues(alpha: platter.a * (1 - lifted))
               : Color.alphaBlend(
-                  colorScheme.onSurface.withValues(alpha: 0.08 * lifted),
-                  SurfaceLevel.floatingOf(
-                    colorScheme,
-                  ).next.colorOf(colorScheme),
+                  colorScheme.primary.withValues(alpha: 0.14 * (1 - lifted)),
+                  Color.alphaBlend(
+                    colorScheme.onSurface.withValues(alpha: 0.08 * lifted),
+                    SurfaceLevel.floatingOf(
+                      colorScheme,
+                    ).next.colorOf(colorScheme),
+                  ),
                 ),
           shape: AppShape.full,
         ),

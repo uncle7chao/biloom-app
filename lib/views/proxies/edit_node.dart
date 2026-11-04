@@ -1,6 +1,6 @@
+import 'dart:async';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/ui/icons/app_glyphs.dart';
-import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/widgets/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -47,11 +47,14 @@ class _EditProxyNodeViewState extends ConsumerState<EditProxyNodeView> {
         );
     // result 为 null 表示内核或校验已经报过错（loadingRun 会弹出来），这里不再补一句。
     if (!mounted || result == null) return;
-    dialogs.showMessage(
-      message: TextSpan(
-        text: '${context.appLocalizations.editNodeSuccess}\n· ${result.updated}',
+    unawaited(
+      dialogs.showMessage(
+        message: TextSpan(
+          text:
+              '${context.appLocalizations.editNodeSuccess}\n· ${result.updated}',
+        ),
+        cancelable: false,
       ),
-      cancelable: false,
     );
     if (!mounted) return;
     Navigator.of(context).pop();

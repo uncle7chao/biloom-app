@@ -63,7 +63,6 @@ export 'proxy_share.dart';
 export 'request.dart';
 export 'smart_params.dart';
 export 'smart_params_store.dart';
-export 'request.dart';
 export 'search.dart';
 export 'snowflake.dart';
 export 'string.dart';

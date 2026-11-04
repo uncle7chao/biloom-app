@@ -295,8 +295,19 @@ class CommonCard extends StatelessWidget {
               }
               final focusNode = FocusManager.instance.primaryFocus;
               final context = focusNode?.context;
-              if (focusNode == null ||
-                  context == null ||
+              if (focusNode == null || context == null) {
+                return KeyEventResult.ignored;
+              }
+              // Arrow right lands on a card's own action (e.g. a delay test
+              // control) that tab traversal skips, mirroring ui/card.dart.
+              final action = focusNode.descendants
+                  .where((node) => node.skipTraversal && node.canRequestFocus)
+                  .firstOrNull;
+              if (action != null) {
+                action.requestFocus();
+                return KeyEventResult.handled;
+              }
+              if (focusNode.skipTraversal ||
                   context.findAncestorWidgetOfExactType<IconButton>() != null) {
                 return KeyEventResult.ignored;
               }

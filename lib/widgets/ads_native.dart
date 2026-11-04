@@ -209,7 +209,7 @@ class _AdsNativeCardState extends ConsumerState<AdsNativeCard>
     if (ad == null || !_loaded) {
       return const SizedBox.shrink();
     }
-    final height = _kNativeCardHeight;
+    const height = _kNativeCardHeight;
     return SizedBox(
       height: height,
       child: ColoredBox(

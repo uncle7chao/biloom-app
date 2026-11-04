@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/providers.dart';
@@ -155,7 +156,7 @@ class _ManageProxyNodesViewState extends ConsumerState<ManageProxyNodesView> {
     _showResult(result);
     if (!mounted) return;
     setState(() => _selected.remove(node.name));
-    _reload();
+    unawaited(_reload());
   }
 
   /// 批量删除：一次确认、一次调内核（removeProxyNodes 本来就收名字列表，
@@ -185,7 +186,7 @@ class _ManageProxyNodesViewState extends ConsumerState<ManageProxyNodesView> {
     _showResult(result);
     if (!mounted) return;
     setState(_selected.clear);
-    _reload();
+    unawaited(_reload());
   }
 
   /// 批量操作栏：全选 + 「删除所选 (n)」。有节点时才出现在列表上方。
@@ -266,7 +267,7 @@ class _ManageProxyNodesViewState extends ConsumerState<ManageProxyNodesView> {
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       itemCount: nodes.length,
-      separatorBuilder: (_, __) => const Divider(height: 1),
+      separatorBuilder: (_, _) => const Divider(height: 1),
       itemBuilder: (context, index) {
         final node = nodes[index];
         final isSelected = _selected.contains(node.name);

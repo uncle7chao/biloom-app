@@ -1,4 +1,3 @@
-import 'package:dio/dio.dart';
 import 'package:fl_clash/common/constant.dart';
 import 'package:fl_clash/common/exception.dart';
 import 'package:fl_clash/common/network_error.dart';
@@ -75,30 +74,6 @@ class _AppUiLocalizationsDelegate
 
   @override
   bool shouldReload(_AppUiLocalizationsDelegate old) => false;
-}
-
-String? networkErrorMessage(Object error, AppLocalizations appLocalizations) {
-  if (error case CoreMethodException(:final code)) {
-    return switch (code) {
-      'request_bad_response' => appLocalizations.networkException,
-      'request_error' => appLocalizations.unknownNetworkError,
-      _ => null,
-    };
-  }
-  if (error is DioException) {
-    if (error.type == DioExceptionType.badResponse) {
-      return appLocalizations.networkException;
-    }
-    // 「未知网络错误」必须带上底层原因（DNS 解析失败 / 连接超时 / 拒绝连接
-    // 是三种完全不同的病，对症的药也完全不同）——只弹一句通用文案，用户
-    // 没法自查，反馈回来也只能再猜一轮（2026-10-01 安卓订阅导入排查教训）。
-    final inner = error.error ?? error.message;
-    final detail = inner?.toString();
-    return detail == null || detail.isEmpty
-        ? appLocalizations.unknownNetworkError
-        : '${appLocalizations.unknownNetworkError}\n$detail';
-  }
-  return null;
 }
 
 String? coreLaunchBlockedMessage(

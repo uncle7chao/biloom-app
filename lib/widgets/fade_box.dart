@@ -1,6 +1,5 @@
 import 'package:animations/animations.dart';
 import 'package:fl_clash/common/common.dart';
-import 'package:fl_clash/ui/metrics.dart' hide AdaptiveSizeExt;
 import 'package:material_ui/material_ui.dart';
 
 class FadeBox extends StatelessWidget {

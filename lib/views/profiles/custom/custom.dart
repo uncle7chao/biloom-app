@@ -428,9 +428,20 @@ class _CustomProfileViewState extends ConsumerState<CustomProfileView> {
   @override
   void deactivate() {
     _discardOnDispose = !_discarded && widget.isNew && _isUntouched;
+    // Providers may already be torn down when the tree is unmounting (e.g. in
+    // tests where the whole ProviderContainer is disposed first). Reading
+    // them here would throw a StateError, so treat that as "not edited".
+    Object? editedInputs;
+    var inputsAvailable = true;
+    try {
+      editedInputs = _inputs;
+    } on StateError {
+      inputsAvailable = false;
+    }
     _edited =
         _loadedInputs != null &&
-        !const DeepCollectionEquality().equals(_loadedInputs, _inputs);
+        inputsAvailable &&
+        !const DeepCollectionEquality().equals(_loadedInputs, editedInputs);
     super.deactivate();
   }
 

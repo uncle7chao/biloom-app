@@ -12,6 +12,7 @@
 /// 持久化与轮换触发见 smart_params_store.dart；接入点：
 /// providers/actions/setup.dart 的 getProfile（configMap → 最终 yaml 的
 /// 必经之路，订阅/粘贴/链接/手填全来源覆盖）。
+library;
 
 const kSmartAntidetectionKey = 'smartAntidetectionEnabled';
 const kFingerprintOverridesKey = 'fingerprintOverrides';

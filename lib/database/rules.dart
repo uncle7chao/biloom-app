@@ -512,10 +512,6 @@ class RulesDao extends DatabaseAccessor<Database> with _$RulesDaoMixin {
     });
   }
 
-  Future<void> _delAll(Iterable<int> ruleIds) async {
-    await rules.deleteWhere((t) => t.id.isIn(ruleIds));
-  }
-
   void _setWithBatch(
     Batch b,
     Iterable<Rule> rules, {

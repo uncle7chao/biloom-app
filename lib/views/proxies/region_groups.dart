@@ -1,6 +1,5 @@
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/ui/icons/app_glyphs.dart';
-import 'package:fl_clash/models/common.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
@@ -81,9 +80,9 @@ class _RegionGroupPlanViewState extends ConsumerState<RegionGroupPlanView> {
       appLocalizations.generateRegionGroupsDone,
       '',
       for (final draft in plan.upserts)
-        '${draft.region.emoji} ${draft.region.label}   '
+        ('${draft.region.emoji} ${draft.region.label}   '
             '${draft.proxyNames.length}   '
-            '${draft.isUpdate ? appLocalizations.update : appLocalizations.create}',
+            '${draft.isUpdate ? appLocalizations.update : appLocalizations.create}'),
       for (final name in plan.removals) '$name   ${appLocalizations.remove}',
       // 重名被挡下是**要说出来**的：不说的话，用户会以为每个地区都建好了。
       if (skipped > 0) '',

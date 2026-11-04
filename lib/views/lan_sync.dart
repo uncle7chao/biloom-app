@@ -204,10 +204,10 @@ class _LanSyncSharePageState extends ConsumerState<LanSyncSharePage> {
               title: Text('已同步 $_downloadCount 次'),
               subtitle: const Text('保持本页打开，直到对方导入完成'),
             ),
-            ListItem(
-              leading: const Icon(Icons.info_outline),
-              title: const Text('使用说明'),
-              subtitle: const Text('两台设备需在同一局域网。首次使用如系统弹出防火墙授权，请选择「允许」。'),
+            const ListItem(
+              leading: Icon(Icons.info_outline),
+              title: Text('使用说明'),
+              subtitle: Text('两台设备需在同一局域网。首次使用如系统弹出防火墙授权，请选择「允许」。'),
             ),
           ],
         ],
@@ -298,7 +298,7 @@ Future<void> importFromLan(BuildContext context, WidgetRef ref) async {
         // 管道写到 backupFilePath，这里直接交出去即可。
         await ref.read(backupActionProvider.notifier).restore(
           option,
-          (downloadPath) async => await appPath.backupFilePath,
+          (downloadPath) async => appPath.backupFilePath,
         );
         return true;
       } finally {

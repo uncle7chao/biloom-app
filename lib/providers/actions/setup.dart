@@ -154,19 +154,24 @@ class SetupAction extends _$SetupAction {
     }
     commonPrint.log('init status');
     _startTime = await serviceStartTime();
+    // 服务已在跑（Windows 服务自启 / 上次进程还活着）：只接管运行态，**不重推
+    // 配置** —— 重推会让 url-test 组重新测速换节点（99b3381d 的语义，merge 时
+    // 丢过一次）。resume 路径靠 lastConfigMd5 对账，配置真变了才会补推。
+    if (_isRunning) {
+      globalState.lastConfigMd5 = await preferences.getAppliedConfigMd5();
+      await _run(true, initialize: true, resume: true);
+      return;
+    }
     // 「接管方式还开着」（系统代理 / TUN）同样代表用户希望处在连接状态 ——
     // 那是他上次离开时的选择，打开软件就该恢复。有了这一条，系统代理的默认值
     // 才真正等于「打开即用」，而不是一个亮着却什么也没做的开关。
-    final shouldRun =
-        _isRunning ||
-        ref.read(appSettingProvider).autoRun ||
-        ref.read(takeoverOpenProvider);
-    if (shouldRun) {
-      globalState.lastConfigMd5 = await preferences.getAppliedConfigMd5();
+    // 冷启动（服务没在跑）必须真推一次配置，内核才有东西可跑。
+    if (ref.read(appSettingProvider).autoRun ||
+        ref.read(takeoverOpenProvider)) {
       await setRunning(true, initialize: true);
-    } else {
-      await globalState.safeRun(() => applyProfile(force: true));
+      return;
     }
+    await globalState.safeRun(() => applyProfile(force: true));
   }
 
   Future<bool> setRunning(bool running, {bool initialize = false}) {

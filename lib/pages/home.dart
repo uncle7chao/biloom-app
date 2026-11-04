@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:io' show Platform;
+
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/manager/app_manager.dart';
@@ -6,7 +9,6 @@ import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/ui/icons/icons.dart';
 import 'package:fl_clash/widgets/widgets.dart' hide
       ActivateBox,
-      AdaptiveSizeExt,
       AnimatedVisibility,
       AppBarSearchStateBuilder,
       BackLayerScope,
@@ -87,6 +89,7 @@ import 'package:fl_clash/widgets/widgets.dart' hide
       showSheet;
 import 'package:fl_clash/ui/ui.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -101,7 +104,11 @@ class HomePage extends ConsumerWidget {
     if (!hasViewSize) {
       return const SizedBox.shrink();
     }
-    return HomeBackScopeContainer(
+    // 冷启动品牌页（B 方案 B1-b）：内容树就绪时盖一层 B 标 + 字标，
+    // ~0.8s 后淡出。双端同源 —— Windows 窗口期与 Android 引擎首帧后
+    // 各自都从系统层（原生启动屏）无缝接进来。
+    return _BrandSplashHost(
+      child: HomeBackScopeContainer(
       child: AppSidebarContainer(
         child: _HomeShell(
           child: Consumer(
@@ -124,6 +131,147 @@ class HomePage extends ConsumerWidget {
               );
             },
           ),
+        ),
+      ),
+      ),
+    );
+  }
+}
+
+/// 冷启动品牌页的宿主：包住整个主页，首帧显示品牌层，短暂停留后淡出并
+/// 从树上移除自己（不占任何后续帧）。品牌底恒定炭黑 `#101010`，B 标与
+/// 字标用品牌绿 —— 这是品牌时刻，不跟随亮色主题（也符合「不引入第二套
+/// 配色」铁律：只有 #101010 与 colorScheme.primary）。
+class _BrandSplashHost extends StatefulWidget {
+  const _BrandSplashHost({required this.child});
+
+  final Widget child;
+
+  @override
+  State<_BrandSplashHost> createState() => _BrandSplashHostState();
+}
+
+class _BrandSplashHostState extends State<_BrandSplashHost> {
+  static const _holdDuration = Duration(milliseconds: 800);
+  static const _fadeDuration = Duration(milliseconds: 400);
+
+  /// flutter test 会注入 FLUTTER_TEST；品牌层是纯启动视觉，测试里跳过，
+  /// 否则 hold 期会吃掉用例的 tap 并留下 pending timer。
+  static final bool _skipInTest = Platform.environment
+      .containsKey('FLUTTER_TEST');
+
+  bool _visible = true;
+  bool _disposed = false;
+  Timer? _holdTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    if (_skipInTest) {
+      return;
+    }
+    _holdTimer = Timer(_holdDuration, () {
+      if (mounted) {
+        setState(() => _visible = false);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    // 树拆掉时收掉品牌层计时器，避免测试环境报 pending timer。
+    _holdTimer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_skipInTest) {
+      return widget.child;
+    }
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        widget.child,
+        if (!_disposed)
+          IgnorePointer(
+            ignoring: !_visible,
+            child: AnimatedOpacity(
+              opacity: _visible ? 1 : 0,
+              duration: _fadeDuration,
+              curve: Curves.easeOut,
+              onEnd: () {
+                if (!_visible && mounted) {
+                  setState(() => _disposed = true);
+                }
+              },
+              child: const ColoredBox(
+                color: Color(0xFF101010),
+                child: Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _BrandMark(),
+                      SizedBox(height: 18),
+                      _BrandWordmark(),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+/// B 标（assets/images/biloom-mark.svg，与启动图标同一份矢量源）。
+class _BrandMark extends StatelessWidget {
+  const _BrandMark();
+
+  @override
+  Widget build(BuildContext context) {
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0.6, end: 1),
+      duration: const Duration(milliseconds: 600),
+      curve: Curves.easeOutCubic,
+      builder: (_, value, child) => Opacity(
+        opacity: value.clamp(0, 1),
+        child: Transform.scale(scale: 0.9 + 0.1 * value, child: child),
+      ),
+      child: SvgPicture.asset(
+        'assets/images/biloom-mark.svg',
+        width: 64,
+        height: 64,
+      ),
+    );
+  }
+}
+
+/// BiLoom 字标。
+class _BrandWordmark extends StatelessWidget {
+  const _BrandWordmark();
+
+  @override
+  Widget build(BuildContext context) {
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0, end: 1),
+      duration: const Duration(milliseconds: 700),
+      curve: Curves.easeOutCubic,
+      builder: (_, value, child) => Opacity(
+        opacity: value.clamp(0, 1),
+        child: Transform.translate(
+          offset: Offset(0, 6 * (1 - value)),
+          child: child,
+        ),
+      ),
+      child: const Text(
+        'BiLoom',
+        style: TextStyle(
+          color: Color(0xFF00E5AF),
+          fontSize: 20,
+          fontWeight: FontWeight.w600,
+          letterSpacing: 1.2,
         ),
       ),
     );

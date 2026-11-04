@@ -268,13 +268,16 @@ class AppTray implements TrayPort {
             );
           },
         ),
-      TrayMenuAction(
-        label: HotAction.delayTest.label,
-        detail: _shortcut(trayState, HotAction.delayTest),
-        onSelected: () {
-          proxiesAction.delayTestGroups(trayState.groups);
-        },
-      ),
+      // 整组测速入口跟随热键绑定（1ab83bc7 起的拍板语义）：绑了热键才出现，
+      // 未绑定时不占托盘一席 —— 页内的测速入口（分组头 / FAB）足够日常用。
+      if (trayState.hotKeys.containsKey(HotAction.delayTest))
+        TrayMenuAction(
+          label: HotAction.delayTest.label,
+          detail: _shortcut(trayState, HotAction.delayTest),
+          onSelected: () {
+            proxiesAction.delayTestGroups(trayState.groups);
+          },
+        ),
       const TrayMenuSeparator(),
     ];
   }

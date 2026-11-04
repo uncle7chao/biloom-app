@@ -79,6 +79,11 @@ class Request {
     return (host == 'localhost' || host == '127.0.0.1' || host == '::1');
   }
 
+  /// The dio the subscription download path runs on, so tests can stall the
+  /// receive phase without stubbing the whole HttpClient stack.
+  @visibleForTesting
+  Dio get downloadDio => _clashDio;
+
   Future<Response<T>> _download<T>(String url, ResponseType responseType) {
     final target = downloadTarget(url);
     final cancelToken = CancelToken();
@@ -98,7 +103,8 @@ class Request {
             );
             return _directDio.getUri<T>(target.uri, options: options);
           }
-          throw e;
+          // catchError 只给 Object，实际错误族全部 implements Exception。
+          throw e as Exception;
         })
         .timeout(
           downloadTimeoutDuration,

@@ -3,10 +3,8 @@ import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/state.dart';
-import 'package:fl_clash/ui/icons/icons.dart';
 import 'package:fl_clash/widgets/widgets.dart' hide
       ActivateBox,
-      AdaptiveSizeExt,
       AnimatedVisibility,
       AppBarSearchStateBuilder,
       BaseScaffold,
@@ -73,7 +71,7 @@ import 'package:fl_clash/widgets/widgets.dart' hide
       showExtend,
       showModalSideSheet,
       showSheet;
-import 'package:fl_clash/ui/ui.dart' hide CommonCard, CommonPopupBox, CommonPopupMenu, CommonPopupMenuItem, CommonPopupRoute, CommonCheckBox, CommonPopScope, InputDialog, OptionsDialog, BackLayerScope, SheetProps, SheetType, ExtendProps;
+import 'package:fl_clash/ui/ui.dart' hide CommonCard, CommonPopupBox, CommonPopupMenu, CommonPopupMenuItem, CommonPopupRoute, CommonCheckBox, CommonPopScope, InputDialog, BackLayerScope, SheetProps, SheetType, ExtendProps;
 import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -126,7 +124,7 @@ class ProxyCard extends ConsumerWidget {
         .read(profilesProvider)
         .map((profile) => profile.id)
         .where((id) => id != currentId);
-    for (final id in [if (currentId != null) currentId, ...foreignIds]) {
+    for (final id in [?currentId, ...foreignIds]) {
       try {
         final targets = await profilesAction.readProfileTargets(id);
         for (final node in targets.nodes) {
@@ -381,6 +379,9 @@ class ProxyCard extends ConsumerWidget {
                   radius: AppCorner.lg,
                   key: key,
                   highlightSelected: true,
+                  // 方向键右键落在卡内测速控件上（tab 遍历跳过它），
+                  // 上游代理卡的同款键盘可达性。
+                  enterActionsOnRight: true,
                   onPressed: () {
                     _changeProxy(ref, selectionSource);
                   },
@@ -516,7 +517,7 @@ class _ProxyDelayBar extends ConsumerWidget {
 class ProxyTypeChip extends StatelessWidget {
   final String label;
 
-  const ProxyTypeChip({required this.label});
+  const ProxyTypeChip({super.key, required this.label});
 
   @override
   Widget build(BuildContext context) {
@@ -555,7 +556,7 @@ class ProxyTypeChip extends StatelessWidget {
 class ProxyRegionChip extends StatelessWidget {
   final ProxyRegion region;
 
-  const ProxyRegionChip({required this.region});
+  const ProxyRegionChip({super.key, required this.region});
 
   @override
   Widget build(BuildContext context) {
@@ -572,26 +573,44 @@ class ProxyRegionChip extends StatelessWidget {
 ///
 /// 外层的 `Tooltip` 是给鼠标/读屏用的：这个控件不是 `IconButton`，所以
 /// `icon_button_tooltip_test` 覆盖不到它，得自己带上说明。
-class ProxyDelayButton extends ConsumerWidget {
+class ProxyDelayButton extends ConsumerStatefulWidget {
   final String proxyName;
   final String? testUrl;
   final VoidCallback onTest;
 
-  const ProxyDelayButton({
+  const ProxyDelayButton({super.key, 
     required this.proxyName,
     required this.onTest,
     this.testUrl,
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ProxyDelayButton> createState() => _ProxyDelayButtonState();
+}
+
+class _ProxyDelayButtonState extends ConsumerState<ProxyDelayButton> {
+  // 键盘可达性对齐上游：tab 遍历跳过本控件，方向键右键由所在卡片
+  // （CommonCard enterActionsOnRight）把它落焦，回车触发测速。
+  final FocusNode _focusNode = SkipTraversalFocusNode();
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final appLocalizations = context.appLocalizations;
     final colorScheme = context.colorScheme;
     final delay = ref.watch(
-      delayProvider(proxyName: proxyName, testUrl: testUrl),
+      delayProvider(proxyName: widget.proxyName, testUrl: widget.testUrl),
     );
     final pending = ref.watch(
-      delayTestPendingProvider(proxyName: proxyName, testUrl: testUrl),
+      delayTestPendingProvider(
+        proxyName: widget.proxyName,
+        testUrl: widget.testUrl,
+      ),
     );
     final color = getDelayColor(delay) ?? colorScheme.onSurfaceVariant;
     final label = switch (delay) {
@@ -604,7 +623,8 @@ class ProxyDelayButton extends ConsumerWidget {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: pending ? null : onTest,
+          focusNode: _focusNode,
+          onTap: pending ? null : widget.onTest,
           borderRadius: AppRadius.xs,
           child: Container(
             height: proxyCardMetaHeight,
@@ -665,7 +685,7 @@ class ProxyExitButton extends ConsumerWidget {
   /// 失败/不一致的警示色不变 —— 语义由 tooltip 兜底。
   final bool compact;
 
-  const ProxyExitButton({required this.proxyName, this.compact = false});
+  const ProxyExitButton({super.key, required this.proxyName, this.compact = false});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

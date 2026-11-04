@@ -555,7 +555,7 @@ packages:
     source: hosted
     version: "3.4.3"
   flutter_rust_bridge:
-    dependency: transitive
+    dependency: "direct dev"
     description:
       name: flutter_rust_bridge
       sha256: ec69331e2335ab4d456c0a9fc700892c2c85b72b9c0cb39df3ecfe8833d5d5c8
@@ -1046,7 +1046,7 @@ packages:
     source: hosted
     version: "2.2.2"
   path_provider_platform_interface:
-    dependency: transitive
+    dependency: "direct dev"
     description:
       name: path_provider_platform_interface
       sha256: "484838772624c3a4b94f1e44a3e19897fee738f2d5c4ce448443b0417f7c9dda"

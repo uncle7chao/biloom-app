@@ -76,7 +76,7 @@ class _BackupAndRestoreState extends ConsumerState<BackupAndRestore>
         await File(file.path).safeCopy(await appPath.backupFilePath);
         await ref.read(backupActionProvider.notifier).restore(
           option,
-          (_) async => await appPath.backupFilePath,
+          (_) async => appPath.backupFilePath,
         );
         return true;
       },
@@ -84,6 +84,7 @@ class _BackupAndRestoreState extends ConsumerState<BackupAndRestore>
       title: context.appLocalizations.restore,
     );
     if (res != true) return;
+    if (!mounted) return;
     unawaited(
       dialogs.showMessage(
         title: context.appLocalizations.restore,

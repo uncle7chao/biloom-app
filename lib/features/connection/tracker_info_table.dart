@@ -82,7 +82,6 @@ import 'package:fl_clash/widgets/widgets.dart' hide
       showExtend,
       showModalSideSheet,
       showSheet;
-import 'package:fl_clash/ui/ui.dart';
 import 'package:material_ui/material_ui.dart';
 
 import 'tracker_info_item.dart';

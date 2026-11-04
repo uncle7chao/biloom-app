@@ -1090,7 +1090,6 @@ class ProfileAddedRules extends _$ProfileAddedRules
   Future<void> persistRule(Rule rule) =>
       database.rulesDao.putProfileAddedRule(profileId, rule);
 
-  @override
   Future<void> persistOrder({required int ruleId, required String order}) =>
       database.rulesDao.orderProfileAddedRule(
         profileId,
@@ -1111,7 +1110,6 @@ class ProfileCustomRules extends _$ProfileCustomRules
   Future<void> persistRule(Rule rule) =>
       database.rulesDao.putProfileCustomRule(profileId, rule);
 
-  @override
   Future<void> persistOrder({required int ruleId, required String order}) =>
       database.rulesDao.orderProfileCustomRule(
         profileId,

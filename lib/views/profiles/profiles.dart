@@ -10,7 +10,6 @@ import 'package:fl_clash/views/profiles/custom/custom.dart';
 import 'package:fl_clash/views/profiles/extend/extend.dart';
 import 'package:fl_clash/widgets/widgets.dart' hide
       ActivateBox,
-      AdaptiveSizeExt,
       AnimatedVisibility,
       AppBarSearchStateBuilder,
       BackLayerScope,
@@ -96,8 +95,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'add.dart';
 import 'edit.dart';
 import 'preview.dart';
-import '../proxies/add_node.dart';
-import '../proxies/manage_nodes.dart';
 
 const _infoGap = 4.0;
 
@@ -153,30 +150,44 @@ class _ProfilesViewState extends ConsumerState<ProfilesView> {
     _isUpdating = false;
   }
 
-  List<IconButtonData> _buildActions(List<Profile> profiles) {
-    return profiles.isNotEmpty
-        ? [
-            IconButtonData(
-              glyph: AppGlyphs.sync,
-              onPressed: () {
-                _updateProfiles(profiles);
-              },
-              tooltip: context.appLocalizations.update,
-            ),
-            IconButtonData(
-              glyph: AppGlyphs.sort,
-              onPressed: () {
-                showSheet(
-                  context: context,
-                  builder: (_) {
-                    return ReorderableProfilesSheet(profiles: profiles);
-                  },
-                );
-              },
-              tooltip: context.appLocalizations.profilesSort,
-            ),
-          ]
-        : [];
+  /// 页头的更新入口显性化（用户拍板）：带文字标签的按钮，纯图标会被当成
+  /// 装饰 —— merge v0.9.2 时被 iconActions 冲掉过一次，这里钉回 [actions]。
+  ///
+  /// 桌面最小窗口宽 380（`common/window.dart` 的 setMinimumSize），上游
+  /// 「最大化窗口恢复」回归用例钉的正是这个宽度 —— 带字按钮放不下，窄于
+  /// [_labeledActionMinWidth] 时入口退回纯图标（由 [_buildUpdateIconAction]
+  /// 钉进 iconActions），只有正常宽度才显示显性化形态。
+  static const double _labeledActionMinWidth = 480;
+
+  bool _withinLabeledActionWidth(BuildContext context) =>
+      MediaQuery.sizeOf(context).width >= _labeledActionMinWidth;
+
+  List<Widget> _buildActions(List<Profile> profiles) {
+    if (profiles.isEmpty || !_withinLabeledActionWidth(context)) {
+      return const [];
+    }
+    return [
+      CommonMinFilledButtonTheme(
+        child: FilledButton.tonalIcon(
+          onPressed: () {
+            _updateProfiles(profiles);
+          },
+          icon: const Icon(Icons.sync, size: 18),
+          label: Text(context.appLocalizations.update),
+        ),
+      ),
+    ];
+  }
+
+  /// 窄窗口下更新入口的纯图标形态（带字按钮放不下，见上）。
+  IconButtonData _buildUpdateIconAction(List<Profile> profiles) {
+    return IconButtonData(
+      glyph: AppGlyphs.sync,
+      onPressed: () {
+        _updateProfiles(profiles);
+      },
+      tooltip: context.appLocalizations.update,
+    );
   }
 
   @override
@@ -191,10 +202,32 @@ class _ProfilesViewState extends ConsumerState<ProfilesView> {
         return CommonScaffold(
           isLoading: isLoading,
           title: appLocalizations.profiles,
-          iconActions: picker ? const [] : _buildActions(state.profiles),
-          actions: state.profiles.isEmpty || picker
-              ? null
+          iconActions: picker
+              ? const []
               : [
+                  IconButtonData(
+                    glyph: AppGlyphs.sort,
+                    onPressed: () {
+                      showSheet(
+                        context: context,
+                        builder: (_) {
+                          return ReorderableProfilesSheet(
+                            profiles: state.profiles,
+                          );
+                        },
+                      );
+                    },
+                    tooltip: context.appLocalizations.profilesSort,
+                  ),
+                  // 窄窗口（<480）下带字更新按钮放不下，入口退回这里。
+                  if (!_withinLabeledActionWidth(context) &&
+                      state.profiles.isNotEmpty)
+                    _buildUpdateIconAction(state.profiles),
+                ],
+          actions: picker || state.profiles.isEmpty
+              ? _buildActions(state.profiles)
+              : [
+                  ..._buildActions(state.profiles),
                   AddProfileMenu(
                     builder: (open) => IconButton(
                       tooltip: appLocalizations.addProfile,
@@ -534,7 +567,8 @@ class ProfileItem extends ConsumerWidget {
       if (isUrl)
         CommonPopupMenuItem(
           glyph: AppGlyphs.sync,
-          label: appLocalizations.sync,
+          // 用户拍板：菜单项从「同步」正名为「更新订阅」（可发现性）。
+          label: appLocalizations.updateSubscription,
           onPressed: () {
             updateProfile(ref);
           },

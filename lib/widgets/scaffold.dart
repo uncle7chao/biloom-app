@@ -1,5 +1,4 @@
 import 'package:fl_clash/common/common.dart';
-import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/models/fork_app_bar.dart';
 import 'package:fl_clash/widgets/pop_scope.dart';
 import 'package:material_ui/material_ui.dart';

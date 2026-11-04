@@ -1,39 +1,7 @@
-import 'package:fl_clash/widgets/active_polling.dart';
 import 'package:fl_clash/widgets/inherited.dart';
 import 'package:material_ui/material_ui.dart';
 
 
-
-class _TickBuilderState extends State<TickBuilder>
-    with WidgetsBindingObserver, ActivePollingMixin<TickBuilder> {
-  int _tick = 0;
-
-  @override
-  Duration get pollInterval => widget.duration;
-
-  @override
-  bool get pollOnStart => false;
-
-  @override
-  Future<void> poll(PollGuard isCurrent) async {
-    setState(() {
-      _tick++;
-    });
-  }
-
-  @override
-  void didUpdateWidget(covariant TickBuilder oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.duration != widget.duration) {
-      restartPolling();
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return widget.builder(context, _tick);
-  }
-}
 
 class ScrollOverBuilder extends StatefulWidget {
   final Widget Function(bool isOver) builder;
