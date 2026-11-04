@@ -1,5 +1,6 @@
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/models/fork_app_bar.dart';
+import 'package:fl_clash/ui/inherited.dart' as ui_scope;
 import 'package:fl_clash/widgets/pop_scope.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
@@ -318,6 +319,13 @@ class CommonScaffoldState extends State<CommonScaffold> {
     final backActionProvider = CommonScaffoldBackActionProvider.of(context);
     final isTV = widget.isTV ?? system.isTV;
     final bottomInset = BottomInsetScope.of(context);
+    // v0.9.2 merge 后壳层的悬浮导航 Dock（home.dart）供给的是 ui 层的同名
+    // InheritedWidget，本 scaffold 内部这个 widgets 层同名类读不到它 —— 于是
+    // 安卓悬浮 Dock 盖在页面 Scaffold 上而 FAB 槽位毫不知情，启动按钮整颗
+    // 沉进 Dock 背后（真机实锤：代理页右下角只露出一点绿边，按不到）。
+    // 这里补读 ui 层的 dock inset 抬 FAB：桌面端 / 关闭悬浮导航时它恒为 0，
+    // 行为不变。
+    final dockInset = ui_scope.BottomInsetScope.of(context);
     final hasFab = !isTV && widget.floatingActionButton != null;
     final body = SafeArea(
       child: Column(
@@ -398,9 +406,9 @@ class CommonScaffoldState extends State<CommonScaffold> {
       resizeToAvoidBottomInset: widget.resizeToAvoidBottomInset,
       backgroundColor: widget.backgroundColor,
       floatingActionButton: hasFab
-          ? bottomInset > 0
+          ? dockInset > 0
                 ? Padding(
-                    padding: EdgeInsets.only(bottom: bottomInset),
+                    padding: EdgeInsets.only(bottom: dockInset),
                     child: fabChild,
                   )
                 : fabChild
