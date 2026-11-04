@@ -205,16 +205,21 @@ class _BrandSplashHostState extends State<_BrandSplashHost> {
                   setState(() => _disposed = true);
                 }
               },
-              child: const ColoredBox(
-                color: Color(0xFF101010),
-                child: Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      _BrandMark(),
-                      SizedBox(height: 18),
-                      _BrandWordmark(),
-                    ],
+              child: Material(
+                // Text 没有 Material 祖先时框架会画黄色双下划线（fallback
+                // 样式标记），品牌层包一层透明 Material 消掉它。
+                type: MaterialType.transparency,
+                child: ColoredBox(
+                  color: const Color(0xFF101010),
+                  child: Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _BrandMark(),
+                        SizedBox(height: 18),
+                        _BrandWordmark(),
+                      ],
+                    ),
                   ),
                 ),
               ),
