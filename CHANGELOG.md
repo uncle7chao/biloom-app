@@ -1,5 +1,16 @@
 # Changelog
 
+## v01.00.40 (2026-11-04)
+
+**Features**
+
+- **ui** The default theme seed is now the brand teal #00E5AF instead of the legacy grey-pink, so the app chrome, launcher icon and brand launch screen finally share one color source; persisted settings that still carry the old default seed migrate to the brand color on load, while user-picked colors are untouched (c734fb8)
+- **ui** The disclaimer license paragraph now states that the software is developed as a modification of FlClash (GPL-3.0), in all seven locales (3148b74)
+
+**Bug Fixes**
+
+- **android** The brand launch screen rendered a yellow double underline under the wordmark: Text widgets outside a Material ancestor fall back to the framework's warning style. The splash layer is now wrapped in a transparent Material, so the wordmark renders clean (90e45b7)
+
 ## v01.00.39 (2026-11-04)
 
 **Features**
