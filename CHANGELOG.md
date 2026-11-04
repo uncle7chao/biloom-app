@@ -1,5 +1,11 @@
 # Changelog
 
+## v01.00.41 (2026-11-04)
+
+**Bug Fixes**
+
+- **android** On the proxies page the floating action buttons (the small delay-test button and the main start button) anchored 16px above the screen bottom and sank behind the floating navigation dock, unreachable on phones. Root cause: the v0.9.2 merge introduced a second `BottomInsetScope` in the new ui layer while the legacy scaffold still read the old widgets-flavored one, so the FAB slot never learned the dock height. The slot now also reads the ui-flavored dock inset and pads with the larger of the two; desktop behaviour is unchanged (e70a402)
+
 ## v01.00.40 (2026-11-04)
 
 **Features**
