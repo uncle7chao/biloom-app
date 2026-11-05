@@ -1,5 +1,11 @@
 # Changelog
 
+## v01.00.42 (2026-11-05)
+
+**Features**
+
+- **ui** On desktop, the proxies page action buttons (delay test and start) now sit at the right end of the group tab row instead of floating over the bottom-right corner; both widgets are reused untouched, the delay-test button gains a larger variant so the two share the same size, and the list no longer reserves the floating-button inset so roughly one more row of proxies is visible. Mobile keeps the floating pair from v01.00.41 (71d8199)
+
 ## v01.00.41 (2026-11-04)
 
 **Bug Fixes**
