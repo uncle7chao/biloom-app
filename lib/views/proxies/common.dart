@@ -21,9 +21,11 @@ double get proxyCardMetaHeight => globalState.measure.labelSmallHeight + 6;
 /// 右下角悬浮按钮区比 `BottomInsetScope` 假设的多出来的那一截。
 ///
 /// `BottomInsetScope.floatingActionButtonInset` 是按「一颗 56 高的 FAB」
-/// 定死的 72（`kFloatingActionButtonMargin + 56`）。「代理」页（tab 布局）的
-/// 右下角现在叠了两颗 —— 小测速按钮 40 + 间距 10 + 启动按钮 56 = 106，
-/// 比它多 50。不补这一截，滚到底时最后一排节点会被按钮压住。
+/// 定死的 72（`kFloatingActionButtonMargin + 56`）。「代理」页（tab 布局，
+/// **手机端**）的右下角现在叠了两颗 —— 小测速按钮 40 + 间距 10 + 启动按钮
+/// 56 = 106，比它多 50。不补这一截，滚到底时最后一排节点会被按钮压住。
+/// 桌面端 tab 布局两颗按钮已上移到页签行右端，消费处按 `system.isDesktop`
+/// 置 0（见 tab.dart 的 GridView padding）。
 const double proxiesExtraFabInset = 52;
 
 /// 把收藏的节点稳定地排到列表前面。

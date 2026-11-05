@@ -245,11 +245,14 @@ class _ProxiesViewState extends ConsumerState<ProxiesView> {
     ];
   }
 
-  /// 右下角的悬浮按钮区。
+  /// 右下角的悬浮按钮区（**手机端 / 桌面 list 布局**）。
   ///
   /// **启动按钮在下、整组测速在上** —— 挑节点和连接是同一件事的两半，
   /// 挑完就在这一页连上，不用再退回仪表盘。启动按钮直接复用仪表盘那颗
   /// [StartButton]（自带运行时长、没有订阅时会说清缺什么），不另造一套。
+  ///
+  /// 桌面端 tab 布局不走这里：两颗按钮上移到页签行右端（tab.dart
+  /// `_buildDesktopHeaderActions`），右下角不再压列表。
   ///
   /// tab 布局下两颗叠起来有 106 高，比 `BottomInsetScope` 假设的多 50，
   /// 所以列表底部额外补了 `proxiesExtraFabInset`（见 `common.dart`）。
@@ -447,7 +450,10 @@ class _ProxiesViewState extends ConsumerState<ProxiesView> {
     return CommonScaffold(
       isLoading: isLoading,
       resizeToAvoidBottomInset: false,
-      floatingActionButton: _buildFAB(),
+      // fork：桌面端 tab 布局的两颗按钮已上移到页签行右端（见 tab.dart
+      // `_buildDesktopHeaderActions`），悬浮组只在手机端（和 list 布局）保留。
+      floatingActionButton:
+          _isTab && system.isDesktop ? null : _buildFAB(),
       actions: picker ? const <Widget>[] : _buildActions(context),
       title: context.appLocalizations.proxies,
       searchState: AppBarSearchState(onSearch: _onSearch),

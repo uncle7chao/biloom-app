@@ -6,6 +6,7 @@ import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/models/clash_config.dart';
 import 'package:fl_clash/models/common.dart';
 import 'package:fl_clash/providers/providers.dart';
+import 'package:fl_clash/views/dashboard/widgets/start_button.dart';
 import 'package:fl_clash/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -72,6 +73,23 @@ class ProxiesTabViewState extends ConsumerState<ProxiesTabView>
     await ref
         .read(proxiesActionProvider.notifier)
         .delayTest(group.all, group.testUrl);
+  }
+
+  /// fork：桌面端页签行右端的按钮区（测速 + 启动）。
+  ///
+  /// 两颗组件**原样复用** —— 测速走本状态的 [delayTestCurrentGroup]（与悬浮
+  /// 组那条 `_proxiesTabKey` 通路是同一个方法），启动直接用仪表盘的
+  /// [StartButton]（运行时长、缺订阅提示都自带）。唯一的外观差异是测速
+  /// `large: true`：用户拍板桌面端两颗等大。悬浮导航 Dock 只存在于手机端，
+  /// 桌面列表底部的 FAB 预留空隙也据此撤掉（见 `_ProxyGroupViewState`）。
+  List<Widget> _buildDesktopHeaderActions() {
+    return [
+      const SizedBox(width: 12),
+      DelayTestButton(large: true, onClick: delayTestCurrentGroup),
+      const SizedBox(width: 12),
+      const StartButton(),
+      const SizedBox(width: 16),
+    ];
   }
 
   Group? get currentGroup {
@@ -214,7 +232,15 @@ class ProxiesTabViewState extends ConsumerState<ProxiesTabView>
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          NotificationListener<ScrollMetricsNotification>(
+          // fork：桌面端把悬浮组（测速 + 启动）上移到页签行右端 —— 桌面没有
+          // 悬浮导航 Dock，右下角两颗按钮只遮列表还够不着列表顶部的页签。
+          // 手机端不动（41 版刚修好 Dock 避让，拇指可达性也更好）。
+          // 上游 merge 注意：本 Row 是 fork 包裹层，内层 NotificationListener
+          // 的结构保持与上游一致，冲突时保内层上游、只保住本 Row 的 actions。
+          Row(
+            children: [
+              Expanded(
+                child: NotificationListener<ScrollMetricsNotification>(
             onNotification: (scrollNotification) {
               _hasMoreButtonNotifier.value =
                   scrollNotification.metrics.maxScrollExtent > 0;
@@ -276,6 +302,10 @@ class ProxiesTabViewState extends ConsumerState<ProxiesTabView>
                 child: _buildMoreButton(),
               ),
             ),
+                ),
+              ),
+              if (system.isDesktop) ..._buildDesktopHeaderActions(),
+            ],
           ),
           // 「当前出口」仪表卡（2026-09-30 改版 A 档）：固定在页签与地区筛选
           // 之间，不随页签切换 —— 翻到任何页签都先看到现在走的是谁。没配置 /
@@ -451,10 +481,15 @@ class _ProxyGroupViewState extends ConsumerState<ProxyGroupView> {
           top: 16,
           left: 16,
           right: 16,
-          // `BottomInsetScope` 只按「一颗 56 高的 FAB」给了 72，而右下角现在
-          // 叠了两颗（测速 + 启动），差出来的那一截得自己补上，否则滚到底时
-          // 最后一排节点会被按钮压住。
-          bottom: 16 + BottomInsetScope.of(context) + proxiesExtraFabInset,
+          // `BottomInsetScope` 只按「一颗 56 高的 FAB」给了 72，而悬浮组在
+          // 手机端现在叠了两颗（测速 + 启动），差出来的那一截得自己补上，
+          // 否则滚到底时最后一排节点会被按钮压住。桌面端页签行的按钮组已
+          // 上移到页签行右端（`_buildDesktopHeaderActions`），没有悬浮组，
+          // 这截预留为 0。
+          bottom:
+              16 +
+              BottomInsetScope.of(context) +
+              (system.isDesktop ? 0.0 : proxiesExtraFabInset),
         ),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: widget.columns,
@@ -481,7 +516,10 @@ class _ProxyGroupViewState extends ConsumerState<ProxyGroupView> {
 class DelayTestButton extends StatefulWidget {
   final Future Function() onClick;
 
-  const DelayTestButton({super.key, required this.onClick});
+  /// 手机端悬浮组里保持 `.small`（40）；桌面端页签行里与启动按钮等大（56）。
+  final bool large;
+
+  const DelayTestButton({super.key, required this.onClick, this.large = false});
 
   @override
   State<DelayTestButton> createState() => _DelayTestButtonState();
@@ -540,17 +578,28 @@ class _DelayTestButtonState extends State<DelayTestButton>
           child: ScaleTransition(scale: _animation, child: child),
         );
       },
-      // 这一颗从「带文字的 extended」降级成小圆按钮：右下角的主位让给「启动」，
+      // 这一颗从「带文字的 extended」降级成小圆按钮：悬浮组里的主位让给「启动」，
       // 整组测速是次级操作（**单节点**的测速入口现在直接画在每张卡片上，
       // 分组头里那颗 `Icons.network_ping` 也还在）。颜色刻意不跟启动按钮抢主题色。
-      child: FloatingActionButton.small(
-        heroTag: null,
-        tooltip: appLocalizations.delayTest,
-        onPressed: _healthcheck,
-        backgroundColor: colorScheme.surfaceContainerHigh,
-        foregroundColor: colorScheme.onSurfaceVariant,
-        child: const Icon(Icons.network_ping),
-      ),
+      // 桌面端页签行里的那颗（`large: true`）与启动按钮同尺寸，见
+      // `_buildDesktopHeaderActions`。
+      child: widget.large
+          ? FloatingActionButton(
+              heroTag: null,
+              tooltip: appLocalizations.delayTest,
+              onPressed: _healthcheck,
+              backgroundColor: colorScheme.surfaceContainerHigh,
+              foregroundColor: colorScheme.onSurfaceVariant,
+              child: const Icon(Icons.network_ping),
+            )
+          : FloatingActionButton.small(
+              heroTag: null,
+              tooltip: appLocalizations.delayTest,
+              onPressed: _healthcheck,
+              backgroundColor: colorScheme.surfaceContainerHigh,
+              foregroundColor: colorScheme.onSurfaceVariant,
+              child: const Icon(Icons.network_ping),
+            ),
     );
   }
 }
