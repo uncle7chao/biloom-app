@@ -226,9 +226,15 @@ class CommonAction extends _$CommonAction {
         cancelText: isUser ? null : currentAppLocalizations.noLongerRemind,
       );
       if (res == true) {
+        // BiLoom fork: 站点源带平台直链（biloom.top/dl，国内可直连）时优先；
+        // 手动检查走 GitHub release map 没有该键，回落上游的 release 页。
+        final downloadUrl = data['download_url'] as String?;
         unawaited(
           launchUrl(
-            Uri.parse('https://github.com/$repository/releases/latest'),
+            Uri.parse(
+              downloadUrl ??
+                  'https://github.com/$repository/releases/latest',
+            ),
           ),
         );
       } else if (!isUser && res == false) {

@@ -142,14 +142,52 @@ class Request {
     }
   }
 
-  /// Null when this build is current; throws when GitHub cannot be asked.
+  /// Null when this build is current; throws when no source can be asked.
+  ///
+  /// BiLoom fork: 站点源优先。`biloom.top/versions.json` 国内可直连、没有
+  /// GitHub API 的匿名配额限制；只有站点不可达（断网/超时/JSON 不认识）
+  /// 时才回落 GitHub（上游逻辑原样保留，且仓库指向已修正为
+  /// `uncle7chao/biloom-app` —— 旧值 'biloom/biloom-app' 是不存在的仓库，
+  /// 兜底恒 404，这是更新弹窗从未出现过的根因之一）。
   Future<Map<String, dynamic>?> checkForUpdate() async {
+    final viaSite = await checkUpdateViaSite();
+    if (viaSite.reachable) {
+      return viaSite.update;
+    }
     final release = await latestRelease();
     final remoteVersion = release['tag_name'] as String;
     final version = globalState.packageInfo.version;
     final hasUpdate =
         compareVersions(remoteVersion.replaceAll('v', ''), version) > 0;
     return hasUpdate ? release : null;
+  }
+
+  /// BiLoom fork: 走自己服务器的 versions.json 检查新版本。
+  /// 网络层失败一律折叠成 `(reachable: false)`，绝不抛 —— 更新检查不许
+  /// 影响启动流程；站点的可达性判定交给调用方回落 GitHub。
+  @visibleForTesting
+  Future<SiteUpdateEvaluation> checkUpdateViaSite() async {
+    try {
+      final response = await dio.get<Object?>(
+        kVersionsJsonUrl,
+        options: Options(
+          responseType: ResponseType.json,
+          sendTimeout: const Duration(seconds: 5),
+          receiveTimeout: const Duration(seconds: 8),
+        ),
+      );
+      return evaluateSiteVersionsJson(
+        decoded: response.data,
+        currentVersion: globalState.packageInfo.version,
+        isAndroid: system.isAndroid,
+      );
+    } catch (error) {
+      commonPrint.log(
+        'versions.json update check failed: ${compactError(error)}',
+        logLevel: LogLevel.warning,
+      );
+      return (reachable: false, update: null);
+    }
   }
 
   /// The release page redirect still answers once the hourly API quota is spent.

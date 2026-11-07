@@ -70,5 +70,7 @@ export 'system.dart';
 export 'system_fonts.dart';
 export 'task.dart';
 export 'task_pool.dart';
+// BiLoom fork: 新版本检查的纯逻辑层（versions.json 站点源优先）。
+export 'update_check.dart';
 export 'webdav.dart';
 export 'yaml.dart';

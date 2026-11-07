@@ -271,8 +271,18 @@ void main() {
     expect(adapter.requests, 1);
 
     adapter.response.complete(
+      // 2026-11-07 fork：checkForUpdate 先走 biloom.top/versions.json 站点源，
+      // 站点可达（返回同版本）就直接判「已是最新」，不会再打 GitHub。
       ResponseBody.fromString(
-        jsonEncode({'tag_name': 'v0.0.0'}),
+        jsonEncode({
+          'enabled': true,
+          'latest': {
+            'version': '0.0.0',
+            'date': '2026-01-01',
+            'notes': '',
+            'files': <Object?>[],
+          },
+        }),
         200,
         headers: {
           Headers.contentTypeHeader: [Headers.jsonContentType],

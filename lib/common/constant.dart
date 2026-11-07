@@ -126,7 +126,9 @@ const defaultSystemDnsFallback = '223.5.5.5';
 const double dialogCommonWidth = 300;
 // BiLoom fork: update check and release links point at the BiLoom repository,
 // NOT upstream (leaving the upstream value would push users back to FlClash).
-const repository = 'biloom/biloom-app';
+// 2026-11-07 fix: 之前写成 'biloom/biloom-app'（不存在的仓库），GitHub 兜底
+// 检查永远 404 —— 更新弹窗两层全断的根因之一。
+const repository = 'uncle7chao/biloom-app';
 const maxMobileWidth = 600;
 const maxLaptopWidth = 840;
 const defaultTestUrl = 'https://www.gstatic.com/generate_204';
