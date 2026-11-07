@@ -1,5 +1,11 @@
 # Changelog
 
+## v01.00.43 (2026-11-07)
+
+**Bug Fixes**
+
+- **update** The automatic new-version dialog never fired: the update check asked a nonexistent repository (`biloom/biloom-app`) through the GitHub API, which is also unreachable without a proxy for most users, and failures were silently skipped. The check now reads our own versions.json on biloom.top first (domestic direct, no API quota) and only falls back to GitHub; the repository constant points at the real repo; and the "go to download" button opens the official site's platform-matched file (android apk / windows setup) instead of the GitHub releases page (7299fa49)
+
 ## v01.00.42 (2026-11-05)
 
 **Features**
