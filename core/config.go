@@ -172,15 +172,19 @@ func applyConfig(params *SetupParams) error {
 	skipCertVerify.Store(params.SkipCertVerify)
 	cfg, err := loadSetupConfig(params)
 	if err != nil {
-		// The fallback is what keeps the listeners serving while the host
-		// reports the error, but it applies a config with no proxies in it.
-		// From the UI that is indistinguishable from a subscription that went
-		// dead: the profile still lists every node, every delay test answers
-		// Timeout, and nothing routes. Name the real cause in the log.
-		logError(
-			"config apply failed, falling back to the built-in default - no proxies will be available: %v",
-			err,
-		)
+		logError("config apply failed: %v", err)
+		// BiLoom: when a config is already running, keep serving it. Falling
+		// back to the built-in default leaves the tunnel up with no proxies,
+		// which from the UI is indistinguishable from a dead subscription:
+		// the profile still lists every node, every delay test answers
+		// Timeout, and nothing routes. The host still receives err and shows
+		// it, and the previous config keeps carrying traffic until something
+		// that loads is pushed.
+		if currentConfig != nil {
+			return err
+		}
+		// First start has nothing to fall back to, so the listeners still
+		// need a config even when it has no proxies in it.
 		fallback, fallbackErr := config.ParseRawConfig(config.DefaultRawConfig())
 		if fallbackErr != nil {
 			return err

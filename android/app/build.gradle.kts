@@ -39,7 +39,13 @@ android {
         applicationId = "app.biloom.top"
         minSdk = flutter.minSdkVersion
         targetSdk = libs.versions.targetSdk.get().toInt()
-        versionCode = flutter.versionCode
+        // BiLoom: the 01.00.44 apk was stamped with 2026114201 while pubspec
+        // said 2026112201. That value is larger than any date-shaped build
+        // number, so a normal bump is rejected as a downgrade
+        // (INSTALL_FAILED_VERSION_DOWNGRADE). Pin a floor one above it; from
+        // 2026-12 on a date-shaped number passes it on its own, so this floor
+        // never needs editing again.
+        versionCode = maxOf(flutter.versionCode, 2026114202)
         versionName = flutter.versionName
     }
 

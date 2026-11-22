@@ -926,6 +926,16 @@ class SetupAction extends _$SetupAction {
     await globalState.loadingRun(
       () async {
         try {
+          if (!profileFailed) {
+            // A config the Core cannot load used to be pushed anyway: the
+            // Core then fell back to its proxy-less default, the VPN stayed
+            // up and the device lost network. Refuse the known-fatal shapes
+            // before anything reaches the disk or the Core.
+            final rejection = await _rejectUnloadableConfig(yamlString);
+            if (rejection != null) {
+              throw MessageException(rejection);
+            }
+          }
           if (setupParams.base == null) {
             final configFilePath = await appPath.configFilePath;
             await File(configFilePath).writeAsStringAtomically(yamlString);
@@ -941,7 +951,7 @@ class SetupAction extends _$SetupAction {
           if (message.isNotEmpty) {
             globalState.lastConfigCounts = configCountsOf(const {});
             await globalState.safeRun(() => onUpdated?.call());
-            throw MessageException(message);
+            throw MessageException(humanizeConfigError(message));
           }
         } catch (e, s) {
           setupFailed = true;
@@ -971,4 +981,53 @@ class SetupAction extends _$SetupAction {
     }
     return _SetupTaskResult.completed;
   }
+
+  /// Returns a user-facing reason when [yaml] is one of the configs the Core
+  /// is known to refuse, or null when it loads fine.
+  ///
+  /// Only the fatal shapes block here: a validator that fails for any other
+  /// reason (Core not up yet, environment quirks) must never stop a normal
+  /// apply, and the Core itself now keeps the previous config instead of
+  /// dropping to its proxy-less default.
+  Future<String?> _rejectUnloadableConfig(String yaml) async {
+    if (yaml.isEmpty) return null;
+    File? probe;
+    try {
+      final configFilePath = await appPath.configFilePath;
+      probe = File('$configFilePath.validate.yaml');
+      await probe.writeAsStringAtomically(yaml);
+      final message = await _core.validateConfig(probe.path);
+      if (message.isEmpty) return null;
+      final lower = message.toLowerCase();
+      if (lower.contains('relay') || lower.contains('unsupported type')) {
+        return humanizeConfigError(message);
+      }
+      commonPrint.log('pre-validate warning (not blocking): $message');
+      return null;
+    } catch (e) {
+      commonPrint.log('pre-validate skipped: $e', logLevel: LogLevel.warning);
+      return null;
+    } finally {
+      final file = probe;
+      if (file != null) {
+        try {
+          await file.delete();
+        } catch (_) {}
+      }
+    }
+  }
+}
+
+/// Turns the Core's parser errors into something a user can act on, keeping
+/// the original text so a report stays diagnosable.
+String humanizeConfigError(String message) {
+  final lower = message.toLowerCase();
+  if (lower.contains('relay')) {
+    return '这份配置里有 relay 类型的代理组，内核已经移除了这种组（继续用会导致整机断网）。'
+        '请改用 dialer-proxy 做链式代理后重新导入。\n\n内核原文：$message';
+  }
+  if (lower.contains('unsupported type')) {
+    return '这份配置里有内核不支持的代理组类型，已拒绝切换以免断网。\n\n内核原文：$message';
+  }
+  return '这份配置无法被内核加载，已拒绝切换以免断网。\n\n内核原文：$message';
 }
