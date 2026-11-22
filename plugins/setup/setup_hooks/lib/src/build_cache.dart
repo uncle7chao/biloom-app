@@ -85,6 +85,32 @@ class BuildCache {
 
     try {
       await lock.lock(FileLock.exclusive);
+
+      // BiLoom: 当环境无法运行 go 工具链时（go list / go build 会永久卡死，
+      // 起不了 compile 子进程），允许设置 BILOOM_SKIP_CORE_BUILD=1 直接复用
+      // 磁盘上已有的内核产物，跳过指纹计算与重编。
+      if (Platform.environment['BILOOM_SKIP_CORE_BUILD'] == '1' &&
+          File(primaryOutput).existsSync()) {
+        final forcedRecord = File(p.join(cacheDir, '$safeKey.json'));
+        _log.warning(
+          'Skip build (BILOOM_SKIP_CORE_BUILD=1), reusing: $primaryOutput',
+        );
+        List<String> forcedOutputs;
+        try {
+          forcedOutputs = forcedRecord.existsSync()
+              ? _recordedOutputs(forcedRecord)
+              : <String>[primaryOutput];
+        } catch (_) {
+          forcedOutputs = <String>[primaryOutput];
+        }
+        return BuildExecution(
+          primaryOutput: primaryOutput,
+          rebuilt: false,
+          inputs: const [],
+          outputs: forcedOutputs,
+        );
+      }
+
       final currentFingerprint = await fingerprint();
       final recordFile = File(p.join(cacheDir, '$safeKey.json'));
       final missReason = _cacheMissReason(
