@@ -1,5 +1,11 @@
 # Changelog
 
+## v01.00.44 (2026-11-22)
+
+**Features**
+
+- **core** The bundled mihomo kernel moves from v1.19.33 to v1.19.34. The Clash.Meta tree is replaced with the FlClash branch commit 5b453f8 (31 files changed, 8 added, none removed, so FlClash's own patch files survive the swap) and the dependency bump follows upstream (easytier-go, mieru 3.39.0, sing 0.5.9, sing-tun 0.4.29, tfo-go, utls 1.9.0-alpha.1). This brings Snell v6 with its mode key, multi-user shadowsocks listeners, a mieru tcp-idle-timeout, the SOCKS domain-length overflow fix and the TFO fix that go1.26.9+/go1.27.2+ needed. The editor schema learns the new keys so a hand-written v6 profile validates instead of being silently rejected, and core_version is bumped so the app reports v1.19.34 (015867f)
+
 ## v01.00.43 (2026-11-07)
 
 **Bug Fixes**
