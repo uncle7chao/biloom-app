@@ -1,5 +1,13 @@
 # Changelog
 
+## v01.00.45 (2026-11-22)
+
+**Bug Fixes**
+
+- **android** 01.00.44 shipped an apk carrying versionCode 2026114201 while pubspec said 2026112201, so any normal bump lands below it and the installer rejects the upgrade with INSTALL_FAILED_VERSION_DOWNGRADE. The build now pins a floor of 2026114202, one above the shipped value; date-shaped numbers pass that floor on their own from 2026-12 on, so it never needs editing again (cfdd6fe)
+- **config** A profile holding a `type: relay` proxy group was written to disk and pushed to the Core, which refused it and fell back to its proxy-less default while the VPN stayed up: the device lost all network and the only signal was one English line. Profiles are now validated before anything is written or pushed, the known-fatal shapes are refused outright (a validator failing for any other reason never blocks a normal apply), the message is actionable Chinese, and a Core that fails to load a config keeps the one already running instead of replacing it (cfdd6fe)
+- **windows** The installer's publisher_url pointed at a repository that does not exist; it now points at the one that does (cfdd6fe)
+
 ## v01.00.44 (2026-11-22)
 
 **Features**
