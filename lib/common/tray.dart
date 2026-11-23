@@ -294,7 +294,9 @@ class AppTray implements TrayPort {
     if (proxies.length > trayGroupMenuMaxItems) {
       final head = proxies.take(trayGroupMenuMaxItems).toList();
       if (!head.any((proxy) => proxy.name == selectedName)) {
-        final selectedProxy = proxies.where((proxy) => proxy.name == selectedName);
+        final selectedProxy = proxies.where(
+          (proxy) => proxy.name == selectedName,
+        );
         if (selectedProxy.isNotEmpty) {
           head[head.length - 1] = selectedProxy.first;
         }

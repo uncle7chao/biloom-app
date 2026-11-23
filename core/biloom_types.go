@@ -106,7 +106,7 @@ type RequestProxyIPParams struct {
 }
 
 // IP 是节点真实出口的地址，Country 是本地 geoip 数据认出的两位国家码
-//（认不出为空串 —— 认不出就交回「未知」，不硬猜）。
+// （认不出为空串 —— 认不出就交回「未知」，不硬猜）。
 type RequestProxyIPResult struct {
 	IP      string `json:"ip"`
 	Country string `json:"country"`
@@ -114,11 +114,11 @@ type RequestProxyIPResult struct {
 
 // BiLoom: fork 专属内核方法名。
 const (
-	requestProxyIPMethod           CoreMethod = "requestProxyIP"
-	convertSubscriptionMethod      CoreMethod = "convertSubscription"
-	addProxyNodesMethod            CoreMethod = "addProxyNodes"
-	removeProxyNodesMethod         CoreMethod = "removeProxyNodes"
-	updateProxyNodeMethod          CoreMethod = "updateProxyNode"
-	readProfileTargetsMethod       CoreMethod = "readProfileTargets"
-	setProxyChainMethod            CoreMethod = "setProxyChain"
+	requestProxyIPMethod      CoreMethod = "requestProxyIP"
+	convertSubscriptionMethod CoreMethod = "convertSubscription"
+	addProxyNodesMethod       CoreMethod = "addProxyNodes"
+	removeProxyNodesMethod    CoreMethod = "removeProxyNodes"
+	updateProxyNodeMethod     CoreMethod = "updateProxyNode"
+	readProfileTargetsMethod  CoreMethod = "readProfileTargets"
+	setProxyChainMethod       CoreMethod = "setProxyChain"
 )

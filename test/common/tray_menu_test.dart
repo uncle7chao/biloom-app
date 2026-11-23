@@ -448,26 +448,29 @@ void main() {
     });
   });
 
-  test('a platform without submenu support (Linux) gets no group submenus', () async {
-    final linux = AppTray.forPlatform(isMacOS: false, isWindows: false);
-    await update(
-      _trayState(
-        isStart: true,
-        groups: [
-          const Group(
-            name: 'Proxy',
-            type: GroupType.Selector,
-            all: [Proxy(name: 'A', type: 'Direct')],
-          ),
-        ],
-      ),
-      on: linux,
-    );
+  test(
+    'a platform without submenu support (Linux) gets no group submenus',
+    () async {
+      final linux = AppTray.forPlatform(isMacOS: false, isWindows: false);
+      await update(
+        _trayState(
+          isStart: true,
+          groups: [
+            const Group(
+              name: 'Proxy',
+              type: GroupType.Selector,
+              all: [Proxy(name: 'A', type: 'Direct')],
+            ),
+          ],
+        ),
+        on: linux,
+      );
 
-    expect(
-      _items(showCall()).where((item) => item['type'] == 'submenu'),
-      isEmpty,
-      reason: 'Linux tray plugin has no submenu implementation',
-    );
-  });
+      expect(
+        _items(showCall()).where((item) => item['type'] == 'submenu'),
+        isEmpty,
+        reason: 'Linux tray plugin has no submenu implementation',
+      );
+    },
+  );
 }

@@ -613,7 +613,10 @@ extension ConfigMigration on Config {
   Config migrateLegacyDnsFallback() {
     final dns = patchClashConfig.dns;
     final filter = dns.fallbackFilter;
-    final shouldUpgradeFallback = _sameList(dns.fallback, legacyDefaultFallback);
+    final shouldUpgradeFallback = _sameList(
+      dns.fallback,
+      legacyDefaultFallback,
+    );
     final shouldUpgradeDomains = _sameList(
       filter.domain,
       legacyFallbackFilterDomains,

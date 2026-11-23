@@ -3,75 +3,89 @@ import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/state.dart';
-import 'package:fl_clash/widgets/widgets.dart' hide
-      ActivateBox,
-      AnimatedVisibility,
-      AppBarSearchStateBuilder,
-      BaseScaffold,
-      BottomInsetScope,
-      CloseContainerActionCallback,
-      CloseContainerBuilder,
-      ClosedCallback,
-      CommonChip,
-      CommonCircleLoading,
-      CommonDialog,
-      CommonExpandIcon,
-      CommonMinFilledButtonTheme,
-      CommonMinIconButtonTheme,
-      CommonScaffold,
-      CommonScaffoldState,
-      CommonScrollBar,
-      DecorationListItem,
-      DisabledMask,
-      EmojiText,
-      FadeBox,
-      FadeScaleBox,
-      FadeScaleEnterBox,
-      FadeScaleEnterTransition,
-      FadeSlideEnterTransition,
-      FadeThroughBox,
-      FloatingScrollbar,
-      Info,
-      InfoHeader,
-      ItemPositionProvider,
-      KeepScope,
-      KeyedAnimatedList,
-      LineChart,
-      ListHeader,
-      ListItem,
-      MetaChip,
-      ModalSideSheetRoute,
-      MoreActionButton,
-      NullStatus,
-      NullStatusIllustration,
-      NullStatusSwitcher,
-      OnKeywordsUpdateCallback,
-      OpenContainer,
-      OpenContainerBuilder,
-      PageActivityScope,
-      PageFocusScope,
-      PageTraversalPolicy,
-      PagedSheet,
-      PagedSheetRoute,
-      PopupAnchorResolver,
-      PopupOpen,
-      ProfileIdProvider,
-      ProxyDecoratorProvider,
-      ScrollToEndBox,
-      SelectedDecorationListItem,
-      SettingTextCard,
-      SheetProvider,
-      SideSheet,
-      SliderDefaultsM3,
-      TooltipLabel,
-      TooltipText,
-      commonProxyDecorator,
-      genActions,
-      generateSection,
-      showExtend,
-      showModalSideSheet,
-      showSheet;
-import 'package:fl_clash/ui/ui.dart' hide CommonCard, CommonPopupBox, CommonPopupMenu, CommonPopupMenuItem, CommonPopupRoute, CommonCheckBox, CommonPopScope, InputDialog, BackLayerScope, SheetProps, SheetType, ExtendProps;
+import 'package:fl_clash/widgets/widgets.dart'
+    hide
+        ActivateBox,
+        AnimatedVisibility,
+        AppBarSearchStateBuilder,
+        BaseScaffold,
+        BottomInsetScope,
+        CloseContainerActionCallback,
+        CloseContainerBuilder,
+        ClosedCallback,
+        CommonChip,
+        CommonCircleLoading,
+        CommonDialog,
+        CommonExpandIcon,
+        CommonMinFilledButtonTheme,
+        CommonMinIconButtonTheme,
+        CommonScaffold,
+        CommonScaffoldState,
+        CommonScrollBar,
+        DecorationListItem,
+        DisabledMask,
+        EmojiText,
+        FadeBox,
+        FadeScaleBox,
+        FadeScaleEnterBox,
+        FadeScaleEnterTransition,
+        FadeSlideEnterTransition,
+        FadeThroughBox,
+        FloatingScrollbar,
+        Info,
+        InfoHeader,
+        ItemPositionProvider,
+        KeepScope,
+        KeyedAnimatedList,
+        LineChart,
+        ListHeader,
+        ListItem,
+        MetaChip,
+        ModalSideSheetRoute,
+        MoreActionButton,
+        NullStatus,
+        NullStatusIllustration,
+        NullStatusSwitcher,
+        OnKeywordsUpdateCallback,
+        OpenContainer,
+        OpenContainerBuilder,
+        PageActivityScope,
+        PageFocusScope,
+        PageTraversalPolicy,
+        PagedSheet,
+        PagedSheetRoute,
+        PopupAnchorResolver,
+        PopupOpen,
+        ProfileIdProvider,
+        ProxyDecoratorProvider,
+        ScrollToEndBox,
+        SelectedDecorationListItem,
+        SettingTextCard,
+        SheetProvider,
+        SideSheet,
+        SliderDefaultsM3,
+        TooltipLabel,
+        TooltipText,
+        commonProxyDecorator,
+        genActions,
+        generateSection,
+        showExtend,
+        showModalSideSheet,
+        showSheet;
+import 'package:fl_clash/ui/ui.dart'
+    hide
+        CommonCard,
+        CommonPopupBox,
+        CommonPopupMenu,
+        CommonPopupMenuItem,
+        CommonPopupRoute,
+        CommonCheckBox,
+        CommonPopScope,
+        InputDialog,
+        BackLayerScope,
+        SheetProps,
+        SheetType,
+        ExtendProps;
 import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -389,20 +403,20 @@ class ProxyCard extends ConsumerWidget {
                   child: child!,
                 );
               },
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: Row(
-              // stretch 让左侧延迟色条自动长到与内容列同高（名称 + 第二行），
-              // 不用自己算高度 —— 也就不用碰 getItemHeight。
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                _ProxyDelayBar(proxyName: proxy.name, testUrl: testUrl),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: Row(
+                  // stretch 让左侧延迟色条自动长到与内容列同高（名称 + 第二行），
+                  // 不用自己算高度 —— 也就不用碰 getItemHeight。
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _ProxyDelayBar(proxyName: proxy.name, testUrl: testUrl),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           proxyNameText,
                           const SizedBox(height: 6),
@@ -497,8 +511,7 @@ class _ProxyDelayBar extends ConsumerWidget {
     final value = ref.watch(
       delayProvider(proxyName: proxyName, testUrl: testUrl),
     );
-    final color =
-        getDelayColor(value) ?? context.colorScheme.outlineVariant;
+    final color = getDelayColor(value) ?? context.colorScheme.outlineVariant;
     final bar = Container(
       width: _width,
       decoration: BoxDecoration(
@@ -578,7 +591,8 @@ class ProxyDelayButton extends ConsumerStatefulWidget {
   final String? testUrl;
   final VoidCallback onTest;
 
-  const ProxyDelayButton({super.key, 
+  const ProxyDelayButton({
+    super.key,
     required this.proxyName,
     required this.onTest,
     this.testUrl,
@@ -685,7 +699,11 @@ class ProxyExitButton extends ConsumerWidget {
   /// 失败/不一致的警示色不变 —— 语义由 tooltip 兜底。
   final bool compact;
 
-  const ProxyExitButton({super.key, required this.proxyName, this.compact = false});
+  const ProxyExitButton({
+    super.key,
+    required this.proxyName,
+    this.compact = false,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -842,7 +860,9 @@ class _ProxyMetaChips extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final typeLabel = isExpand ? ref.watch(proxyDescProvider(proxy)) : proxy.type;
+    final typeLabel = isExpand
+        ? ref.watch(proxyDescProvider(proxy))
+        : proxy.type;
     return LayoutBuilder(
       builder: (context, constraints) {
         final budget = constraints.maxWidth;

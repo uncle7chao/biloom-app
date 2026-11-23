@@ -188,19 +188,20 @@ void main() {
     expect(container.read(appSettingProvider).autoCheckUpdate, isTrue);
   });
 
-  testWidgets('an automatic check stays silent when the server is unreachable', (
-    tester,
-  ) async {
-    final container = await pumpApp(tester);
+  testWidgets(
+    'an automatic check stays silent when the server is unreachable',
+    (tester) async {
+      final container = await pumpApp(tester);
 
-    await container
-        .read(commonActionProvider.notifier)
-        .checkUpdateResultHandle(result: _failed);
-    await tester.pumpAndSettle();
+      await container
+          .read(commonActionProvider.notifier)
+          .checkUpdateResultHandle(result: _failed);
+      await tester.pumpAndSettle();
 
-    // 启动时因为查不到就弹窗属于打扰；但也不能顺手把用户的自动检查关掉
-    // —— 关掉只在「用户主动点了不再提醒」时发生。
-    expect(find.text('Check for updates'), findsNothing);
-    expect(container.read(appSettingProvider).autoCheckUpdate, isTrue);
-  });
+      // 启动时因为查不到就弹窗属于打扰；但也不能顺手把用户的自动检查关掉
+      // —— 关掉只在「用户主动点了不再提醒」时发生。
+      expect(find.text('Check for updates'), findsNothing);
+      expect(container.read(appSettingProvider).autoCheckUpdate, isTrue);
+    },
+  );
 }

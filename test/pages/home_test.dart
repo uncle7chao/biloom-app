@@ -818,8 +818,9 @@ void main() {
 
     Widget page(String label) {
       return Builder(
-        builder: (context) =>
-            Text('page:$label inset:${ui_inherited.BottomInsetScope.of(context)}'),
+        builder: (context) => Text(
+          'page:$label inset:${ui_inherited.BottomInsetScope.of(context)}',
+        ),
       );
     }
 
@@ -1209,9 +1210,7 @@ void main() {
               NavigationItem(
                 glyph: AppGlyphs.dashboard,
                 label: PageLabel.dashboard,
-                builder: (_) => _NestedSearchLauncher(
-                  onSearch: (_) {},
-                ),
+                builder: (_) => _NestedSearchLauncher(onSearch: (_) {}),
               ),
               NavigationItem(
                 glyph: AppGlyphs.tools,

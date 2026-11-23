@@ -205,12 +205,19 @@ void main() {
           .toList();
       return tops.reduce((a, b) => a < b ? a : b);
     }
+
     final list = find.byType(CustomScrollView);
-    expect(sheetTop(), closeTo(view.height * (1 - ui_det.snapSheetDetents.first), 1));
+    expect(
+      sheetTop(),
+      closeTo(view.height * (1 - ui_det.snapSheetDetents.first), 1),
+    );
 
     await tester.fling(list, const Offset(0, -200), 2000);
     await tester.pumpAndSettle();
-    expect(sheetTop(), closeTo(view.height * (1 - ui_det.snapSheetDetents.last), 1));
+    expect(
+      sheetTop(),
+      closeTo(view.height * (1 - ui_det.snapSheetDetents.last), 1),
+    );
     expect(tester.widget<CustomScrollView>(list).controller!.offset, 0);
   });
 }

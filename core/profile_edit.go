@@ -695,7 +695,7 @@ func handleAddProxyNodes(params *AddProxyNodesParams) (AddProxyNodesResult, erro
 //   - listeners 的 proxy 字段（删掉该字段让它回落默认行为，不整条删 listener）。
 //
 // 只动 proxies/proxy-groups/rules/listeners 四处，注释、排版与其余内容原样保留
-//（同 handleAddProxyNodes 的文档级编辑模式）。没找到的名字如实回传 missing。
+// （同 handleAddProxyNodes 的文档级编辑模式）。没找到的名字如实回传 missing。
 func handleRemoveProxyNodes(params *RemoveProxyNodesParams) (RemoveProxyNodesResult, error) {
 	requested := make(map[string]bool, len(params.Names))
 	for _, name := range params.Names {

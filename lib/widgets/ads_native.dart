@@ -106,10 +106,7 @@ class _AdsNativeCardState extends ConsumerState<AdsNativeCard>
       request: const AdRequest(),
       listener: NativeAdListener(
         onAdLoaded: (ad) {
-          commonPrint.log(
-            'ads native loaded: $id',
-            logLevel: LogLevel.debug,
-          );
+          commonPrint.log('ads native loaded: $id', logLevel: LogLevel.debug);
           if (mounted) {
             setState(() => _loaded = true);
           }
@@ -128,22 +125,24 @@ class _AdsNativeCardState extends ConsumerState<AdsNativeCard>
     _ad = ad;
     _loadedId = id;
     _loaded = false;
-    _ensureSdkInitialized().then((_) {
-      if (!mounted) {
-        ad.dispose();
-        return;
-      }
-      // 本插件版本 load() 返回 void（结果走 listener 回调），这里只负责
-      // 等 SDK 就绪后发起；初始化异常走 catchError 退避。
-      ad.load();
-    }).catchError((Object e) {
-      commonPrint.log(
-        'ads native load error: $e',
-        logLevel: LogLevel.debug,
-      );
-      _clearAd();
-      _scheduleRetry();
-    });
+    _ensureSdkInitialized()
+        .then((_) {
+          if (!mounted) {
+            ad.dispose();
+            return;
+          }
+          // 本插件版本 load() 返回 void（结果走 listener 回调），这里只负责
+          // 等 SDK 就绪后发起；初始化异常走 catchError 退避。
+          ad.load();
+        })
+        .catchError((Object e) {
+          commonPrint.log(
+            'ads native load error: $e',
+            logLevel: LogLevel.debug,
+          );
+          _clearAd();
+          _scheduleRetry();
+        });
   }
 
   void _scheduleRetry() {
@@ -159,10 +158,8 @@ class _AdsNativeCardState extends ConsumerState<AdsNativeCard>
       );
       return;
     }
-    final delay = _retryDelays[(_failures - 1).clamp(
-      0,
-      _retryDelays.length - 1,
-    )];
+    final delay =
+        _retryDelays[(_failures - 1).clamp(0, _retryDelays.length - 1)];
     _retryTimer?.cancel();
     _retryTimer = Timer(Duration(seconds: delay), () {
       final props = _pendingProps;

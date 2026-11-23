@@ -27,13 +27,7 @@ class ProxyNodeForm extends StatefulWidget {
   State<ProxyNodeForm> createState() => ProxyNodeFormState();
 }
 
-enum _FieldType {
-  text,
-  password,
-  int_,
-  bool_,
-  dropdown,
-}
+enum _FieldType { text, password, int_, bool_, dropdown }
 
 class _Field {
   final String key;
@@ -261,11 +255,7 @@ class ProxyNodeFormState extends State<ProxyNodeForm> {
         _Field('username', l('proxyFieldUsername')),
         _Field('password', l('proxyFieldPassword'), type: _FieldType.password),
         _Field('tls', l('proxyFieldTls'), type: _FieldType.bool_),
-        _Field(
-          'sni',
-          l('proxyFieldSni'),
-          visible: (v) => v.boolOf('tls'),
-        ),
+        _Field('sni', l('proxyFieldSni'), visible: (v) => v.boolOf('tls')),
         _Field(
           'skip-cert-verify',
           l('proxyFieldSkipCertVerify'),
@@ -284,8 +274,12 @@ class ProxyNodeFormState extends State<ProxyNodeForm> {
           options: _ssCiphers,
           initial: _ssCiphers.first,
         ),
-        _Field('password', l('proxyFieldPassword'), type: _FieldType.password,
-            required: true),
+        _Field(
+          'password',
+          l('proxyFieldPassword'),
+          type: _FieldType.password,
+          required: true,
+        ),
         _Field('udp', l('proxyFieldUdp'), type: _FieldType.bool_),
       ]),
       _Protocol('vmess', [
@@ -483,12 +477,7 @@ class ProxyNodeFormState extends State<ProxyNodeForm> {
         ),
         // 内核 TrojanOption 里有 RealityOpts：trojan+reality 是当前主流的
         // 抗封锁组合，表单此前没暴露。Reality 是服务端约定，公钥必填。
-        _Field(
-          'alpn',
-          l('proxyFieldAlpn'),
-          pseudo: true,
-          advanced: true,
-        ),
+        _Field('alpn', l('proxyFieldAlpn'), pseudo: true, advanced: true),
         _Field(
           'reality',
           l('proxyFieldReality'),
@@ -546,16 +535,8 @@ class ProxyNodeFormState extends State<ProxyNodeForm> {
           requiredIf: (v) => v.textOf('obfs').isNotEmpty,
           visible: (v) => v.textOf('obfs').isNotEmpty,
         ),
-        _Field(
-          'up',
-          l('proxyFieldUp'),
-          advanced: true,
-        ),
-        _Field(
-          'down',
-          l('proxyFieldDown'),
-          advanced: true,
-        ),
+        _Field('up', l('proxyFieldUp'), advanced: true),
+        _Field('down', l('proxyFieldDown'), advanced: true),
         _Field(
           'skip-cert-verify',
           l('proxyFieldSkipCertVerify'),
@@ -646,9 +627,7 @@ class ProxyNodeFormState extends State<ProxyNodeForm> {
   TextEditingController _controller(String key, [_Field? field]) {
     return _controllers.putIfAbsent(
       key,
-      () => TextEditingController(
-        text: _prefill[key] ?? field?.initial ?? '',
-      ),
+      () => TextEditingController(text: _prefill[key] ?? field?.initial ?? ''),
     );
   }
 
@@ -667,7 +646,8 @@ class ProxyNodeFormState extends State<ProxyNodeForm> {
       return null;
     }
     final text = {
-      for (final entry in _controllers.entries) entry.key: entry.value.text.trim(),
+      for (final entry in _controllers.entries)
+        entry.key: entry.value.text.trim(),
     };
     final values = _FormValues(text, _bools);
     final protocol = _current;
@@ -722,7 +702,8 @@ class ProxyNodeFormState extends State<ProxyNodeForm> {
     // 注意 network 只要选了 ws/grpc 就必须写进节点 —— 即使用户没填路径/服务名，
     // 否则节点会静默退回 tcp，用户的选择被无声忽略。
     final network = text['network'] ?? 'tcp';
-    if (protocol.type == 'vmess' || protocol.type == 'vless' ||
+    if (protocol.type == 'vmess' ||
+        protocol.type == 'vless' ||
         protocol.type == 'trojan') {
       if (network == 'ws') {
         node['network'] = 'ws';
@@ -809,7 +790,8 @@ class ProxyNodeFormState extends State<ProxyNodeForm> {
     final l10n = context.appLocalizations;
     final protocol = _current;
     final text = {
-      for (final entry in _controllers.entries) entry.key: entry.value.text.trim(),
+      for (final entry in _controllers.entries)
+        entry.key: entry.value.text.trim(),
     };
     final values = _FormValues(text, _bools);
     final visibleFields = protocol.fields
@@ -851,15 +833,17 @@ class ProxyNodeFormState extends State<ProxyNodeForm> {
           if (advanced.isNotEmpty)
             ExpansionTile(
               initiallyExpanded: _advancedOpen,
-              onExpansionChanged: (open) => setState(() => _advancedOpen = open),
+              onExpansionChanged: (open) =>
+                  setState(() => _advancedOpen = open),
               tilePadding: EdgeInsets.zero,
               childrenPadding: EdgeInsets.zero,
               title: Text(
                 l10n.proxyFormAdvanced,
                 style: context.textTheme.bodyMedium,
               ),
-              children:
-                  advanced.map((field) => _buildField(field, values)).toList(),
+              children: advanced
+                  .map((field) => _buildField(field, values))
+                  .toList(),
             ),
         ],
       ),
@@ -891,8 +875,7 @@ class ProxyNodeFormState extends State<ProxyNodeForm> {
         final hasExtra =
             rawValue.isNotEmpty && !field.options.contains(rawValue);
         return DropdownButtonFormField<String>(
-          initialValue:
-              rawValue.isEmpty && !field.options.contains('')
+          initialValue: rawValue.isEmpty && !field.options.contains('')
               ? null
               : rawValue,
           decoration: InputDecoration(labelText: field.label),
@@ -924,7 +907,8 @@ class ProxyNodeFormState extends State<ProxyNodeForm> {
                 ? [FilteringTextInputFormatter.digitsOnly]
                 : null,
             decoration: InputDecoration(
-              labelText: field.label +
+              labelText:
+                  field.label +
                   ((field.required || field.requiredIf != null) ? ' *' : ''),
               border: const OutlineInputBorder(),
             ),

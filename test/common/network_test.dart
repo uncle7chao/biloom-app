@@ -138,7 +138,11 @@ void main() {
         expect(isIPv4InCidr(address, '198.18.0.1/16'), isTrue, reason: address);
       }
       for (final address in ['198.17.255.255', '198.19.0.0', '1.1.1.1']) {
-        expect(isIPv4InCidr(address, '198.18.0.1/16'), isFalse, reason: address);
+        expect(
+          isIPv4InCidr(address, '198.18.0.1/16'),
+          isFalse,
+          reason: address,
+        );
       }
     });
 

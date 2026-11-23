@@ -24,10 +24,7 @@ void main() {
     });
 
     test('falls back to the brand default on missing config', () {
-      expect(
-        ThemeProps.safeFromJson(null).primaryColor,
-        defaultPrimaryColor,
-      );
+      expect(ThemeProps.safeFromJson(null).primaryColor, defaultPrimaryColor);
     });
   });
 
@@ -515,9 +512,7 @@ void main() {
         patchClashConfig: PatchClashConfig(
           dns: Dns(
             fallback: legacyDefaultFallback,
-            fallbackFilter: FallbackFilter(
-              domain: legacyFallbackFilterDomains,
-            ),
+            fallbackFilter: FallbackFilter(domain: legacyFallbackFilterDomains),
           ),
         ),
       );
@@ -528,78 +523,87 @@ void main() {
       expect(dns.fallbackFilter.domain, isEmpty);
     });
 
-    test('turns off the legacy geoip filter that discards nameserver answers', () {
-      // 出厂默认三件套同时命中：一起升级。
-      const config = Config(
-        themeProps: defaultThemeProps,
-        patchClashConfig: PatchClashConfig(
-          dns: Dns(
-            fallback: legacyDefaultFallback,
-            fallbackFilter: FallbackFilter(
-              domain: legacyFallbackFilterDomains,
-              geoip: legacyFallbackFilterGeoip,
-              geoipCode: legacyFallbackFilterGeoipCode,
+    test(
+      'turns off the legacy geoip filter that discards nameserver answers',
+      () {
+        // 出厂默认三件套同时命中：一起升级。
+        const config = Config(
+          themeProps: defaultThemeProps,
+          patchClashConfig: PatchClashConfig(
+            dns: Dns(
+              fallback: legacyDefaultFallback,
+              fallbackFilter: FallbackFilter(
+                domain: legacyFallbackFilterDomains,
+                geoip: legacyFallbackFilterGeoip,
+                geoipCode: legacyFallbackFilterGeoipCode,
+              ),
             ),
           ),
-        ),
-      );
+        );
 
-      final dns = config.migrateLegacyDnsFallback().patchClashConfig.dns;
+        final dns = config.migrateLegacyDnsFallback().patchClashConfig.dns;
 
-      expect(dns.fallback, defaultFallback);
-      expect(dns.fallbackFilter.domain, isEmpty);
-      expect(dns.fallbackFilter.geoip, isFalse);
-      // `geoip-code` 本身不是问题（只在 geoip 开着时才被读），留着不动 ——
-      // 迁移不该在用户看不出差别的地方改他的配置。
-      expect(dns.fallbackFilter.geoipCode, 'CN');
-      expect(dns.fallbackFilter.ipcidr, ['240.0.0.0/4']);
-    });
+        expect(dns.fallback, defaultFallback);
+        expect(dns.fallbackFilter.domain, isEmpty);
+        expect(dns.fallbackFilter.geoip, isFalse);
+        // `geoip-code` 本身不是问题（只在 geoip 开着时才被读），留着不动 ——
+        // 迁移不该在用户看不出差别的地方改他的配置。
+        expect(dns.fallbackFilter.geoipCode, 'CN');
+        expect(dns.fallbackFilter.ipcidr, ['240.0.0.0/4']);
+      },
+    );
 
-    test('turns off geoip on its own, leaving the rest of the filter intact', () {
-      // 独立判定的第三面：只 `geoip` 是旧的，也必须被单独升级；
-      // 同时证明它不会顺手把兄弟字段（ipcidr）重置掉。
-      const config = Config(
-        themeProps: defaultThemeProps,
-        patchClashConfig: PatchClashConfig(
-          dns: Dns(
-            fallback: defaultFallback,
-            fallbackFilter: FallbackFilter(
-              domain: defaultFallbackFilterDomains,
-              geoip: legacyFallbackFilterGeoip,
-              ipcidr: ['10.0.0.0/8'],
+    test(
+      'turns off geoip on its own, leaving the rest of the filter intact',
+      () {
+        // 独立判定的第三面：只 `geoip` 是旧的，也必须被单独升级；
+        // 同时证明它不会顺手把兄弟字段（ipcidr）重置掉。
+        const config = Config(
+          themeProps: defaultThemeProps,
+          patchClashConfig: PatchClashConfig(
+            dns: Dns(
+              fallback: defaultFallback,
+              fallbackFilter: FallbackFilter(
+                domain: defaultFallbackFilterDomains,
+                geoip: legacyFallbackFilterGeoip,
+                ipcidr: ['10.0.0.0/8'],
+              ),
             ),
           ),
-        ),
-      );
+        );
 
-      final dns = config.migrateLegacyDnsFallback().patchClashConfig.dns;
+        final dns = config.migrateLegacyDnsFallback().patchClashConfig.dns;
 
-      expect(dns.fallbackFilter.geoip, isFalse);
-      expect(dns.fallbackFilter.ipcidr, ['10.0.0.0/8']);
-      expect(dns.fallbackFilter.geoipCode, 'CN');
-      expect(dns.fallback, defaultFallback);
-      expect(dns.fallbackFilter.domain, isEmpty);
-    });
+        expect(dns.fallbackFilter.geoip, isFalse);
+        expect(dns.fallbackFilter.ipcidr, ['10.0.0.0/8']);
+        expect(dns.fallbackFilter.geoipCode, 'CN');
+        expect(dns.fallback, defaultFallback);
+        expect(dns.fallbackFilter.domain, isEmpty);
+      },
+    );
 
-    test('leaves a geoip filter alone when the user picked another country', () {
-      // `geoip-code` 不是出厂值 ⇒ 这一组是用户自己配的，一个字节都不碰。
-      // 「宁可漏，不可错」：误改用户配置的代价远高于漏迁移一次。
-      const config = Config(
-        themeProps: defaultThemeProps,
-        patchClashConfig: PatchClashConfig(
-          dns: Dns(
-            fallback: defaultFallback,
-            fallbackFilter: FallbackFilter(
-              domain: defaultFallbackFilterDomains,
-              geoip: true,
-              geoipCode: 'JP',
+    test(
+      'leaves a geoip filter alone when the user picked another country',
+      () {
+        // `geoip-code` 不是出厂值 ⇒ 这一组是用户自己配的，一个字节都不碰。
+        // 「宁可漏，不可错」：误改用户配置的代价远高于漏迁移一次。
+        const config = Config(
+          themeProps: defaultThemeProps,
+          patchClashConfig: PatchClashConfig(
+            dns: Dns(
+              fallback: defaultFallback,
+              fallbackFilter: FallbackFilter(
+                domain: defaultFallbackFilterDomains,
+                geoip: true,
+                geoipCode: 'JP',
+              ),
             ),
           ),
-        ),
-      );
+        );
 
-      expect(identical(config.migrateLegacyDnsFallback(), config), isTrue);
-    });
+        expect(identical(config.migrateLegacyDnsFallback(), config), isTrue);
+      },
+    );
 
     test('upgrades only the untouched half when the other was customised', () {
       // 用户自己填过备用上游 → 那一半一个字节都不碰；旁路列表没动过 → 照改。
@@ -608,9 +612,7 @@ void main() {
         patchClashConfig: PatchClashConfig(
           dns: Dns(
             fallback: ['tls://9.9.9.9'],
-            fallbackFilter: FallbackFilter(
-              domain: legacyFallbackFilterDomains,
-            ),
+            fallbackFilter: FallbackFilter(domain: legacyFallbackFilterDomains),
           ),
         ),
       );
@@ -656,33 +658,36 @@ void main() {
       expect(identical(config.migrateLegacyDnsFallback(), config), isTrue);
     });
 
-    test('touches only the legacy fields, not the surrounding dns settings', () {
-      const config = Config(
-        themeProps: defaultThemeProps,
-        patchClashConfig: PatchClashConfig(
-          dns: Dns(
-            fallback: legacyDefaultFallback,
-            fallbackFilter: FallbackFilter(
-              domain: legacyFallbackFilterDomains,
-              // geoip 已经是「关」，不是出厂默认的那一组 → 不该被碰
-              // （它本来就等于目标值，改与不改结果相同，但这里同时也守住了
-              //  「判定基于 geoip + geoipCode 这一组」这个前提）。
-              geoip: false,
-              ipcidr: ['10.0.0.0/8'],
+    test(
+      'touches only the legacy fields, not the surrounding dns settings',
+      () {
+        const config = Config(
+          themeProps: defaultThemeProps,
+          patchClashConfig: PatchClashConfig(
+            dns: Dns(
+              fallback: legacyDefaultFallback,
+              fallbackFilter: FallbackFilter(
+                domain: legacyFallbackFilterDomains,
+                // geoip 已经是「关」，不是出厂默认的那一组 → 不该被碰
+                // （它本来就等于目标值，改与不改结果相同，但这里同时也守住了
+                //  「判定基于 geoip + geoipCode 这一组」这个前提）。
+                geoip: false,
+                ipcidr: ['10.0.0.0/8'],
+              ),
+              listen: '0.0.0.0:1053',
             ),
-            listen: '0.0.0.0:1053',
           ),
-        ),
-      );
+        );
 
-      final dns = config.migrateLegacyDnsFallback().patchClashConfig.dns;
+        final dns = config.migrateLegacyDnsFallback().patchClashConfig.dns;
 
-      expect(dns.listen, '0.0.0.0:1053');
-      // fallback-filter 里只有 domain 是旧默认值 —— 就只改它一个，兄弟字段原样保留。
-      expect(dns.fallbackFilter.geoip, isFalse);
-      expect(dns.fallbackFilter.ipcidr, ['10.0.0.0/8']);
-      expect(dns.fallbackFilter.geoipCode, 'CN');
-    });
+        expect(dns.listen, '0.0.0.0:1053');
+        // fallback-filter 里只有 domain 是旧默认值 —— 就只改它一个，兄弟字段原样保留。
+        expect(dns.fallbackFilter.geoip, isFalse);
+        expect(dns.fallbackFilter.ipcidr, ['10.0.0.0/8']);
+        expect(dns.fallbackFilter.geoipCode, 'CN');
+      },
+    );
   });
 
   group('Migration dns fallback upgrade', () {

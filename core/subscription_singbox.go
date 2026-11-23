@@ -17,13 +17,13 @@ import (
 
 // singBoxSkippedTypes 记录 as-is 跳过的出站类型，用于报错时说明原因。
 var singBoxUnsupportedTypes = map[string]string{
-	"selector": "分组(selector),请用外层 tag 引用具体节点",
-	"urltest":  "自动选择分组(urltest)",
-	"direct":   "直连出站(direct)",
-	"block":    "拦截出站(block)",
-	"dns":      "DNS 出站(dns)",
-	"tor":      "Tor 出站(内核无对应实现)",
-	"ssh":      "SSH 出站(内核无对应实现)",
+	"selector":  "分组(selector),请用外层 tag 引用具体节点",
+	"urltest":   "自动选择分组(urltest)",
+	"direct":    "直连出站(direct)",
+	"block":     "拦截出站(block)",
+	"dns":       "DNS 出站(dns)",
+	"tor":       "Tor 出站(内核无对应实现)",
+	"ssh":       "SSH 出站(内核无对应实现)",
 	"wireguard": "WireGuard 出站(需要额外密钥与网段配置,无法自动转换)",
 }
 

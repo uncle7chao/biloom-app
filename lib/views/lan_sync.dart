@@ -78,7 +78,10 @@ class _LanSyncSharePageState extends ConsumerState<LanSyncSharePage> {
       }
       final url = 'http://${_ips.first}:$port$_servePath';
       _qrImage = QrImage(
-        QrCode(payload: QrPayload.fromString(url), errorCorrectLevel: QrErrorCorrectLevel.medium),
+        QrCode(
+          payload: QrPayload.fromString(url),
+          errorCorrectLevel: QrErrorCorrectLevel.medium,
+        ),
       );
       setState(() {});
     } catch (error, stacktrace) {
@@ -296,10 +299,9 @@ Future<void> importFromLan(BuildContext context, WidgetRef ref) async {
         await response.pipe(File(await appPath.backupFilePath).openWrite());
         // 上游 restore 的 fetch 语义：把归档准备好并返回路径。zip 已由上面的
         // 管道写到 backupFilePath，这里直接交出去即可。
-        await ref.read(backupActionProvider.notifier).restore(
-          option,
-          (downloadPath) async => appPath.backupFilePath,
-        );
+        await ref
+            .read(backupActionProvider.notifier)
+            .restore(option, (downloadPath) async => appPath.backupFilePath);
         return true;
       } finally {
         client.close(force: true);

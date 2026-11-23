@@ -53,10 +53,7 @@ void main() {
 }
 ''';
       final config = AdsRemoteConfig.parse(raw);
-      expect(
-        adsProxiesBannerPropsFor(config, AdPlatform.android),
-        isNull,
-      );
+      expect(adsProxiesBannerPropsFor(config, AdPlatform.android), isNull);
       expect(adsNativePropsFor(config, AdPlatform.android), isNull);
     });
 
@@ -70,10 +67,7 @@ void main() {
 }
 ''';
       final config = AdsRemoteConfig.parse(raw);
-      expect(
-        adsProxiesBannerPropsFor(config, AdPlatform.android),
-        isNull,
-      );
+      expect(adsProxiesBannerPropsFor(config, AdPlatform.android), isNull);
       // 纯空白 ID 也判空（trim 语义：空串检查走 isEmpty，空白串按开启
       // 会传给 SDK 崩 —— 这里第二键是空白串，AdPlacementProps 不做 trim，
       // 判定看 isEmpty，所以 "  " 会被放行。防线在 props 层：)
@@ -164,10 +158,7 @@ void main() {
 }
 ''';
       final on = AdsRemoteConfig.parse(rawOn);
-      expect(
-        adsProfilesBannerPropsFor(on, AdPlatform.android),
-        isNotNull,
-      );
+      expect(adsProfilesBannerPropsFor(on, AdPlatform.android), isNotNull);
       expect(adsToolsBannerPropsFor(on, AdPlatform.android), isNotNull);
       for (final platform in AdPlatform.values) {
         if (platform == AdPlatform.android) continue;

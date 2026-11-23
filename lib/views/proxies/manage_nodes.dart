@@ -115,11 +115,13 @@ class _ManageProxyNodesViewState extends ConsumerState<ManageProxyNodesView> {
     showSheet(
       context: context,
       props: const SheetProps(isScrollControlled: true),
-      builder: (_) => EditProxyNodeView(profileId: widget.profileId, node: detail),
+      builder: (_) =>
+          EditProxyNodeView(profileId: widget.profileId, node: detail),
     );
   }
 
-  void _showResult(RemoveProxyNodesResult result) {    final appLocalizations = context.appLocalizations;
+  void _showResult(RemoveProxyNodesResult result) {
+    final appLocalizations = context.appLocalizations;
     final lines = <String>[];
     if (result.removed.isNotEmpty) {
       lines.add(appLocalizations.deleteNodeSuccess);
@@ -219,12 +221,8 @@ class _ManageProxyNodesViewState extends ConsumerState<ManageProxyNodesView> {
           const Spacer(),
           FilledButton.icon(
             style: FilledButton.styleFrom(
-              backgroundColor: count == 0
-                  ? null
-                  : context.colorScheme.error,
-              foregroundColor: count == 0
-                  ? null
-                  : context.colorScheme.onError,
+              backgroundColor: count == 0 ? null : context.colorScheme.error,
+              foregroundColor: count == 0 ? null : context.colorScheme.onError,
             ),
             onPressed: count == 0 ? null : _handleBatchDelete,
             icon: const Icon(Icons.delete_sweep_outlined, size: 18),

@@ -95,7 +95,8 @@ void main() {
     container
         .read(patchClashConfigProvider.notifier)
         .update(
-          (state) => state.copyWith(dns: state.dns.copyWith(enhancedMode: mode)),
+          (state) =>
+              state.copyWith(dns: state.dns.copyWith(enhancedMode: mode)),
         );
     await settle(tester);
   }

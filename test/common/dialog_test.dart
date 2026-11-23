@@ -431,7 +431,8 @@ void main() {
     expect(
       find.byWidgetPredicate(
         (widget) =>
-            widget is SelectableText && (widget.data?.contains(statement) ?? false),
+            widget is SelectableText &&
+            (widget.data?.contains(statement) ?? false),
       ),
       findsNothing,
     );

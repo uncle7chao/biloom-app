@@ -109,12 +109,13 @@ class _AdsBannerState extends ConsumerState<AdsBanner>
     _createAd(props, size);
   }
 
-  Provider<AdPlacementProps?> _placementProvider() => switch (widget.placement) {
-    AdsBannerPlacement.home => adsBannerPlacementProvider,
-    AdsBannerPlacement.proxies => adsProxiesBannerPlacementProvider,
-    AdsBannerPlacement.profiles => adsProfilesBannerPlacementProvider,
-    AdsBannerPlacement.tools => adsToolsBannerPlacementProvider,
-  };
+  Provider<AdPlacementProps?> _placementProvider() =>
+      switch (widget.placement) {
+        AdsBannerPlacement.home => adsBannerPlacementProvider,
+        AdsBannerPlacement.proxies => adsProxiesBannerPlacementProvider,
+        AdsBannerPlacement.profiles => adsProfilesBannerPlacementProvider,
+        AdsBannerPlacement.tools => adsToolsBannerPlacementProvider,
+      };
 
   /// SDK 初始化只发一次（MobileAds.initialize 幂等，这里再 memo 一层省
   /// 重复平台通道调用），返回的 Future 完成后才允许 load。
@@ -142,18 +143,20 @@ class _AdsBannerState extends ConsumerState<AdsBanner>
       return;
     }
     // 该 API 返回 Future（尺寸计算可能走平台通道），异步回来后同档 guard。
-    AdSize.getLargeAnchoredAdaptiveBannerAdSize(width).then((adaptive) {
-      if (!mounted) {
-        return;
-      }
-      if (adaptive == null) {
-        _disposeAd();
-        return;
-      }
-      _createAd(props, adaptive);
-    }).catchError((Object _) {
-      // 尺寸计算失败也静默 —— 广告链路异常不允许打扰主功能。
-    });
+    AdSize.getLargeAnchoredAdaptiveBannerAdSize(width)
+        .then((adaptive) {
+          if (!mounted) {
+            return;
+          }
+          if (adaptive == null) {
+            _disposeAd();
+            return;
+          }
+          _createAd(props, adaptive);
+        })
+        .catchError((Object _) {
+          // 尺寸计算失败也静默 —— 广告链路异常不允许打扰主功能。
+        });
   }
 
   void _createAd(AdPlacementProps props, AdSize size) {
@@ -198,22 +201,24 @@ class _AdsBannerState extends ConsumerState<AdsBanner>
     _loadedId = id;
     _loadedWidth = size.width;
     _loaded = false;
-    _ensureSdkInitialized().then((_) {
-      if (!mounted) {
-        ad.dispose();
-        return;
-      }
-      // 本插件版本 load() 返回 void（结果走 listener 回调），这里只负责
-      // 等 SDK 就绪后发起；初始化异常走 catchError 退避。
-      ad.load();
-    }).catchError((Object e) {
-      commonPrint.log(
-        'ads banner load error: $e',
-        logLevel: LogLevel.debug,
-      );
-      _clearAd();
-      _scheduleRetry();
-    });
+    _ensureSdkInitialized()
+        .then((_) {
+          if (!mounted) {
+            ad.dispose();
+            return;
+          }
+          // 本插件版本 load() 返回 void（结果走 listener 回调），这里只负责
+          // 等 SDK 就绪后发起；初始化异常走 catchError 退避。
+          ad.load();
+        })
+        .catchError((Object e) {
+          commonPrint.log(
+            'ads banner load error: $e',
+            logLevel: LogLevel.debug,
+          );
+          _clearAd();
+          _scheduleRetry();
+        });
   }
 
   /// 失败后按退避序列排一次重试。退避期间 build 里再怎么触发 _syncAd
@@ -231,10 +236,8 @@ class _AdsBannerState extends ConsumerState<AdsBanner>
       );
       return;
     }
-    final delay = _retryDelays[(_failures - 1).clamp(
-      0,
-      _retryDelays.length - 1,
-    )];
+    final delay =
+        _retryDelays[(_failures - 1).clamp(0, _retryDelays.length - 1)];
     _retryTimer?.cancel();
     _retryTimer = Timer(Duration(seconds: delay), () {
       final props = _pendingProps;

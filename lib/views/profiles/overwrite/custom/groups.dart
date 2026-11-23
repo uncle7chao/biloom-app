@@ -25,7 +25,11 @@ class CustomProxyGroupsView extends ConsumerStatefulWidget {
   /// 一个组」，落到一个空列表页还要再找一次「新增」按钮是多余的一步。
   final bool autoAdd;
 
-  const CustomProxyGroupsView(this.profileId, {super.key, this.autoAdd = false});
+  const CustomProxyGroupsView(
+    this.profileId, {
+    super.key,
+    this.autoAdd = false,
+  });
 
   @override
   ConsumerState createState() => _CustomProxyGroupsViewState();
@@ -130,11 +134,7 @@ class _CustomProxyGroupsViewState extends ConsumerState<CustomProxyGroupsView> {
         proxyGroupProvider.overrideWithBuild(
           (_, _) =>
               proxyGroup ??
-              const ProxyGroup(
-                id: -1,
-                name: '',
-                type: GroupType.Selector,
-              ),
+              const ProxyGroup(id: -1, name: '', type: GroupType.Selector),
         ),
       ],
       currentOf: (ref) => ref.read(proxyGroupProvider),

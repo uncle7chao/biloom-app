@@ -20,8 +20,9 @@ void main() {
       expect(uri.host, '1.2.3.4');
       expect(uri.port, 8388);
       // SIP002：userinfo = base64url(method:password)，无填充。
-      final decoded =
-          utf8.decode(base64Url.decode(base64Url.normalize(uri.userInfo)));
+      final decoded = utf8.decode(
+        base64Url.decode(base64Url.normalize(uri.userInfo)),
+      );
       expect(decoded, 'aes-128-gcm:pass/word+1');
       // Dart 的 uri.fragment 返回 percent-encoded 原文，解码后比较。
       expect(Uri.decodeComponent(uri.fragment), '香港 01');
@@ -66,8 +67,9 @@ void main() {
         },
       });
       expect(link!.startsWith('vmess://'), isTrue);
-      final payload =
-          utf8.decode(base64.decode(link.substring('vmess://'.length)));
+      final payload = utf8.decode(
+        base64.decode(link.substring('vmess://'.length)),
+      );
       final json = jsonDecode(payload) as Map<String, dynamic>;
       expect(json['ps'], '美国 02');
       expect(json['add'], '5.6.7.8');
@@ -89,8 +91,9 @@ void main() {
         'port': 1,
         'uuid': 'u',
       });
-      final payload =
-          utf8.decode(base64.decode(link!.substring('vmess://'.length)));
+      final payload = utf8.decode(
+        base64.decode(link!.substring('vmess://'.length)),
+      );
       expect((jsonDecode(payload) as Map)['net'], 'tcp');
     });
   });
@@ -231,10 +234,7 @@ void main() {
       });
     }
     test('missing server', () {
-      expect(
-        proxyToShareLink({'name': 'n', 'type': 'ss', 'port': 1}),
-        isNull,
-      );
+      expect(proxyToShareLink({'name': 'n', 'type': 'ss', 'port': 1}), isNull);
     });
     test('missing port', () {
       expect(

@@ -314,8 +314,12 @@ void main() {
     // Fork semantics: the sheet bar leads with Back (not Close), search
     // toggles in the bar, and the tab layout's delay test is a FAB outside
     // the bar.
-    (ProxiesType.list, ['Back', 'Search'], ['Back', 'Clear search'],
-     ['Back', 'Search']),
+    (
+      ProxiesType.list,
+      ['Back', 'Search'],
+      ['Back', 'Clear search'],
+      ['Back', 'Search'],
+    ),
     (
       ProxiesType.tab,
       ['Back', 'Search'],

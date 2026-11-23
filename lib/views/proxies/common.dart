@@ -38,8 +38,12 @@ List<Proxy> orderFavoritesFirst(List<Proxy> proxies, Set<String>? favorites) {
   if (favorites == null || favorites.isEmpty) {
     return proxies;
   }
-  final head = proxies.where((proxy) => favorites.contains(proxy.name)).toList();
-  final tail = proxies.where((proxy) => !favorites.contains(proxy.name)).toList();
+  final head = proxies
+      .where((proxy) => favorites.contains(proxy.name))
+      .toList();
+  final tail = proxies
+      .where((proxy) => !favorites.contains(proxy.name))
+      .toList();
   return [...head, ...tail];
 }
 

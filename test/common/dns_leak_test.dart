@@ -38,38 +38,44 @@ void main() {
       expect(result.addresses, contains('93.184.216.34'));
     });
 
-    test('reports takeover when the answer comes from the fake-ip range', () async {
-      answering({
-        'example.com': ['198.18.0.5'],
-        'example.org': ['198.18.0.6'],
-      });
+    test(
+      'reports takeover when the answer comes from the fake-ip range',
+      () async {
+        answering({
+          'example.com': ['198.18.0.5'],
+          'example.org': ['198.18.0.6'],
+        });
 
-      final result = await probeSystemDnsTakeover(
-        enhancedMode: DnsMode.fakeIp,
-        fakeIpRange: '198.18.0.1/16',
-        hosts: ['example.com', 'example.org'],
-      );
+        final result = await probeSystemDnsTakeover(
+          enhancedMode: DnsMode.fakeIp,
+          fakeIpRange: '198.18.0.1/16',
+          hosts: ['example.com', 'example.org'],
+        );
 
-      expect(result.outcome, DnsTakeoverOutcome.takenOver);
-      expect(result.addresses, contains('198.18.0.5'));
-    });
+        expect(result.outcome, DnsTakeoverOutcome.takenOver);
+        expect(result.addresses, contains('198.18.0.5'));
+      },
+    );
 
-    test('one fake-ip answer is enough to prove the core saw the query', () async {
-      // 真实上游不可能返回运营商手里根本不存在的地址段，所以单个命中就是铁证。
-      // 反过来，只有一个域名没命中可能只是它被缓存了 —— 所以判定只取「命中即成立」。
-      answering({
-        'example.com': ['198.18.0.5'],
-        'example.org': ['93.184.216.35'],
-      });
+    test(
+      'one fake-ip answer is enough to prove the core saw the query',
+      () async {
+        // 真实上游不可能返回运营商手里根本不存在的地址段，所以单个命中就是铁证。
+        // 反过来，只有一个域名没命中可能只是它被缓存了 —— 所以判定只取「命中即成立」。
+        answering({
+          'example.com': ['198.18.0.5'],
+          'example.org': ['93.184.216.35'],
+        });
 
-      final result = await probeSystemDnsTakeover(
-        enhancedMode: DnsMode.fakeIp,
-        fakeIpRange: '198.18.0.1/16',
-        hosts: ['example.com', 'example.org'],
-      );
+        final result = await probeSystemDnsTakeover(
+          enhancedMode: DnsMode.fakeIp,
+          fakeIpRange: '198.18.0.1/16',
+          hosts: ['example.com', 'example.org'],
+        );
 
-      expect(result.outcome, DnsTakeoverOutcome.takenOver);
-    });
+        expect(result.outcome, DnsTakeoverOutcome.takenOver);
+      },
+    );
 
     test('honours a custom fake-ip range', () async {
       answering({
@@ -131,21 +137,24 @@ void main() {
       expect(result.outcome, DnsTakeoverOutcome.takenOver);
     });
 
-    test('always probes more than one pool host so DNS cache cannot fake a result', () async {
-      // 固定一个域名的话：用户先在系统代理下测（缓存了真实 IP），再切 TUN 重测，
-      // 系统会把缓存里的真实 IP 还回来，于是「已接管」被误报成「没接管」。
-      answering({
-        for (final host in dnsProbeHostPool) host: ['198.18.0.7'],
-      });
+    test(
+      'always probes more than one pool host so DNS cache cannot fake a result',
+      () async {
+        // 固定一个域名的话：用户先在系统代理下测（缓存了真实 IP），再切 TUN 重测，
+        // 系统会把缓存里的真实 IP 还回来，于是「已接管」被误报成「没接管」。
+        answering({
+          for (final host in dnsProbeHostPool) host: ['198.18.0.7'],
+        });
 
-      final result = await probeSystemDnsTakeover(
-        enhancedMode: DnsMode.fakeIp,
-        fakeIpRange: '198.18.0.1/16',
-      );
+        final result = await probeSystemDnsTakeover(
+          enhancedMode: DnsMode.fakeIp,
+          fakeIpRange: '198.18.0.1/16',
+        );
 
-      expect(result.hosts, hasLength(2));
-      expect(result.hosts.toSet(), hasLength(2));
-      expect(result.hosts.every(dnsProbeHostPool.contains), isTrue);
-    });
+        expect(result.hosts, hasLength(2));
+        expect(result.hosts.toSet(), hasLength(2));
+        expect(result.hosts.every(dnsProbeHostPool.contains), isTrue);
+      },
+    );
   });
 }

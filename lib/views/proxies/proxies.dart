@@ -7,71 +7,89 @@ import 'package:fl_clash/views/dashboard/widgets/start_button.dart';
 import 'package:fl_clash/views/config/providers.dart';
 import 'package:fl_clash/views/profiles/overwrite/custom/groups.dart';
 import 'package:fl_clash/views/proxies/list.dart';
-import 'package:fl_clash/widgets/widgets.dart' hide
-      ActivateBox,
-      AnimatedVisibility,
-      AppBarSearchStateBuilder,
-      BaseScaffold,
-      BottomInsetScope,
-      CloseContainerActionCallback,
-      CloseContainerBuilder,
-      ClosedCallback,
-      CommonChip,
-      CommonCircleLoading,
-      CommonDialog,
-      CommonExpandIcon,
-      CommonMinFilledButtonTheme,
-      CommonMinIconButtonTheme,
-      CommonScrollBar,
-      DecorationListItem,
-      DisabledMask,
-      EmojiText,
-      FadeBox,
-      FadeScaleBox,
-      FadeScaleEnterBox,
-      FadeScaleEnterTransition,
-      FadeSlideEnterTransition,
-      FadeThroughBox,
-      FloatingScrollbar,
-      Info,
-      InfoHeader,
-      ItemPositionProvider,
-      KeepScope,
-      KeyedAnimatedList,
-      LineChart,
-      ListHeader,
-      ListItem,
-      MetaChip,
-      ModalSideSheetRoute,
-      MoreActionButton,
-      NullStatus,
-      NullStatusIllustration,
-      NullStatusSwitcher,
-      OnKeywordsUpdateCallback,
-      OpenContainer,
-      OpenContainerBuilder,
-      PageActivityScope,
-      PageFocusScope,
-      PageTraversalPolicy,
-      PagedSheet,
-      PagedSheetRoute,
-      PopupAnchorResolver,
-      PopupOpen,
-      ProfileIdProvider,
-      ProxyDecoratorProvider,
-      ScrollToEndBox,
-      SelectedDecorationListItem,
-      SettingTextCard,
-      SheetProvider,
-      SideSheet,
-      SliderDefaultsM3,
-      TooltipLabel,
-      TooltipText,
-      commonProxyDecorator,
-      genActions,
-      generateSection,
-      showExtend;
-import 'package:fl_clash/ui/ui.dart' hide CommonCard, CommonPopupBox, CommonPopupMenu, CommonPopupMenuItem, CommonPopupRoute, CommonCheckBox, CommonPopScope, InputDialog, BackLayerScope, SheetProps, SheetType, ExtendProps, CommonScaffold, CommonScaffoldState, AppBarSearchState, showSheet;
+import 'package:fl_clash/widgets/widgets.dart'
+    hide
+        ActivateBox,
+        AnimatedVisibility,
+        AppBarSearchStateBuilder,
+        BaseScaffold,
+        BottomInsetScope,
+        CloseContainerActionCallback,
+        CloseContainerBuilder,
+        ClosedCallback,
+        CommonChip,
+        CommonCircleLoading,
+        CommonDialog,
+        CommonExpandIcon,
+        CommonMinFilledButtonTheme,
+        CommonMinIconButtonTheme,
+        CommonScrollBar,
+        DecorationListItem,
+        DisabledMask,
+        EmojiText,
+        FadeBox,
+        FadeScaleBox,
+        FadeScaleEnterBox,
+        FadeScaleEnterTransition,
+        FadeSlideEnterTransition,
+        FadeThroughBox,
+        FloatingScrollbar,
+        Info,
+        InfoHeader,
+        ItemPositionProvider,
+        KeepScope,
+        KeyedAnimatedList,
+        LineChart,
+        ListHeader,
+        ListItem,
+        MetaChip,
+        ModalSideSheetRoute,
+        MoreActionButton,
+        NullStatus,
+        NullStatusIllustration,
+        NullStatusSwitcher,
+        OnKeywordsUpdateCallback,
+        OpenContainer,
+        OpenContainerBuilder,
+        PageActivityScope,
+        PageFocusScope,
+        PageTraversalPolicy,
+        PagedSheet,
+        PagedSheetRoute,
+        PopupAnchorResolver,
+        PopupOpen,
+        ProfileIdProvider,
+        ProxyDecoratorProvider,
+        ScrollToEndBox,
+        SelectedDecorationListItem,
+        SettingTextCard,
+        SheetProvider,
+        SideSheet,
+        SliderDefaultsM3,
+        TooltipLabel,
+        TooltipText,
+        commonProxyDecorator,
+        genActions,
+        generateSection,
+        showExtend;
+import 'package:fl_clash/ui/ui.dart'
+    hide
+        CommonCard,
+        CommonPopupBox,
+        CommonPopupMenu,
+        CommonPopupMenuItem,
+        CommonPopupRoute,
+        CommonCheckBox,
+        CommonPopScope,
+        InputDialog,
+        BackLayerScope,
+        SheetProps,
+        SheetType,
+        ExtendProps,
+        CommonScaffold,
+        CommonScaffoldState,
+        AppBarSearchState,
+        showSheet;
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -147,16 +165,14 @@ class _ProxiesViewState extends ConsumerState<ProxiesView> {
             for (final item in ProxiesSortType.values)
               CommonPopupMenuItem(
                 // 当前项用对勾图标标出，其余项用各自的类型图标。
-                icon: item == sortType
-                    ? Icons.check
-                    : _proxiesSortIcon(item),
+                icon: item == sortType ? Icons.check : _proxiesSortIcon(item),
                 label: _proxiesSortLabel(context, item),
                 onPressed: () {
-                  ref
-                      .read(proxiesStyleSettingProvider.notifier)
-                      .update((state) {
-                        return state.copyWith(sortType: item);
-                      });
+                  ref.read(proxiesStyleSettingProvider.notifier).update((
+                    state,
+                  ) {
+                    return state.copyWith(sortType: item);
+                  });
                 },
               ),
           ],
@@ -274,7 +290,6 @@ class _ProxiesViewState extends ConsumerState<ProxiesView> {
     );
   }
 
-
   /// 更新当前生效的配置。
   ///
   /// 错误走 `loadingRun` → `safeRun` 的统一提示通道（失败弹窗/红标两条路都有：
@@ -284,14 +299,11 @@ class _ProxiesViewState extends ConsumerState<ProxiesView> {
     if (profileId == null) return;
     final profile = ref.read(profileProvider(profileId));
     if (profile == null) return;
-    await globalState.loadingRun(
-      () {
-        return ref
-            .read(profilesActionProvider.notifier)
-            .updateProfile(profile, showLoading: true);
-      },
-      tag: LoadingTag.proxies,
-    );
+    await globalState.loadingRun(() {
+      return ref
+          .read(profilesActionProvider.notifier)
+          .updateProfile(profile, showLoading: true);
+    }, tag: LoadingTag.proxies);
   }
 
   /// 打开「新增节点」面板。
@@ -452,8 +464,7 @@ class _ProxiesViewState extends ConsumerState<ProxiesView> {
       resizeToAvoidBottomInset: false,
       // fork：桌面端 tab 布局的两颗按钮已上移到页签行右端（见 tab.dart
       // `_buildDesktopHeaderActions`），悬浮组只在手机端（和 list 布局）保留。
-      floatingActionButton:
-          _isTab && system.isDesktop ? null : _buildFAB(),
+      floatingActionButton: _isTab && system.isDesktop ? null : _buildFAB(),
       actions: picker ? const <Widget>[] : _buildActions(context),
       title: context.appLocalizations.proxies,
       searchState: AppBarSearchState(onSearch: _onSearch),

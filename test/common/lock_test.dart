@@ -10,8 +10,7 @@ void main() {
 
   setUp(() {
     home = Directory.systemTemp.createTempSync('biloom-lock-');
-    SingleInstanceLock.resolvePath = () async =>
-        join(home.path, 'BiLoom.lock');
+    SingleInstanceLock.resolvePath = () async => join(home.path, 'BiLoom.lock');
   });
 
   tearDown(() async {

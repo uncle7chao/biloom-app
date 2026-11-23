@@ -287,8 +287,7 @@ class _AddProxyChainViewState extends ConsumerState<AddProxyChainView> {
   /// 某份配置的候选里按名找节点的完整参数（快照用）。找不到返回 null
   /// （策略组、或这份配置的名单还没加载出来）。
   Map<String, dynamic>? _snapshotNodeOf(int? profileId, String name) {
-    final targets =
-        profileId == null || profileId == _profileId
+    final targets = profileId == null || profileId == _profileId
         ? _targets
         : _foreignTargets[profileId];
     for (final node in targets?.nodes ?? const <Map<String, dynamic>>[]) {
@@ -547,9 +546,7 @@ class _AddProxyChainViewState extends ConsumerState<AddProxyChainView> {
           padding: const EdgeInsets.symmetric(
             horizontal: 16,
           ).copyWith(top: context.sheetTopPadding, bottom: 20),
-          children: [
-            _buildBody(),
-          ],
+          children: [_buildBody()],
         ),
       ),
       title: appLocalizations.addProxyChain,
@@ -670,8 +667,8 @@ class _TargetPickerViewState extends ConsumerState<_TargetPickerView> {
 
   /// 有没有任何节点节被截断 —— 决定搜索框下那行提示显不显示。
   bool get _anyCapped => widget.sections.any(
-        (section) => !section.isGroups && section.items.length > _maxShownPerConfig,
-      );
+    (section) => !section.isGroups && section.items.length > _maxShownPerConfig,
+  );
 
   List<_PickerSection> get _filtered {
     final keyword = _controller.text.trim().toLowerCase();
@@ -819,31 +816,31 @@ class _TargetPickerViewState extends ConsumerState<_TargetPickerView> {
                           if (searching || !_collapsedSections.contains(index))
                             for (final item in section.items)
                               ListTile(
-                              onTap: () {
-                                Navigator.of(context).pop(
-                                  _PickedItem(
-                                    name: item.name,
-                                    profileId: section.profileId,
-                                  ),
-                                );
-                              },
-                              contentPadding: const EdgeInsets.only(
-                                left: 16,
-                                right: 12,
+                                onTap: () {
+                                  Navigator.of(context).pop(
+                                    _PickedItem(
+                                      name: item.name,
+                                      profileId: section.profileId,
+                                    ),
+                                  );
+                                },
+                                contentPadding: const EdgeInsets.only(
+                                  left: 16,
+                                  right: 12,
+                                ),
+                                title: Text(
+                                  item.name,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                subtitle: Text(section.subtitleOf(item)),
+                                trailing: item.name == widget.selected
+                                    ? Icon(
+                                        Icons.check,
+                                        color: context.colorScheme.primary,
+                                      )
+                                    : null,
                               ),
-                              title: Text(
-                                item.name,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              subtitle: Text(section.subtitleOf(item)),
-                              trailing: item.name == widget.selected
-                                  ? Icon(
-                                      Icons.check,
-                                      color: context.colorScheme.primary,
-                                    )
-                                  : null,
-                            ),
                         ],
                       ],
                     ),
@@ -855,4 +852,3 @@ class _TargetPickerViewState extends ConsumerState<_TargetPickerView> {
     );
   }
 }
-

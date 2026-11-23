@@ -303,9 +303,9 @@ void main() {
           barrierColor: Colors.black26,
           barrierLabel: 'sheet',
           builder: (_) => Navigator(
-          onGenerateRoute: (_) => ui_ps.PagedSheetRoute<void>(
-            builder: (_) => const Material(child: TextField(autofocus: true)),
-          ),
+            onGenerateRoute: (_) => ui_ps.PagedSheetRoute<void>(
+              builder: (_) => const Material(child: TextField(autofocus: true)),
+            ),
           ),
         ),
       ),

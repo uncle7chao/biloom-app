@@ -157,9 +157,9 @@ func TestAddProxyNodesAcceptsProxiesFragment(t *testing.T) {
 
 func TestAddProxyNodesRejectsUnusableInput(t *testing.T) {
 	for name, nodes := range map[string]string{
-		"空白":     "   \n",
+		"空白":          "   \n",
 		"既非链接也非 YAML": "这不是节点",
-		"条目缺少 name": "- type: ss\n  server: 1.2.3.4\n",
+		"条目缺少 name":   "- type: ss\n  server: 1.2.3.4\n",
 	} {
 		if _, err := handleAddProxyNodes(&AddProxyNodesParams{
 			YAML:  bareProxiesFixture,

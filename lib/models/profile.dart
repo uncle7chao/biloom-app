@@ -22,10 +22,8 @@ typedef ValidateConfig =
 /// 上游没有这个维度：两处来源共用一个回调，于是那句为「下载」写的空守卫
 /// 拦掉了「本地保存」——内核早就为此做好的空 profile 短路（core/subscription.go
 /// 的 blankSubscription）等于没生效。
-typedef ConvertSubscription = Future<Uint8List> Function(
-  Uint8List bytes, {
-  bool? fromRemote,
-});
+typedef ConvertSubscription =
+    Future<Uint8List> Function(Uint8List bytes, {bool? fromRemote});
 
 @freezed
 abstract class SubscriptionInfo with _$SubscriptionInfo {
@@ -248,7 +246,6 @@ extension ProfileExtension on Profile {
     return copyWith(lastUpdateDate: DateTime.now());
   }
 }
-
 
 // fork 兼容：规则与订阅的挂载关系（自定义规则编辑器数据层）。
 @freezed

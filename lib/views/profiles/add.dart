@@ -126,7 +126,10 @@ class AddProfileMenu extends ConsumerWidget {
 
   /// 「先建个空的，再自己往里加节点」—— 上游缺的就是这条路：三个既有入口都要求
   /// 已经有内容来源（二维码/文件/URL），而空配置在内核里本来就是合法状态。
-  Future<void> _handleAddProfileFormBlank(BuildContext context, WidgetRef ref) async {
+  Future<void> _handleAddProfileFormBlank(
+    BuildContext context,
+    WidgetRef ref,
+  ) async {
     final appLocalizations = context.appLocalizations;
     final label = await dialogs.showCommonDialog<String>(
       child: InputDialog(
@@ -145,7 +148,9 @@ class AddProfileMenu extends ConsumerWidget {
     final name = trimmed.isNotEmpty
         ? trimmed
         : '${appLocalizations.createProfile} ${_timeStamp()}';
-    unawaited(ref.read(profilesActionProvider.notifier).addProfileFormBlank(name));
+    unawaited(
+      ref.read(profilesActionProvider.notifier).addProfileFormBlank(name),
+    );
   }
 
   static String _timeStamp() {

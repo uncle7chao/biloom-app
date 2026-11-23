@@ -47,7 +47,10 @@ void main() {
       TestApp(
         overrides: [_viewSizeOverride],
         child: Scaffold(
-          body: ui_in.ListItem.toggle(title: const Text('Disabled'), value: false),
+          body: ui_in.ListItem.toggle(
+            title: const Text('Disabled'),
+            value: false,
+          ),
         ),
       ),
     );
@@ -355,7 +358,8 @@ void main() {
             return FilledButton(
               onPressed: () => showDialog<String>(
                 context: context,
-                builder: (_) => const ui_in.InputDialog(title: 'Value', value: ''),
+                builder: (_) =>
+                    const ui_in.InputDialog(title: 'Value', value: ''),
               ),
               child: const Text('Open'),
             );

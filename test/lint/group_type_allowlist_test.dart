@@ -37,9 +37,9 @@ void main() {
       reason: '类型选项应当来自显式的白名单常量；这份白名单不见了，请确认 relay 仍被排除。',
     );
     expect(
-      RegExp(r'GroupType\.Relay').hasMatch(
-        source.substring(source.indexOf('_selectableTypes')),
-      ),
+      RegExp(
+        r'GroupType\.Relay',
+      ).hasMatch(source.substring(source.indexOf('_selectableTypes'))),
       isFalse,
       reason: '白名单里出现了 GroupType.Relay —— 它会让用户做出加载不了的配置。',
     );

@@ -180,8 +180,10 @@ void main() {
       seedAccessControl(const AccessControlProps(enable: true));
       await pumpAccessView(tester);
       final l10n = AppLocalizations.current;
-      Finder inMenu(Finder finder) =>
-          find.descendant(of: find.byType(ui_ax.CommonPopupMenu), matching: finder);
+      Finder inMenu(Finder finder) => find.descendant(
+        of: find.byType(ui_ax.CommonPopupMenu),
+        matching: finder,
+      );
 
       await openBarMenu(tester);
       await tester.tap(inMenu(find.text(l10n.settings)).last);
@@ -203,8 +205,10 @@ void main() {
       seedAccessControl(const AccessControlProps(enable: true));
       await pumpAccessView(tester);
       final l10n = AppLocalizations.current;
-      Finder inMenu(Finder finder) =>
-          find.descendant(of: find.byType(ui_ax.CommonPopupMenu), matching: finder);
+      Finder inMenu(Finder finder) => find.descendant(
+        of: find.byType(ui_ax.CommonPopupMenu),
+        matching: finder,
+      );
 
       await openBarMenu(tester);
       await tester.tap(inMenu(find.text(l10n.settings)).last);
@@ -401,8 +405,10 @@ void main() {
       seedAccessControl(const AccessControlProps(enable: true));
       await pumpAccessView(tester);
       final l10n = AppLocalizations.current;
-      Finder inMenu(Finder finder) =>
-          find.descendant(of: find.byType(ui_ax.CommonPopupMenu), matching: finder);
+      Finder inMenu(Finder finder) => find.descendant(
+        of: find.byType(ui_ax.CommonPopupMenu),
+        matching: finder,
+      );
       Finder checkOn(String label) => inMenu(
         find.descendant(
           of: find.ancestor(of: find.text(label), matching: find.byType(Row)),

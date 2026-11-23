@@ -405,7 +405,9 @@ func subscriptionToFullConfigYAML(buf []byte) ([]byte, subscriptionFormat, error
 // convertSSDSubscription 解析 ssd:// 订阅。
 // 格式为 ssd://<base64(JSON)>，JSON 形如
 // {"airport":"x","port":443,"encryption":"aes-256-gcm","password":"p",
-//  "servers":[{"server":"1.2.3.4","port":8443,"encryption":"...","password":"...","remarks":"HK"}]}
+//
+//	"servers":[{"server":"1.2.3.4","port":8443,"encryption":"...","password":"...","remarks":"HK"}]}
+//
 // 其中 servers 里的字段缺省时回退到顶层同名字段。
 func convertSSDSubscription(buf []byte) ([]map[string]any, error) {
 	text := strings.TrimSpace(stripBOM(string(buf)))

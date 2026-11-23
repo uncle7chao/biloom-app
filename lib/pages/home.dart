@@ -7,86 +7,87 @@ import 'package:fl_clash/manager/app_manager.dart';
 import 'package:fl_clash/models/common.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/ui/icons/icons.dart';
-import 'package:fl_clash/widgets/widgets.dart' hide
-      ActivateBox,
-      AnimatedVisibility,
-      AppBarSearchStateBuilder,
-      BackLayerScope,
-      BaseScaffold,
-      BottomInsetScope,
-      CloseContainerActionCallback,
-      CloseContainerBuilder,
-      ClosedCallback,
-      CommonCard,
-      CommonCheckBox,
-      CommonChip,
-      CommonCircleLoading,
-      CommonDialog,
-      CommonExpandIcon,
-      CommonMinFilledButtonTheme,
-      CommonMinIconButtonTheme,
-      CommonPopScope,
-      CommonPopupBox,
-      CommonPopupMenu,
-      CommonPopupMenuItem,
-      CommonPopupRoute,
-      CommonScaffold,
-      CommonScaffoldState,
-      CommonScrollBar,
-      DecorationListItem,
-      DisabledMask,
-      EmojiText,
-      ExtendProps,
-      FadeBox,
-      FadeScaleBox,
-      FadeScaleEnterBox,
-      FadeScaleEnterTransition,
-      FadeSlideEnterTransition,
-      FadeThroughBox,
-      FloatingScrollbar,
-      Info,
-      InfoHeader,
-      InputDialog,
-      ItemPositionProvider,
-      KeepScope,
-      KeyedAnimatedList,
-      LineChart,
-      ListHeader,
-      ListItem,
-      MetaChip,
-      ModalSideSheetRoute,
-      MoreActionButton,
-      NullStatus,
-      NullStatusIllustration,
-      NullStatusSwitcher,
-      OnKeywordsUpdateCallback,
-      OpenContainer,
-      OpenContainerBuilder,
-      PageActivityScope,
-      PageFocusScope,
-      PageTraversalPolicy,
-      PagedSheet,
-      PagedSheetRoute,
-      PopupAnchorResolver,
-      PopupOpen,
-      ProfileIdProvider,
-      ProxyDecoratorProvider,
-      ScrollToEndBox,
-      SelectedDecorationListItem,
-      SettingTextCard,
-      SheetProps,
-      SheetProvider,
-      SheetType,
-      SideSheet,
-      SliderDefaultsM3,
-      TooltipLabel,
-      TooltipText,
-      commonProxyDecorator,
-      genActions,
-      generateSection,
-      showExtend,
-      showModalSideSheet,
-      showSheet;
+import 'package:fl_clash/widgets/widgets.dart'
+    hide
+        ActivateBox,
+        AnimatedVisibility,
+        AppBarSearchStateBuilder,
+        BackLayerScope,
+        BaseScaffold,
+        BottomInsetScope,
+        CloseContainerActionCallback,
+        CloseContainerBuilder,
+        ClosedCallback,
+        CommonCard,
+        CommonCheckBox,
+        CommonChip,
+        CommonCircleLoading,
+        CommonDialog,
+        CommonExpandIcon,
+        CommonMinFilledButtonTheme,
+        CommonMinIconButtonTheme,
+        CommonPopScope,
+        CommonPopupBox,
+        CommonPopupMenu,
+        CommonPopupMenuItem,
+        CommonPopupRoute,
+        CommonScaffold,
+        CommonScaffoldState,
+        CommonScrollBar,
+        DecorationListItem,
+        DisabledMask,
+        EmojiText,
+        ExtendProps,
+        FadeBox,
+        FadeScaleBox,
+        FadeScaleEnterBox,
+        FadeScaleEnterTransition,
+        FadeSlideEnterTransition,
+        FadeThroughBox,
+        FloatingScrollbar,
+        Info,
+        InfoHeader,
+        InputDialog,
+        ItemPositionProvider,
+        KeepScope,
+        KeyedAnimatedList,
+        LineChart,
+        ListHeader,
+        ListItem,
+        MetaChip,
+        ModalSideSheetRoute,
+        MoreActionButton,
+        NullStatus,
+        NullStatusIllustration,
+        NullStatusSwitcher,
+        OnKeywordsUpdateCallback,
+        OpenContainer,
+        OpenContainerBuilder,
+        PageActivityScope,
+        PageFocusScope,
+        PageTraversalPolicy,
+        PagedSheet,
+        PagedSheetRoute,
+        PopupAnchorResolver,
+        PopupOpen,
+        ProfileIdProvider,
+        ProxyDecoratorProvider,
+        ScrollToEndBox,
+        SelectedDecorationListItem,
+        SettingTextCard,
+        SheetProps,
+        SheetProvider,
+        SheetType,
+        SideSheet,
+        SliderDefaultsM3,
+        TooltipLabel,
+        TooltipText,
+        commonProxyDecorator,
+        genActions,
+        generateSection,
+        showExtend,
+        showModalSideSheet,
+        showSheet;
 import 'package:fl_clash/ui/ui.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -109,30 +110,30 @@ class HomePage extends ConsumerWidget {
     // 各自都从系统层（原生启动屏）无缝接进来。
     return _BrandSplashHost(
       child: HomeBackScopeContainer(
-      child: AppSidebarContainer(
-        child: _HomeShell(
-          child: Consumer(
-            builder: (_, ref, _) {
-              final navigationItems = ref
-                  .watch(currentNavigationItemsStateProvider)
-                  .value;
-              final isMobile = ref.watch(isMobileViewProvider);
-              return _HomePageView(
-                navigationItems: navigationItems,
-                pageBuilder: (_, index) {
-                  final navigationItem = navigationItems[index];
-                  return _NavigationPage(
-                    key: ValueKey(navigationItem.label),
-                    item: navigationItem,
-                    isMobile: isMobile,
-                    view: navigationItem.builder(context),
-                  );
-                },
-              );
-            },
+        child: AppSidebarContainer(
+          child: _HomeShell(
+            child: Consumer(
+              builder: (_, ref, _) {
+                final navigationItems = ref
+                    .watch(currentNavigationItemsStateProvider)
+                    .value;
+                final isMobile = ref.watch(isMobileViewProvider);
+                return _HomePageView(
+                  navigationItems: navigationItems,
+                  pageBuilder: (_, index) {
+                    final navigationItem = navigationItems[index];
+                    return _NavigationPage(
+                      key: ValueKey(navigationItem.label),
+                      item: navigationItem,
+                      isMobile: isMobile,
+                      view: navigationItem.builder(context),
+                    );
+                  },
+                );
+              },
+            ),
           ),
         ),
-      ),
       ),
     );
   }
@@ -157,8 +158,9 @@ class _BrandSplashHostState extends State<_BrandSplashHost> {
 
   /// flutter test 会注入 FLUTTER_TEST；品牌层是纯启动视觉，测试里跳过，
   /// 否则 hold 期会吃掉用例的 tap 并留下 pending timer。
-  static final bool _skipInTest = Platform.environment
-      .containsKey('FLUTTER_TEST');
+  static final bool _skipInTest = Platform.environment.containsKey(
+    'FLUTTER_TEST',
+  );
 
   bool _visible = true;
   bool _disposed = false;

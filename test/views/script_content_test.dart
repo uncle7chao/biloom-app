@@ -108,7 +108,9 @@ void main() {
 
     await pumpScriptContent(tester);
 
-    final listBottom = tester.getBottomLeft(find.byType(ui_sc.DecorationListItem)).dy;
+    final listBottom = tester
+        .getBottomLeft(find.byType(ui_sc.DecorationListItem))
+        .dy;
     final entryTop = tester
         .getTopLeft(
           find.descendant(

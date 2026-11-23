@@ -52,10 +52,9 @@ void main() {
         currentProfileIdProvider.overrideWithBuild((_, _) => profile.id),
         profilesProvider.overrideWith(() => TestProfiles([profile])),
         groupsProvider.overrideWithValue([
-          selectorGroup(
-            [const Proxy(name: 'HK-01', type: 'Trojan')],
-            now: 'HK-01',
-          ),
+          selectorGroup([
+            const Proxy(name: 'HK-01', type: 'Trojan'),
+          ], now: 'HK-01'),
         ]),
       ],
     );
@@ -83,10 +82,9 @@ void main() {
         currentProfileIdProvider.overrideWithBuild((_, _) => profile.id),
         profilesProvider.overrideWith(() => TestProfiles([profile])),
         groupsProvider.overrideWithValue([
-          selectorGroup(
-            [const Proxy(name: 'HK-01', type: 'Trojan')],
-            now: 'HK-01',
-          ),
+          selectorGroup([
+            const Proxy(name: 'HK-01', type: 'Trojan'),
+          ], now: 'HK-01'),
         ]),
       ],
     );

@@ -10,7 +10,6 @@ import 'package:material_ui/material_ui.dart';
 final _compactFormat = NumberFormat.compact(locale: 'en');
 
 extension NumExt on num {
-
   double get ap {
     final scale = WidgetsBinding.instance.platformDispatcher.textScaleFactor;
     return this * (1 + (scale - 1) * 0.5);
@@ -20,6 +19,7 @@ extension NumExt on num {
     final scale = WidgetsBinding.instance.platformDispatcher.textScaleFactor;
     return this * min((1 + (scale - 1) * 0.5), 1);
   }
+
   String get compact => _compactFormat.format(this);
 
   String fixed({int decimals = 2}) {

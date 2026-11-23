@@ -129,7 +129,6 @@ class AdaptiveSheetScaffold extends StatefulWidget {
 }
 
 class _AdaptiveSheetScaffoldState extends State<AdaptiveSheetScaffold> {
-
   @override
   void didUpdateWidget(covariant AdaptiveSheetScaffold oldWidget) {
     super.didUpdateWidget(oldWidget);

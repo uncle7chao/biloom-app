@@ -3,7 +3,8 @@ import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/state.dart';
-import 'package:fl_clash/ui/ui.dart' as ui_pfo
+import 'package:fl_clash/ui/ui.dart'
+    as ui_pfo
     show CommonCircleLoading, CommonPopupMenu;
 import 'package:fl_clash/views/profiles/profiles.dart';
 import 'package:fl_clash/widgets/widgets.dart';

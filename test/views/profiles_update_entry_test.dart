@@ -48,7 +48,9 @@ void main() {
   }
 
   testWidgets('页头有一个带文字标签的「更新」按钮', (tester) async {
-    await pumpProfiles(tester, [Profile.normal(label: '机场', url: 'https://a/b')]);
+    await pumpProfiles(tester, [
+      Profile.normal(label: '机场', url: 'https://a/b'),
+    ]);
 
     // 关键约束：这个入口**不能是纯图标**。之前它是右上角一个没有文字的 ↻，
     // 用户看不懂那是「更新订阅」，才会出现「没看到更新按钮」。
@@ -60,7 +62,9 @@ void main() {
   });
 
   testWidgets('订阅卡片的 ⋮ 菜单里有「更新订阅」', (tester) async {
-    await pumpProfiles(tester, [Profile.normal(label: '机场', url: 'https://a/b')]);
+    await pumpProfiles(tester, [
+      Profile.normal(label: '机场', url: 'https://a/b'),
+    ]);
 
     // fork 的卡片菜单由 ContextMenuRegion 承载：桌面右键打开。
     await tester.tap(

@@ -22,9 +22,7 @@ import '../helpers/test_profiles.dart';
 void main() {
   Future<void> pumpSheet(WidgetTester tester, List<Profile> profiles) async {
     final container = ProviderContainer(
-      overrides: [
-        profilesProvider.overrideWith(() => TestProfiles(profiles)),
-      ],
+      overrides: [profilesProvider.overrideWith(() => TestProfiles(profiles))],
     );
     addTearDown(container.dispose);
     globalState.container = container;
@@ -106,11 +104,7 @@ void main() {
 
       expect(visibleLabels(tester), ['first', 'second', 'third']);
 
-      await dragItem(
-        tester,
-        find.text('first'),
-        kind: PointerDeviceKind.mouse,
-      );
+      await dragItem(tester, find.text('first'), kind: PointerDeviceKind.mouse);
 
       expect(
         visibleLabels(tester).indexOf('first'),

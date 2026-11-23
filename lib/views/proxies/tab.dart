@@ -241,67 +241,67 @@ class ProxiesTabViewState extends ConsumerState<ProxiesTabView>
             children: [
               Expanded(
                 child: NotificationListener<ScrollMetricsNotification>(
-            onNotification: (scrollNotification) {
-              _hasMoreButtonNotifier.value =
-                  scrollNotification.metrics.maxScrollExtent > 0;
-              return false;
-            },
-            child: ValueListenableBuilder(
-              valueListenable: _hasMoreButtonNotifier,
-              builder: (_, value, child) {
-                return Stack(
-                  alignment: AlignmentDirectional.centerStart,
-                  children: [
-                    AnimatedBuilder(
-                      animation: _tabController!,
-                      builder: (_, _) {
-                        return TabBar(
-                          controller: _tabController,
-                          padding: EdgeInsets.only(
-                            left: 16,
-                            right: 16 + (value ? 16 : 0),
-                          ),
-                          dividerColor: Colors.transparent,
-                          // 选中态交给页签自己的胶囊（与地区筛选 chip 同一套
-                          // 语言），内核下划线指示器整个撤掉。
-                          indicator: const BoxDecoration(),
-                          isScrollable: true,
-                          tabAlignment: TabAlignment.start,
-                          labelPadding: const EdgeInsets.symmetric(
-                            horizontal: 3,
-                          ),
-                          tabs: [
-                            for (var i = 0; i < groups.length; i++)
-                              Tab(
-                                child: _ProxyTabPill(
-                                  name: groups[i].name,
-                                  selected: i == _tabController!.index,
+                  onNotification: (scrollNotification) {
+                    _hasMoreButtonNotifier.value =
+                        scrollNotification.metrics.maxScrollExtent > 0;
+                    return false;
+                  },
+                  child: ValueListenableBuilder(
+                    valueListenable: _hasMoreButtonNotifier,
+                    builder: (_, value, child) {
+                      return Stack(
+                        alignment: AlignmentDirectional.centerStart,
+                        children: [
+                          AnimatedBuilder(
+                            animation: _tabController!,
+                            builder: (_, _) {
+                              return TabBar(
+                                controller: _tabController,
+                                padding: EdgeInsets.only(
+                                  left: 16,
+                                  right: 16 + (value ? 16 : 0),
                                 ),
-                              ),
+                                dividerColor: Colors.transparent,
+                                // 选中态交给页签自己的胶囊（与地区筛选 chip 同一套
+                                // 语言），内核下划线指示器整个撤掉。
+                                indicator: const BoxDecoration(),
+                                isScrollable: true,
+                                tabAlignment: TabAlignment.start,
+                                labelPadding: const EdgeInsets.symmetric(
+                                  horizontal: 3,
+                                ),
+                                tabs: [
+                                  for (var i = 0; i < groups.length; i++)
+                                    Tab(
+                                      child: _ProxyTabPill(
+                                        name: groups[i].name,
+                                        selected: i == _tabController!.index,
+                                      ),
+                                    ),
+                                ],
+                              );
+                            },
+                          ),
+                          if (value) Positioned(right: 0, child: child!),
+                        ],
+                      );
+                    },
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.centerLeft,
+                          end: Alignment.centerRight,
+                          colors: [
+                            context.colorScheme.surface.opacity10,
+                            context.colorScheme.surface,
                           ],
-                        );
-                      },
+                          // 渐变带拉宽：「更多」按钮不再从一条硬边上突然冒出来。
+                          stops: const [0.0, 0.25],
+                        ),
+                      ),
+                      child: _buildMoreButton(),
                     ),
-                    if (value) Positioned(right: 0, child: child!),
-                  ],
-                );
-              },
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.centerLeft,
-                    end: Alignment.centerRight,
-                    colors: [
-                      context.colorScheme.surface.opacity10,
-                      context.colorScheme.surface,
-                    ],
-                    // 渐变带拉宽：「更多」按钮不再从一条硬边上突然冒出来。
-                    stops: const [0.0, 0.25],
                   ),
-                ),
-                child: _buildMoreButton(),
-              ),
-            ),
                 ),
               ),
               if (system.isDesktop) ..._buildDesktopHeaderActions(),

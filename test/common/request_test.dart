@@ -165,10 +165,8 @@ void main() {
     // deadline is what governs the receive path.
     final request = Request()
       ..downloadDio.httpClientAdapter = _HostAdapter({
-        '127.0.0.1': () => ResponseBody(
-          StreamController<Uint8List>.broadcast().stream,
-          200,
-        ),
+        '127.0.0.1': () =>
+            ResponseBody(StreamController<Uint8List>.broadcast().stream, 200),
       });
     final pending = request.getTextResponseForUrl('http://127.0.0.1/stalled');
     var settled = false;

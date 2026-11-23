@@ -1,8 +1,6 @@
 import 'package:fl_clash/widgets/inherited.dart';
 import 'package:material_ui/material_ui.dart';
 
-
-
 class ScrollOverBuilder extends StatefulWidget {
   final Widget Function(bool isOver) builder;
 

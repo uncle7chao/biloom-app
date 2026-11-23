@@ -86,7 +86,10 @@ class _ConnectionsStatState extends ConsumerState<ConnectionsStat>
                   crossAxisAlignment: CrossAxisAlignment.baseline,
                   textBaseline: TextBaseline.alphabetic,
                   children: [
-                    Text('$count', style: context.textTheme.titleLarge?.toLight),
+                    Text(
+                      '$count',
+                      style: context.textTheme.titleLarge?.toLight,
+                    ),
                     const SizedBox(width: 8),
                     Flexible(
                       child: TooltipText(
@@ -141,7 +144,11 @@ class _ConnectionsStatState extends ConsumerState<ConnectionsStat>
 }
 
 class _StatItem extends StatelessWidget {
-  const _StatItem({required this.icon, required this.color, required this.value});
+  const _StatItem({
+    required this.icon,
+    required this.color,
+    required this.value,
+  });
 
   final IconData icon;
   final Color color;

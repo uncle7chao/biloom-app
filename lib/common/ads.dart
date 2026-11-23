@@ -224,21 +224,21 @@ class AdsRemoteConfig {
             ? decoded['bannerProxiesAndroid'] as Map
             : const {},
       ),
-    nativeProxiesAndroid: AdPlacementProps.fromMap(
-      decoded['nativeProxiesAndroid'] is Map
-          ? decoded['nativeProxiesAndroid'] as Map
-          : const {},
-    ),
-    bannerProfilesAndroid: AdPlacementProps.fromMap(
-      decoded['bannerProfilesAndroid'] is Map
-          ? decoded['bannerProfilesAndroid'] as Map
-          : const {},
-    ),
-    bannerToolsAndroid: AdPlacementProps.fromMap(
-      decoded['bannerToolsAndroid'] is Map
-          ? decoded['bannerToolsAndroid'] as Map
-          : const {},
-    ),
+      nativeProxiesAndroid: AdPlacementProps.fromMap(
+        decoded['nativeProxiesAndroid'] is Map
+            ? decoded['nativeProxiesAndroid'] as Map
+            : const {},
+      ),
+      bannerProfilesAndroid: AdPlacementProps.fromMap(
+        decoded['bannerProfilesAndroid'] is Map
+            ? decoded['bannerProfilesAndroid'] as Map
+            : const {},
+      ),
+      bannerToolsAndroid: AdPlacementProps.fromMap(
+        decoded['bannerToolsAndroid'] is Map
+            ? decoded['bannerToolsAndroid'] as Map
+            : const {},
+      ),
       promoWindows: PromoWindowProps.fromMap(
         decoded['promoWindows'] is Map
             ? decoded['promoWindows'] as Map
@@ -304,9 +304,7 @@ AdPlacementProps? _androidPlacementPropsFor(
   AdPlatform platform,
   AdPlacementProps Function(AdsRemoteConfig config) pick,
 ) {
-  if (config == null ||
-      !config.enabled ||
-      platform != AdPlatform.android) {
+  if (config == null || !config.enabled || platform != AdPlatform.android) {
     return null;
   }
   final props = pick(config);

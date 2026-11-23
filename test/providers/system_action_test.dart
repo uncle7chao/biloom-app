@@ -410,11 +410,7 @@ void main() {
 
       expect(container.read(patchClashConfigProvider).tun.enable, isFalse);
       expect(container.read(networkSettingProvider).systemProxy, isTrue);
-      expect(
-        setup.calls,
-        [true],
-        reason: '系统代理还开着，就不该断开',
-      );
+      expect(setup.calls, [true], reason: '系统代理还开着，就不该断开');
     });
 
     test('closing both takeover ways stops the connection', () {
@@ -450,11 +446,7 @@ void main() {
       action().updateSystemProxy();
 
       expect(container.read(networkSettingProvider).systemProxy, isTrue);
-      expect(
-        setup.calls,
-        isEmpty,
-        reason: 'bootstrap 还没跑完，启动要交给它自己的恢复流程',
-      );
+      expect(setup.calls, isEmpty, reason: 'bootstrap 还没跑完，启动要交给它自己的恢复流程');
     });
   });
 }

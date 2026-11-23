@@ -510,7 +510,8 @@ class ProfilesAction extends _$ProfilesAction {
       if (existing.isNotEmpty) {
         await dialogs.showMessage(
           message: TextSpan(
-            text: '该订阅已添加为配置「${existing.first.realLabel}」。\n\n'
+            text:
+                '该订阅已添加为配置「${existing.first.realLabel}」。\n\n'
                 '如需刷新节点，请在「配置」页选中它后点「更新」。',
           ),
         );

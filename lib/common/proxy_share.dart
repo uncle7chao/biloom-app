@@ -128,8 +128,7 @@ String _encodeVless(Map<String, dynamic> node, String server, int port) {
     'encryption': 'none',
     if (_str(node['flow']).isNotEmpty) 'flow': _str(node['flow']),
     'security': hasReality ? 'reality' : (hasTls ? 'tls' : 'none'),
-    if (_str(node['servername']).isNotEmpty)
-      'sni': _str(node['servername']),
+    if (_str(node['servername']).isNotEmpty) 'sni': _str(node['servername']),
     if (hasReality) ...{
       'pbk': _str(realityOpts['public-key']),
       'sid': _str(realityOpts['short-id']),
@@ -224,8 +223,7 @@ Map<String, String> _transportParams(Map<String, dynamic> node) {
       'host': _str(_map(wsOpts['headers'])['Host']),
       'path': _str(wsOpts['path']),
     },
-    if (network == 'grpc')
-      'serviceName': _str(grpcOpts['grpc-service-name']),
+    if (network == 'grpc') 'serviceName': _str(grpcOpts['grpc-service-name']),
     if (network == 'httpupgrade') ...{
       'host': _str(_map(node['httpupgrade-opts'])['host']),
       'path': _str(_map(node['httpupgrade-opts'])['path']),
@@ -272,9 +270,7 @@ String _composeUri({
 /// `%`、空格、非 ASCII……）编码。不能用 [Uri.encodeComponent] 全量编码 ——
 /// 它会把合法的 `:` 也编成 `%3A`，链接可读性差且部分客户端解析行为不一。
 String _encodeUserInfo(String raw) {
-  const subDelims = {
-    '!', r'$', '&', "'", '(', ')', '*', '+', ',', ';', '=',
-  };
+  const subDelims = {'!', r'$', '&', "'", '(', ')', '*', '+', ',', ';', '='};
   final sb = StringBuffer();
   for (final rune in raw.runes) {
     final ch = String.fromCharCode(rune);

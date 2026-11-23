@@ -10,7 +10,8 @@ import 'package:fl_clash/state.dart';
 import 'package:fl_clash/views/profiles/custom/rules.dart';
 import 'package:fl_clash/ui/dialog.dart' show CommonDialog;
 import 'package:fl_clash/ui/popup.dart' show CommonPopupMenu;
-import 'package:fl_clash/widgets/widgets.dart' hide CommonDialog, CommonPopupMenu, CommonPopupMenuItem;
+import 'package:fl_clash/widgets/widgets.dart'
+    hide CommonDialog, CommonPopupMenu, CommonPopupMenuItem;
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';

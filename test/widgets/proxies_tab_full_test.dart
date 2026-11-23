@@ -27,21 +27,15 @@ class _TabStateNotifier extends Notifier<ProxiesTabState> {
   void set(ProxiesTabState value) => state = value;
 }
 
-const _groupNames = [
-  '节点选择',
-  '自动选择',
-  '链式代理',
-  '故障转移',
-  '全球直连',
-  '漏网之鱼',
-];
+const _groupNames = ['节点选择', '自动选择', '链式代理', '故障转移', '全球直连', '漏网之鱼'];
 
 List<Proxy> _nodes({int count = 162}) {
   const regions = ['🇺🇸', '🇭🇰', '🇸🇬', '🇩🇪', '🇫🇮', '🇬🇧', '☁️'];
   return [
     for (var i = 0; i < count; i++)
       Proxy(
-        name: '${regions[i % regions.length]} 节点${i.toString().padLeft(2, '0')}',
+        name:
+            '${regions[i % regions.length]} 节点${i.toString().padLeft(2, '0')}',
         type: i % 3 == 0 ? 'Vless' : 'Trojan',
       ),
   ];
@@ -109,9 +103,7 @@ void main() {
   late ProviderSubscription<Profile?> currentProfileSubscription;
 
   setUp(() {
-    final profile = Profile.normal().copyWith(
-      currentGroupName: _groupNames[0],
-    );
+    final profile = Profile.normal().copyWith(currentGroupName: _groupNames[0]);
     container = ProviderContainer(
       overrides: [
         currentProfileIdProvider.overrideWithBuild((_, _) => profile.id),
@@ -126,7 +118,10 @@ void main() {
       ],
     );
     globalState.container = container;
-    currentProfileSubscription = container.listen(currentProfileProvider, (_, _) {});
+    currentProfileSubscription = container.listen(
+      currentProfileProvider,
+      (_, _) {},
+    );
   });
 
   tearDown(() {
@@ -157,10 +152,7 @@ void main() {
     // 地区筛选栏可见。
     expect(find.text('全部', findRichText: true), findsOneWidget);
     // 节点卡片网格：成员节点名能找到（EmojiText 渲染 RichText）。
-    expect(
-      find.textContaining('节点', findRichText: true),
-      findsWidgets,
-    );
+    expect(find.textContaining('节点', findRichText: true), findsWidgets);
     expect(tester.takeException(), isNull);
   });
 
@@ -184,9 +176,7 @@ void main() {
 
     // 连续三轮「更新订阅」：每轮都是新实例、组名不变（Controller 不重建的分支）。
     for (var round = 0; round < 3; round++) {
-      container
-          .read(_tabStateProvider.notifier)
-          .set(_tabState(_realGroups()));
+      container.read(_tabStateProvider.notifier).set(_tabState(_realGroups()));
       await tester.pump();
     }
     await tester.pumpAndSettle();

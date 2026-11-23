@@ -29,11 +29,8 @@ typedef ChainInjectedNamesState = ({
 
 class ChainInjectedNames extends Notifier<ChainInjectedNamesState> {
   @override
-  ChainInjectedNamesState build() => (
-    dialers: const {},
-    chains: const {},
-    groupName: '',
-  );
+  ChainInjectedNamesState build() =>
+      (dialers: const {}, chains: const {}, groupName: '');
 
   void set(ChainInjectedNamesState value) => state = value;
 }
@@ -335,11 +332,7 @@ DelayTestPhase? delayTestPhase(
 /// fork 兼容：v0.9.2 上游把 pending 布尔语义升级成了阶段枚举，这里补一个
 /// 等价布尔视图，fork 的节点卡测速按钮不用改。
 @riverpod
-bool delayTestPending(
-  Ref ref, {
-  required String proxyName,
-  String? testUrl,
-}) {
+bool delayTestPending(Ref ref, {required String proxyName, String? testUrl}) {
   final phase = ref.watch(
     delayTestPhaseProvider(proxyName: proxyName, testUrl: testUrl),
   );

@@ -196,10 +196,7 @@ class _DnsLeakViewState extends ConsumerState<DnsLeakView> {
                       height: 18,
                       child: CommonCircleLoading(),
                     )
-                  : Icon(
-                      Icons.play_arrow,
-                      color: colorScheme.onSurfaceVariant,
-                    ),
+                  : Icon(Icons.play_arrow, color: colorScheme.onSurfaceVariant),
               onTap: _checking ? null : _runProbe,
             ),
             // 系统代理只作用于「认这个代理的程序」，Windows 自己发出的 DNS 查询不在其列

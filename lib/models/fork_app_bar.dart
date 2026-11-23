@@ -17,12 +17,11 @@ class AppBarState {
     List<Widget>? actions,
     AppBarSearchState? searchState,
     AppBarEditState? editState,
-  }) =>
-      AppBarState(
-        actions: actions ?? this.actions,
-        searchState: searchState ?? this.searchState,
-        editState: editState ?? this.editState,
-      );
+  }) => AppBarState(
+    actions: actions ?? this.actions,
+    searchState: searchState ?? this.searchState,
+    editState: editState ?? this.editState,
+  );
 }
 
 class AppBarSearchState {
@@ -40,27 +39,20 @@ class AppBarSearchState {
     Function(String)? onSearch,
     bool? autoAddSearch,
     String? query,
-  }) =>
-      AppBarSearchState(
-        onSearch: onSearch ?? this.onSearch,
-        autoAddSearch: autoAddSearch ?? this.autoAddSearch,
-        query: query ?? this.query,
-      );
+  }) => AppBarSearchState(
+    onSearch: onSearch ?? this.onSearch,
+    autoAddSearch: autoAddSearch ?? this.autoAddSearch,
+    query: query ?? this.query,
+  );
 }
 
 class AppBarEditState {
   final int editCount;
   final Function() onExit;
 
-  const AppBarEditState({
-    this.editCount = 0,
-    required this.onExit,
-  });
+  const AppBarEditState({this.editCount = 0, required this.onExit});
 
-  AppBarEditState copyWith({
-    int? editCount,
-    Function()? onExit,
-  }) =>
+  AppBarEditState copyWith({int? editCount, Function()? onExit}) =>
       AppBarEditState(
         editCount: editCount ?? this.editCount,
         onExit: onExit ?? this.onExit,

@@ -4,7 +4,8 @@ import 'package:fl_clash/ui/popup.dart';
 import 'package:fl_clash/ui/scaffold.dart';
 import 'package:fl_clash/ui/inherited.dart' as ui_sa show SheetProvider;
 import 'package:fl_clash/ui/sheet.dart' as ui_sa show SheetType;
-import 'package:fl_clash/widgets/widgets.dart' hide CommonPopupMenuItem, CommonScaffold;
+import 'package:fl_clash/widgets/widgets.dart'
+    hide CommonPopupMenuItem, CommonScaffold;
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 

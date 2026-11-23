@@ -1,4 +1,5 @@
-import 'package:fl_clash/ui/focus.dart' as ui_rt
+import 'package:fl_clash/ui/focus.dart'
+    as ui_rt
     show PageFocusScope, PageTraversalPolicy;
 import 'package:fl_clash/widgets/widgets.dart';
 import 'package:flutter/foundation.dart';

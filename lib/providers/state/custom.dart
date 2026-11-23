@@ -960,4 +960,3 @@ class ProxyProviderOptionsProvider extends _$ProxyProviderOptionsProvider
     );
   }
 }
-

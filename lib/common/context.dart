@@ -49,4 +49,3 @@ extension AppContextExtension on BuildContext {
     return state;
   }
 }
-

@@ -228,13 +228,13 @@ var methodHandlers = map[CoreMethod]methodHandler{
 	clearEffectMethod:              withMessage(handleClearEffect),
 
 	// BiLoom: fork 专属方法（节点编辑/分享、订阅转换、链式代理、落地 IP 检测）。
-	convertSubscriptionMethod:      withFallible(handleConvertSubscription),
-	addProxyNodesMethod:            withFallible(handleAddProxyNodes),
-	removeProxyNodesMethod:         withFallible(handleRemoveProxyNodes),
-	updateProxyNodeMethod:          withFallible(handleUpdateProxyNode),
-	readProfileTargetsMethod:       withFallible(handleReadProfileTargets),
-	setProxyChainMethod:            withFallible(handleSetProxyChain),
-	requestProxyIPMethod:           withFallible(handleRequestProxyIP),
+	convertSubscriptionMethod: withFallible(handleConvertSubscription),
+	addProxyNodesMethod:       withFallible(handleAddProxyNodes),
+	removeProxyNodesMethod:    withFallible(handleRemoveProxyNodes),
+	updateProxyNodeMethod:     withFallible(handleUpdateProxyNode),
+	readProfileTargetsMethod:  withFallible(handleReadProfileTargets),
+	setProxyChainMethod:       withFallible(handleSetProxyChain),
+	requestProxyIPMethod:      withFallible(handleRequestProxyIP),
 }
 
 func watchRouteHandler(call *MethodCall) (any, error) {

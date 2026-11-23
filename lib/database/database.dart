@@ -33,7 +33,8 @@ part 'scripts.dart';
     DisabledRules,
     ProxyGroups,
     IconRecords,
-    ProxyExits,    IconSets,
+    ProxyExits,
+    IconSets,
     ClashProviders,
     CustomProxies,
     ProxyDialers,
@@ -45,7 +46,8 @@ part 'scripts.dart';
     RulesDao,
     ProxyGroupsDao,
     IconRecordsDao,
-    ProxyExitsDao,    IconSetsDao,
+    ProxyExitsDao,
+    IconSetsDao,
     ClashProvidersDao,
     CustomProxiesDao,
     ProxyDialersDao,
@@ -507,6 +509,7 @@ class Database extends _$Database {
           t.proxyId.isNotInQuery(customProxyIds),
     );
   }
+
   Future<void> setProfileCustomData(
     int profileId,
     List<ProxyGroup> groups,
@@ -517,7 +520,6 @@ class Database extends _$Database {
       rulesDao.setCustomRulesWithBatch(profileId, b, rules);
     });
   }
-
 }
 
 const _v17GroupOptions = [
@@ -548,7 +550,6 @@ const _v17GroupFlags = [
 
 // SQLite builds before 3.32 cap a statement at 999 bound parameters.
 const _maxBoundValues = 900;
-
 
 extension TableInfoExt<Tbl extends Table, Row> on TableInfo<Tbl, Row> {
   void setAll(

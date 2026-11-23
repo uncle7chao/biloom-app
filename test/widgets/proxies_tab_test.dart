@@ -403,10 +403,7 @@ void main() {
 
     // fork 切组会重建 ProxyCard 实例，但卡片 key（组名.节点名）稳定，
     // 元素状态因此保留 —— 断言 key 不变即可。
-    expect(
-      (tester.widget(card) as ProxyCard).key,
-      (before as ProxyCard).key,
-    );
+    expect((tester.widget(card) as ProxyCard).key, (before as ProxyCard).key);
   });
 
   testWidgets('lays each tab out at the width its label takes', (tester) async {

@@ -353,6 +353,7 @@ class CoreController {
       timeoutMs: timeoutMs,
     );
   }
+
   Future<ProbeResult?> probe(ProbeParams params) => _interface.probe(params);
 
   Future<OutboundIpResult?> outboundIp(OutboundIpParams params) =>

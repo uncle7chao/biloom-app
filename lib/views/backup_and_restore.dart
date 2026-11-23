@@ -74,10 +74,9 @@ class _BackupAndRestoreState extends ConsumerState<BackupAndRestore>
     final res = await globalState.loadingRun<bool>(
       () async {
         await File(file.path).safeCopy(await appPath.backupFilePath);
-        await ref.read(backupActionProvider.notifier).restore(
-          option,
-          (_) async => appPath.backupFilePath,
-        );
+        await ref
+            .read(backupActionProvider.notifier)
+            .restore(option, (_) async => appPath.backupFilePath);
         return true;
       },
       tag: LoadingTag.backup_restore,
@@ -347,7 +346,9 @@ class _BackupAndRestoreState extends ConsumerState<BackupAndRestore>
             items: [
               ListItem(
                 onTap: () {
-                  unawaited(BaseNavigator.push(context, const LanSyncSharePage()));
+                  unawaited(
+                    BaseNavigator.push(context, const LanSyncSharePage()),
+                  );
                 },
                 leading: const Icon(Icons.share),
                 title: const Text('分享配置到其他设备'),
@@ -420,7 +421,8 @@ class _BackupAndRestoreState extends ConsumerState<BackupAndRestore>
                   ),
                 ),
             ],
-          ),        ],
+          ),
+        ],
       ),
     );
   }

@@ -155,7 +155,9 @@ class _ProxiesListViewState extends ConsumerState<ProxiesListView> {
       ),
     );
     final all = orderFavoritesFirst(group.all, favorites);
-    final rows = isExpand ? all.chunks(columns).toList() : const <List<Proxy>>[];
+    final rows = isExpand
+        ? all.chunks(columns).toList()
+        : const <List<Proxy>>[];
     return SliverMainAxisGroup(
       slivers: [
         PinnedHeaderSliver(

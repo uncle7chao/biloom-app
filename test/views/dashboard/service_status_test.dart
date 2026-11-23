@@ -493,7 +493,8 @@ void main() {
         double height() {
           final clip = find
               .byWidgetPredicate(
-                (widget) => widget.runtimeType.toString() == 'ClipRSuperellipse',
+                (widget) =>
+                    widget.runtimeType.toString() == 'ClipRSuperellipse',
               )
               .first;
           return tester.view.physicalSize.height - tester.getTopLeft(clip).dy;

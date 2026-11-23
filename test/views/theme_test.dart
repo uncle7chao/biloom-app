@@ -401,8 +401,9 @@ void main() {
 
       await openFonts(tester);
       expect(
-        ui_th.SheetProvider.of(tester.element(find.byType(FontFamilyView)))
-            ?.type,
+        ui_th.SheetProvider.of(
+          tester.element(find.byType(FontFamilyView)),
+        )?.type,
         ui_th.SheetType.sideSheet,
       );
       expect(inPage('Installed fonts'), findsOneWidget);

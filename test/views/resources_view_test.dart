@@ -105,7 +105,10 @@ void main() {
       );
       expect(row, findsOneWidget);
       expect(
-        find.ancestor(of: row, matching: find.byType(ui_rv.ItemPositionProvider)),
+        find.ancestor(
+          of: row,
+          matching: find.byType(ui_rv.ItemPositionProvider),
+        ),
         findsOneWidget,
       );
       expect(
@@ -247,7 +250,10 @@ void main() {
       matching: find.byType(ui_rv.DecorationListItem),
     );
     expect(
-      find.descendant(of: geoItem, matching: find.byType(ui_rv.CommonCircleLoading)),
+      find.descendant(
+        of: geoItem,
+        matching: find.byType(ui_rv.CommonCircleLoading),
+      ),
       findsOneWidget,
     );
     expect(find.text(1.traffic.show), findsNothing);

@@ -40,9 +40,7 @@ class _ActivityViewState extends ConsumerState<ActivityView> {
     if (promo == null) {
       return CommonScaffold(
         title: appLocalizations.activity,
-        body: Center(
-          child: Text(appLocalizations.activityLoadFailed),
-        ),
+        body: Center(child: Text(appLocalizations.activityLoadFailed)),
       );
     }
     return CommonScaffold(
@@ -179,11 +177,7 @@ class _ActivityWebViewState extends ConsumerState<_ActivityWebView> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            Icons.language,
-            size: 48,
-            color: Theme.of(context).hintColor,
-          ),
+          Icon(Icons.language, size: 48, color: Theme.of(context).hintColor),
           const SizedBox(height: 16),
           Text(appLocalizations.activityLoadFailed),
           const SizedBox(height: 24),
@@ -193,10 +187,7 @@ class _ActivityWebViewState extends ConsumerState<_ActivityWebView> {
             label: Text(appLocalizations.openInBrowser),
           ),
           const SizedBox(height: 8),
-          TextButton(
-            onPressed: _init,
-            child: Text(appLocalizations.retry),
-          ),
+          TextButton(onPressed: _init, child: Text(appLocalizations.retry)),
         ],
       ),
     );

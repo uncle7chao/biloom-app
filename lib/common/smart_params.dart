@@ -48,8 +48,10 @@ class FingerprintRecord {
 
   const FingerprintRecord({required this.fingerprint, required this.rotatedAt});
 
-  Map<String, dynamic> toJson() =>
-      {'fingerprint': fingerprint, 'rotatedAt': rotatedAt};
+  Map<String, dynamic> toJson() => {
+    'fingerprint': fingerprint,
+    'rotatedAt': rotatedAt,
+  };
 
   static FingerprintRecord? fromJson(Map<String, dynamic>? json) {
     if (json == null) {
@@ -106,4 +108,3 @@ bool smartFillProxies(
 
 /// 指纹覆盖记录的持久化与轮换触发、开关的存取 —— 见 smart_params_store.dart
 /// （需要 shared_preferences，与纯逻辑分开，逻辑层保持零依赖可独立测试）。
-

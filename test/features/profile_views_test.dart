@@ -212,7 +212,10 @@ void main() {
       expect(
         find.ancestor(
           of: find.byType(SelectionBadge),
-          matching: find.widgetWithText(ui_list.DecorationListItem, l10n.standard),
+          matching: find.widgetWithText(
+            ui_list.DecorationListItem,
+            l10n.standard,
+          ),
         ),
         findsOneWidget,
       );
@@ -221,7 +224,10 @@ void main() {
       expect(
         find.ancestor(
           of: find.byType(SelectionBadge),
-          matching: find.widgetWithText(ui_list.DecorationListItem, l10n.script),
+          matching: find.widgetWithText(
+            ui_list.DecorationListItem,
+            l10n.script,
+          ),
         ),
         findsOneWidget,
       );
@@ -367,8 +373,10 @@ void main() {
       await tester.pumpAndSettle();
     }
 
-    Finder tile(String label) =>
-        find.ancestor(of: find.text(label), matching: find.byType(ui_list.ListItem));
+    Finder tile(String label) => find.ancestor(
+      of: find.text(label),
+      matching: find.byType(ui_list.ListItem),
+    );
 
     String? statusOf(WidgetTester tester, String label) {
       final l = currentAppLocalizations;

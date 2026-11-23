@@ -299,7 +299,6 @@ class RulesDao extends DatabaseAccessor<Database> with _$RulesDaoMixin {
     return query.count;
   }
 
-
   Future<void> resetOrders() async {
     final stmt = profileRuleLinks.select();
 
@@ -355,7 +354,6 @@ class RulesDao extends DatabaseAccessor<Database> with _$RulesDaoMixin {
     final linkKeys = links.map((item) => item.key);
     batch.deleteWhere(profileRuleLinks, (t) => t.id.isNotIn(linkKeys));
   }
-
 
   Future<void> putGlobalRule(Rule rule) {
     return _put(rule);

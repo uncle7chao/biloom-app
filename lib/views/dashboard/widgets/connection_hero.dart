@@ -49,11 +49,7 @@ class ConnectionHero extends ConsumerWidget {
         // ⚠️ 不要用 lighten()：它是 HSL 亮度直接 +amount%，深色主题的
         // primary（tone 80）亮度已高，+30% 会顶到纯白（01.00.37 翻车：
         // 图标标题全变白）。RGB 向白混 20% 才是「更浅但仍是绿」。
-        stateColor = Color.lerp(
-          context.colorScheme.primary,
-          Colors.white,
-          0.2,
-        );
+        stateColor = Color.lerp(context.colorScheme.primary, Colors.white, 0.2);
         // B 方案 B2-b：连接成功 = 三弧线外扩淡出 + 对勾弹入（品牌图形语言）。
         leading = _ConnectionMark(phase: phase, color: stateColor!);
         title = appLocalizations.connectionStateConnected;
@@ -280,8 +276,7 @@ class _ArcsCheckPainter extends CustomPainter {
       const sweep = 64 * math.pi / 180;
       const gap = (2 * math.pi - 3 * sweep) / 3;
       for (var i = 0; i < 3; i++) {
-        final start =
-            -math.pi / 2 + spin * 2 * math.pi + i * (sweep + gap);
+        final start = -math.pi / 2 + spin * 2 * math.pi + i * (sweep + gap);
         canvas.drawArc(
           Rect.fromCircle(center: center, radius: radius),
           start,

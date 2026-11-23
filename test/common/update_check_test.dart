@@ -6,56 +6,55 @@ void main() {
     required String version,
     List<Object?>? files,
     String? notes,
-  }) =>
-      {
-        'enabled': true,
-        'latest': {
-          'version': version,
-          'date': '2026-11-05',
-          if (notes != null) 'notes': notes,
-          if (files != null) 'files': files,
-        },
-      };
+  }) => {
+    'enabled': true,
+    'latest': {
+      'version': version,
+      'date': '2026-11-05',
+      if (notes != null) 'notes': notes,
+      if (files != null) 'files': files,
+    },
+  };
 
   List<Object?> standardFiles() => [
-        {
-          'label': '安装版 setup.exe（国内直连）',
-          'kind': 'exe',
-          'url': 'https://biloom.top/dl/BiLoom-01.00.43-windows-amd64-setup.exe',
-          'size': '44.0 MB',
-          'sha256': 'a' * 64,
-        },
-        {
-          'label': '安装版 setup.exe（GitHub 镜像）',
-          'kind': 'exe',
-          'url':
-              'https://github.com/uncle7chao/biloom-app/releases/download/v01.00.43/BiLoom-01.00.43-windows-amd64-setup.exe',
-          'size': '44.0 MB',
-          'sha256': 'a' * 64,
-        },
-        {
-          'label': '便携版 .zip（国内直连）',
-          'kind': 'zip',
-          'url': 'https://biloom.top/dl/BiLoom-01.00.43-windows-amd64.zip',
-          'size': '70.1 MB',
-          'sha256': 'b' * 64,
-        },
-        {
-          'label': '安卓版 APK arm64（国内直连）',
-          'kind': 'apk',
-          'url': 'https://biloom.top/dl/BiLoom-01.00.43-android-arm64-v8a.apk',
-          'size': '64.0 MB',
-          'sha256': 'c' * 64,
-        },
-        {
-          'label': '安卓版 APK arm64（GitHub 镜像）',
-          'kind': 'apk',
-          'url':
-              'https://github.com/uncle7chao/biloom-app/releases/download/v01.00.43/BiLoom-01.00.43-android-arm64-v8a.apk',
-          'size': '64.0 MB',
-          'sha256': 'c' * 64,
-        },
-      ];
+    {
+      'label': '安装版 setup.exe（国内直连）',
+      'kind': 'exe',
+      'url': 'https://biloom.top/dl/BiLoom-01.00.43-windows-amd64-setup.exe',
+      'size': '44.0 MB',
+      'sha256': 'a' * 64,
+    },
+    {
+      'label': '安装版 setup.exe（GitHub 镜像）',
+      'kind': 'exe',
+      'url':
+          'https://github.com/uncle7chao/biloom-app/releases/download/v01.00.43/BiLoom-01.00.43-windows-amd64-setup.exe',
+      'size': '44.0 MB',
+      'sha256': 'a' * 64,
+    },
+    {
+      'label': '便携版 .zip（国内直连）',
+      'kind': 'zip',
+      'url': 'https://biloom.top/dl/BiLoom-01.00.43-windows-amd64.zip',
+      'size': '70.1 MB',
+      'sha256': 'b' * 64,
+    },
+    {
+      'label': '安卓版 APK arm64（国内直连）',
+      'kind': 'apk',
+      'url': 'https://biloom.top/dl/BiLoom-01.00.43-android-arm64-v8a.apk',
+      'size': '64.0 MB',
+      'sha256': 'c' * 64,
+    },
+    {
+      'label': '安卓版 APK arm64（GitHub 镜像）',
+      'kind': 'apk',
+      'url':
+          'https://github.com/uncle7chao/biloom-app/releases/download/v01.00.43/BiLoom-01.00.43-android-arm64-v8a.apk',
+      'size': '64.0 MB',
+      'sha256': 'c' * 64,
+    },
+  ];
 
   group('evaluateSiteVersionsJson', () {
     test('newer site version yields a GitHub-shaped update map', () {
@@ -112,8 +111,12 @@ void main() {
         null,
         <String, Object?>{},
         <String, Object?>{'latest': null},
-        <String, Object?>{'latest': <String, Object?>{'version': ''}},
-        <String, Object?>{'latest': <String, Object?>{'version': 42}},
+        <String, Object?>{
+          'latest': <String, Object?>{'version': ''},
+        },
+        <String, Object?>{
+          'latest': <String, Object?>{'version': 42},
+        },
       ]) {
         final result = evaluateSiteVersionsJson(
           decoded: decoded,
@@ -160,10 +163,7 @@ void main() {
               'https://github.com/uncle7chao/biloom-app/releases/download/v01.00.43/BiLoom-01.00.43-windows-amd64-setup.exe',
         },
       ];
-      expect(
-        pickSiteDownloadUrl(files, isAndroid: false),
-        files.first['url'],
-      );
+      expect(pickSiteDownloadUrl(files, isAndroid: false), files.first['url']);
     });
 
     test('desktop skips an apk-only file list and returns null', () {

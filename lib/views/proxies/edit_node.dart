@@ -79,9 +79,7 @@ class _EditProxyNodeViewState extends ConsumerState<EditProxyNodeView> {
           padding: const EdgeInsets.symmetric(
             horizontal: 16,
           ).copyWith(top: context.sheetTopPadding, bottom: 20),
-          children: [
-            ProxyNodeForm(key: _formKey, initialNode: widget.node),
-          ],
+          children: [ProxyNodeForm(key: _formKey, initialNode: widget.node)],
         ),
       ),
       title: appLocalizations.editNode,

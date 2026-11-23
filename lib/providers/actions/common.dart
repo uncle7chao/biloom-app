@@ -87,9 +87,7 @@ class CommonAction extends _$CommonAction {
     final index = Mode.values.indexWhere((item) => item == current);
     if (index == -1) return;
     final nextIndex = index + 1 > Mode.values.length - 1 ? 0 : index + 1;
-    ref
-        .read(setupActionProvider.notifier)
-        .changeMode(Mode.values[nextIndex]);
+    ref.read(setupActionProvider.notifier).changeMode(Mode.values[nextIndex]);
   }
 
   Future<void> updateTraffic() async {
@@ -232,8 +230,7 @@ class CommonAction extends _$CommonAction {
         unawaited(
           launchUrl(
             Uri.parse(
-              downloadUrl ??
-                  'https://github.com/$repository/releases/latest',
+              downloadUrl ?? 'https://github.com/$repository/releases/latest',
             ),
           ),
         );

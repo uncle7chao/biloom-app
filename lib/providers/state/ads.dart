@@ -78,9 +78,7 @@ class AdsConfigStore extends AsyncNotifier<AdsRemoteConfig?> {
 }
 
 final adsConfigStoreProvider =
-    AsyncNotifierProvider<AdsConfigStore, AdsRemoteConfig?>(
-      AdsConfigStore.new,
-    );
+    AsyncNotifierProvider<AdsConfigStore, AdsRemoteConfig?>(AdsConfigStore.new);
 
 /// 当前平台「Banner 广告位」的生效配置；null = 本平台不展示（没接 SDK /
 /// 总开关关 / 从未拉到配置 / 广告位 ID 空）。**将来所有广告 UI 挂载点只认

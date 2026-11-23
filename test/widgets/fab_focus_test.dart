@@ -1,6 +1,7 @@
 import 'dart:async';
 
-import 'package:fl_clash/ui/focus.dart' as ui_fb
+import 'package:fl_clash/ui/focus.dart'
+    as ui_fb
     show PageFocusScope, PageTraversalPolicy;
 import 'package:fl_clash/ui/icons/icons.dart';
 import 'package:material_ui/material_ui.dart';

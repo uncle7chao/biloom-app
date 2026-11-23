@@ -1409,7 +1409,7 @@ abstract class Dns with _$Dns {
     // 只有主上游失败、或返回的 IP 命中了 `fallback-filter` 的 IP 过滤器时才会被采用。
     // 详见上面 `nameserver` 与下面 `defaultFallbackFilterGeoip` 的说明。
     @Default(defaultFallback) List<String> fallback,
-        @Default(false)
+    @Default(false)
     @JsonKey(name: 'fallback-lazy-query')
     bool fallbackLazyQuery,
     @Default(['https://doh.pub/dns-query'])

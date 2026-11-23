@@ -156,7 +156,9 @@ class ProxyExitDashboard extends ConsumerWidget {
                                       testUrl: group.testUrl,
                                       onTest: () {
                                         ref
-                                            .read(proxiesActionProvider.notifier)
+                                            .read(
+                                              proxiesActionProvider.notifier,
+                                            )
                                             .proxyDelayTest(
                                               exitProxy,
                                               group.testUrl,

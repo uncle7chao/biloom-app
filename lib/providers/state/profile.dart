@@ -37,9 +37,10 @@ class ProfileUpdateStatuses
 }
 
 final profileUpdateStatusesProvider =
-    AsyncNotifierProvider<ProfileUpdateStatuses, Map<String, ProfileUpdateStatus>>(
-      ProfileUpdateStatuses.new,
-    );
+    AsyncNotifierProvider<
+      ProfileUpdateStatuses,
+      Map<String, ProfileUpdateStatus>
+    >(ProfileUpdateStatuses.new);
 
 @riverpod
 ProfilesState profilesState(Ref ref) {
@@ -159,8 +160,7 @@ Future<SetupState> setupState(Ref ref, int? profileId) async {
     profileLastUpdateDate: profileLastUpdateDate,
     profileType: profileType,
     extendType: extendType,
-    overwriteType:
-        profile?.overwriteType ?? OverwriteType.standard,
+    overwriteType: profile?.overwriteType ?? OverwriteType.standard,
     addedRules: addedRules,
     script: script,
     overrides: overrides,

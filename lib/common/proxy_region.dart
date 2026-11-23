@@ -687,12 +687,7 @@ const _regionNames = <String, RegionNames>{
     ru: 'Фарерские острова',
   ),
   'GI': (zh: '直布罗陀', en: 'Gibraltar', ja: 'ジブラルタル', ru: 'Гибралтар'),
-  'LI': (
-    zh: '列支敦士登',
-    en: 'Liechtenstein',
-    ja: 'リヒテンシュタイン',
-    ru: 'Лихтенштейн',
-  ),
+  'LI': (zh: '列支敦士登', en: 'Liechtenstein', ja: 'リヒテンシュタイン', ru: 'Лихтенштейн'),
   'MC': (zh: '摩纳哥', en: 'Monaco', ja: 'モナコ', ru: 'Монако'),
   'AD': (zh: '安道尔', en: 'Andorra', ja: 'アンドラ', ru: 'Андорра'),
   'SM': (zh: '圣马力诺', en: 'San Marino', ja: 'サンマリノ', ru: 'Сан-Марино'),
@@ -702,12 +697,7 @@ const _regionNames = <String, RegionNames>{
   'PY': (zh: '巴拉圭', en: 'Paraguay', ja: 'パラグアイ', ru: 'Парагвай'),
   'BO': (zh: '玻利维亚', en: 'Bolivia', ja: 'ボリビア', ru: 'Боливия'),
   'VE': (zh: '委内瑞拉', en: 'Venezuela', ja: 'ベネズエラ', ru: 'Венесуэла'),
-  'CR': (
-    zh: '哥斯达黎加',
-    en: 'Costa Rica',
-    ja: 'コスタリカ',
-    ru: 'Коста-Рика',
-  ),
+  'CR': (zh: '哥斯达黎加', en: 'Costa Rica', ja: 'コスタリカ', ru: 'Коста-Рика'),
   'PA': (zh: '巴拿马', en: 'Panama', ja: 'パナマ', ru: 'Панама'),
   'GT': (zh: '危地马拉', en: 'Guatemala', ja: 'グアテマラ', ru: 'Гватемала'),
   'CU': (zh: '古巴', en: 'Cuba', ja: 'キューバ', ru: 'Куба'),
@@ -740,12 +730,7 @@ const _regionNames = <String, RegionNames>{
   'TZ': (zh: '坦桑尼亚', en: 'Tanzania', ja: 'タンザニア', ru: 'Танзания'),
   'UG': (zh: '乌干达', en: 'Uganda', ja: 'ウガンダ', ru: 'Уганда'),
   'GH': (zh: '加纳', en: 'Ghana', ja: 'ガーナ', ru: 'Гана'),
-  'CI': (
-    zh: '科特迪瓦',
-    en: "Côte d'Ivoire",
-    ja: 'コートジボワール',
-    ru: "Кот-д'Ивуар",
-  ),
+  'CI': (zh: '科特迪瓦', en: "Côte d'Ivoire", ja: 'コートジボワール', ru: "Кот-д'Ивуар"),
   'SN': (zh: '塞内加尔', en: 'Senegal', ja: 'セネガル', ru: 'Сенегал'),
   'CM': (zh: '喀麦隆', en: 'Cameroon', ja: 'カメルーン', ru: 'Камерун'),
   'AO': (zh: '安哥拉', en: 'Angola', ja: 'アンゴラ', ru: 'Ангола'),
@@ -754,12 +739,7 @@ const _regionNames = <String, RegionNames>{
   'MZ': (zh: '莫桑比克', en: 'Mozambique', ja: 'モザンビーク', ru: 'Мозамбик'),
   'BW': (zh: '博茨瓦纳', en: 'Botswana', ja: 'ボツワナ', ru: 'Ботсвана'),
   'NA': (zh: '纳米比亚', en: 'Namibia', ja: 'ナミビア', ru: 'Намибия'),
-  'MG': (
-    zh: '马达加斯加',
-    en: 'Madagascar',
-    ja: 'マダガスカル',
-    ru: 'Мадагаскар',
-  ),
+  'MG': (zh: '马达加斯加', en: 'Madagascar', ja: 'マダガスカル', ru: 'Мадагаскар'),
   'MU': (zh: '毛里求斯', en: 'Mauritius', ja: 'モーリシャス', ru: 'Маврикий'),
   'RW': (zh: '卢旺达', en: 'Rwanda', ja: 'ルワンダ', ru: 'Руанда'),
   'SO': (zh: '索马里', en: 'Somalia', ja: 'ソマリア', ru: 'Сомали'),
@@ -967,8 +947,7 @@ bool looksLikeGeneratedRegionGroup(
     return false;
   }
   for (final name in group.proxyNames) {
-    if (resolveProxyRegionWithLanding(name, landingByProxy).key !=
-        region.key) {
+    if (resolveProxyRegionWithLanding(name, landingByProxy).key != region.key) {
       return false;
     }
   }
@@ -1050,7 +1029,10 @@ RegionGroupPlan buildRegionGroupPlan({
   required String Function(ProxyRegion region) nameOf,
   Map<String, String> landingByProxy = const {},
 }) {
-  final buckets = groupProxyNamesByRegion(nodeNames, landingByProxy: landingByProxy);
+  final buckets = groupProxyNamesByRegion(
+    nodeNames,
+    landingByProxy: landingByProxy,
+  );
   final claimed = <String>{};
   final upserts = <RegionGroupDraft>[];
   for (final bucket in buckets.groups) {
@@ -1064,7 +1046,12 @@ RegionGroupPlan buildRegionGroupPlan({
       claimed,
       landingByProxy,
     );
-    hit ??= _matchByRegion(existingGroups, bucket.region.key, claimed, landingByProxy);
+    hit ??= _matchByRegion(
+      existingGroups,
+      bucket.region.key,
+      claimed,
+      landingByProxy,
+    );
     if (hit != null) {
       claimed.add(hit.name);
     }
