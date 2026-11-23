@@ -40,7 +40,9 @@ String? pickSiteDownloadUrl(List<Object?>? files, {required bool isAndroid}) {
   }
 
   // 先挑国内直连，再放宽到任意通道（GitHub 镜像）。
-  return pick((entry) => (entry['url'] as String?)?.contains('biloom.top') == true) ??
+  return pick(
+        (entry) => (entry['url'] as String?)?.contains('biloom.top') == true,
+      ) ??
       pick((_) => true);
 }
 
@@ -49,10 +51,8 @@ String? pickSiteDownloadUrl(List<Object?>? files, {required bool isAndroid}) {
 /// - reachable 且 [update] 为 null = 已是最新；
 /// - reachable 且 [update] 非 null = 有新版本，map 形制与 GitHub release 对齐
 ///   （`tag_name` / `body`），外加 fork 私有的 `download_url`。
-@visibleForTesting
 typedef SiteUpdateEvaluation = ({bool reachable, Map<String, dynamic>? update});
 
-@visibleForTesting
 SiteUpdateEvaluation evaluateSiteVersionsJson({
   required Object? decoded,
   required String currentVersion,

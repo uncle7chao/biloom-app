@@ -87,7 +87,10 @@ class Request {
   Future<Response<T>> _download<T>(String url, ResponseType responseType) {
     final target = downloadTarget(url);
     final cancelToken = CancelToken();
-    final options = Options(responseType: responseType, headers: target.headers);
+    final options = Options(
+      responseType: responseType,
+      headers: target.headers,
+    );
     return _clashDio
         .getUri<T>(target.uri, options: options, cancelToken: cancelToken)
         .catchError((Object e) {
@@ -165,7 +168,6 @@ class Request {
   /// BiLoom fork: 走自己服务器的 versions.json 检查新版本。
   /// 网络层失败一律折叠成 `(reachable: false)`，绝不抛 —— 更新检查不许
   /// 影响启动流程；站点的可达性判定交给调用方回落 GitHub。
-  @visibleForTesting
   Future<SiteUpdateEvaluation> checkUpdateViaSite() async {
     try {
       final response = await dio.get<Object?>(
@@ -346,11 +348,7 @@ String? getFileNameForDisposition(String? disposition) {
 }
 
 /// fork 兼容：三态检查更新（上游把「无新版」和「失败」混为 null）。
-enum UpdateCheckStatus {
-  hasUpdate,
-  upToDate,
-  failed,
-}
+enum UpdateCheckStatus { hasUpdate, upToDate, failed }
 
 class UpdateCheckResult {
   const UpdateCheckResult(this.status, [this.data]);
