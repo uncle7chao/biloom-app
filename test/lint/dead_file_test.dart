@@ -43,6 +43,27 @@ bool _isBarrel(String source) {
       );
 }
 
+/// Files inherited from FlClash v0.9.2 that the 0.9.2 UI rewrite left behind:
+/// every name they publish is referenced only by themselves (plus the barrel
+/// that keeps them compiling). They are not a mistake we introduced and they
+/// are not worth a delete/modify conflict on the next upstream merge, so they
+/// are pinned here instead of being silently tolerated. Anything that lands in
+/// this list after today is a new dead file and must be fixed, not listed.
+const _inheritedDead = {
+  'lib/views/profiles/overwrite/overwrite.dart',
+  'lib/views/dashboard/widgets/network_speed.dart',
+  'lib/views/proxies/manage_nodes.dart',
+  'lib/common/auto_exit_test.dart',
+  'lib/common/proxy_share.dart',
+  'lib/widgets/tab.dart',
+  'lib/widgets/notification.dart',
+  'lib/widgets/color_scheme_box.dart',
+  'lib/widgets/donut_chart.dart',
+  'lib/widgets/wave.dart',
+  'lib/widgets/float_layout.dart',
+  'lib/features/overwrite/overwrite_nested_sheet.dart',
+};
+
 void main() {
   test('every file under lib declares something used outside itself', () {
     // Generated code counts as a consumer but never as a declarer: a riverpod
@@ -66,6 +87,9 @@ void main() {
       if (!path.startsWith('lib/')) continue;
       if (barrels.contains(path) || _entryPoints.contains(path)) continue;
       if (path.startsWith('lib/l10n/')) continue;
+      // Directory.listSync hands back backslashes on Windows, so the pinned
+      // list is compared in the one separator everything else here uses.
+      if (_inheritedDead.contains(path.replaceAll(r'\', '/'))) continue;
 
       // Extensions and typedefs are reached through the types they attach to,
       // never by name, so a file that publishes only those cannot be measured
