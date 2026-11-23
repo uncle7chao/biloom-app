@@ -1,5 +1,11 @@
 # Changelog
 
+## v01.00.46 (2026-11-23)
+
+**Bug Fixes**
+
+- **config** The 01.00.45 guard still let a `type: relay` profile through on a cold start. The Core-side validator only unmarshals the document into a struct and never builds a proxy group, so the group parser was the first thing to notice the bad type - and by then there was no previous config for the Core to keep: it ran its proxy-less default while the VPN was already up, the tunnel carried nothing, and every domain failed to resolve. Profiles are now checked against the four group types the Core can build (`select`, `url-test`, `fallback`, `load-balance`) in Dart, from the YAML text alone, before anything is written or pushed, so a config that cannot load is refused while the tunnel is still down and there is nothing to roll back. Verified on device: switching away from a working config was already safe in 45, the cold start used to kill DNS and now refuses instead
+
 ## v01.00.45 (2026-11-22)
 
 **Bug Fixes**
