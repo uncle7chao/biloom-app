@@ -256,8 +256,36 @@ class SetupAction extends _$SetupAction {
   }
 
   Future<void> _startCoreRunning(_RunRequest request) async {
+    // The connect button calls setRunning(true) without initialize, which lands
+    // here first and pushes the config afterwards. Starting the Core straight
+    // away means a config it cannot load leaves a tunnel that carries nothing
+    // (and a DNS that resolves nothing) until that push fails, so the profile
+    // file is checked before the Core is ever asked to start.
+    final rejection = await _rejectActiveProfileGroupType();
+    if (rejection != null) {
+      throw MessageException(rejection);
+    }
     if (!await _setCoreRunning(request) && _isCurrent(request)) {
       throw _unanswered(CoreMethod.startListener);
+    }
+  }
+
+  /// Groups declared by the profile file of the profile that is about to run.
+  /// Null when the file is absent or unreadable - that is the Core's call.
+  Future<String?> _rejectActiveProfileGroupType() async {
+    final profile = ref.read(currentProfileProvider);
+    if (profile == null) return null;
+    try {
+      final path = await appPath.getProfilePath(profile.id.toString());
+      final file = File(path);
+      if (!await file.exists()) return null;
+      return _rejectUnsupportedGroupType(await file.readAsString());
+    } catch (e) {
+      commonPrint.log(
+        'active profile check skipped: $e',
+        logLevel: LogLevel.warning,
+      );
+      return null;
     }
   }
 
@@ -931,7 +959,10 @@ class SetupAction extends _$SetupAction {
             // Core then fell back to its proxy-less default, the VPN stayed
             // up and the device lost network. Refuse the known-fatal shapes
             // before anything reaches the disk or the Core.
-            final rejection = await _rejectUnloadableConfig(yamlString);
+            final rejection = await _rejectUnloadableConfig(
+              yamlString,
+              basePath: setupParams.base?.path,
+            );
             if (rejection != null) {
               throw MessageException(rejection);
             }
@@ -989,7 +1020,27 @@ class SetupAction extends _$SetupAction {
   /// reason (Core not up yet, environment quirks) must never stop a normal
   /// apply, and the Core itself now keeps the previous config instead of
   /// dropping to its proxy-less default.
-  Future<String?> _rejectUnloadableConfig(String yaml) async {
+  Future<String?> _rejectUnloadableConfig(
+    String yaml, {
+    String? basePath,
+  }) async {
+    // With a base the Core does not load [yaml] on its own: it merges the
+    // profile file with this overlay. The proxy groups therefore live in the
+    // file, and the overlay usually has none at all - checking only the
+    // overlay here was how 01.00.46 still let a relay config through.
+    if (basePath != null && basePath.isNotEmpty) {
+      try {
+        final baseYaml = await File(basePath).readAsString();
+        final baseRejection = _rejectUnsupportedGroupType(baseYaml);
+        if (baseRejection != null) return baseRejection;
+      } catch (e) {
+        // An unreadable base is the Core's call to make, not ours.
+        commonPrint.log(
+          'base profile check skipped: $e',
+          logLevel: LogLevel.warning,
+        );
+      }
+    }
     if (yaml.isEmpty) return null;
     // Local check first: the Core-side validator only unmarshals the document
     // into a struct, it never builds a proxy group, so `type: relay` sails
