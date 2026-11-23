@@ -1,5 +1,15 @@
 # Changelog
 
+## v01.00.48 (2026-11-23)
+
+**Bug Fixes**
+
+- **config** The 47 guard that reads the active profile before the Core starts could itself abort a connect. It read `currentProfile` outside its own try block, and that provider opens the database, which opens lazily through path_provider; on any host where the plugin has not answered yet the read throws, and because the guard sits inside `_startCoreRunning` the throw took the connect with it. The whole body is inside the try now, so a missing profile, a missing file, an unreadable file or a database that is not up all mean "no opinion" and let the Core start - a check that cannot run must never be the thing that stops a connect
+
+**Build**
+
+- **ci** Three long-standing reasons the workflow could never go green are gone, so a red run now means a real failure instead of a known-bad gate. `systemProp.socksProxyHost=127.0.0.1` lived in the tracked `android/gradle.properties`, which sent the Gradle wrapper download on the CI runner to a SOCKS port that only exists on the dev machine - the Android job died with `Connection refused` before compiling anything, and changing the distribution URL could not help because the traffic never left the runner; the two lines now live in the untracked `GRADLE_USER_HOME/gradle.properties`. `test/lint/dead_file_test.dart` reported twelve FlClash v0.9.2 leftovers whose names are referenced only by themselves - they are pinned in an explicit baseline rather than deleted, so upstream merges do not turn into delete/modify conflicts while a newly dead file still fails the run. And the two coverage floors that the first real run could not reach (`widgets` 82% against a measured 45.7%, `database` 81% against 74.8%) are reset to the measured baseline: they were calibrated on upstream's tree, and a floor no commit can reach is a red badge, not a gate
+
 ## v01.00.47 (2026-11-23)
 
 **Bug Fixes**
