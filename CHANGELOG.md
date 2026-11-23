@@ -1,5 +1,11 @@
 # Changelog
 
+## v01.00.47 (2026-11-23)
+
+**Bug Fixes**
+
+- **config** 01.00.46 tried to refuse a config the Core cannot build by checking the YAML it was about to push. Two things were wrong with that. First, when a profile has a base the pushed YAML is only the overlay the Core merges onto the profile file, so the check inspected a document that usually holds no groups at all - the relay group lived in the file, not in the overlay. Second, and worse, the connect button starts the Core before pushing anything, so by the time the push failed the tunnel was already up and running the Core's proxy-less default: the device had a VPN, no working DNS, and only a toast. The check now reads the active profile's own file and runs in `_startCoreRunning`, before the Core is asked to start at all, so a config that cannot load leaves no tunnel behind; the profile-file check also covers the base case for the normal apply path, which is what 46 was missing
+
 ## v01.00.46 (2026-11-23)
 
 **Bug Fixes**
