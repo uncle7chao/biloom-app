@@ -273,9 +273,14 @@ class SetupAction extends _$SetupAction {
   /// Groups declared by the profile file of the profile that is about to run.
   /// Null when the file is absent or unreadable - that is the Core's call.
   Future<String?> _rejectActiveProfileGroupType() async {
-    final profile = ref.read(currentProfileProvider);
-    if (profile == null) return null;
+    // Reading the current profile touches the database, and the database opens
+    // lazily through path_provider. Neither is guaranteed to answer this early
+    // (a headless start, a plugin-less test host), and a check that cannot run
+    // must never be the thing that stops a connect: it is only here to catch a
+    // config the Core would choke on, so every failure below means "no opinion".
     try {
+      final profile = ref.read(currentProfileProvider);
+      if (profile == null) return null;
       final path = await appPath.getProfilePath(profile.id.toString());
       final file = File(path);
       if (!await file.exists()) return null;
