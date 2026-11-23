@@ -991,6 +991,14 @@ class SetupAction extends _$SetupAction {
   /// dropping to its proxy-less default.
   Future<String?> _rejectUnloadableConfig(String yaml) async {
     if (yaml.isEmpty) return null;
+    // Local check first: the Core-side validator only unmarshals the document
+    // into a struct, it never builds a proxy group, so `type: relay` sails
+    // straight through it. On a cold start there is no previous config for
+    // the Core to keep, so letting it through means the Core runs its
+    // proxy-less default while the VPN stays up - DNS dies and the device
+    // looks offline with only a toast to explain it.
+    final localRejection = _rejectUnsupportedGroupType(yaml);
+    if (localRejection != null) return localRejection;
     File? probe;
     try {
       final configFilePath = await appPath.configFilePath;
@@ -1015,6 +1023,46 @@ class SetupAction extends _$SetupAction {
         } catch (_) {}
       }
     }
+  }
+
+  /// Group types the bundled Core can still build. It has exactly four
+  /// branches in its group parser (`select`, `url-test`, `fallback`,
+  /// `load-balance`; `relay` is a hard error, everything else hits the
+  /// default branch), so anything outside this set fails the whole config.
+  static const _supportedGroupTypes = {
+    'select',
+    'url-test',
+    'fallback',
+    'load-balance',
+  };
+
+  /// Rejects a config whose `proxy-groups` carry a type the Core cannot
+  /// build, using the YAML text alone so the answer does not depend on a
+  /// running Core. Returns the message to show, or null when it looks fine.
+  String? _rejectUnsupportedGroupType(String yaml) {
+    try {
+      final document = loadYaml(yaml);
+      if (document is! YamlMap) return null;
+      final groups = document['proxy-groups'] ?? document['proxy_groups'];
+      if (groups is! YamlList) return null;
+      for (final group in groups) {
+        if (group is! YamlMap) continue;
+        final type = group['type']?.toString().trim().toLowerCase() ?? '';
+        if (type.isEmpty || _supportedGroupTypes.contains(type)) continue;
+        if (type == 'relay') {
+          return '这份配置里有 relay 类型的代理组，内核已经移除了这种组（继续用会导致整机断网）。'
+              '请改用 dialer-proxy 做链式代理后重新导入。';
+        }
+        return '这份配置里有内核不支持的代理组类型「$type」，已拒绝切换以免断网。';
+      }
+    } catch (e) {
+      // A YAML we cannot parse is the Core's call to make, not ours.
+      commonPrint.log(
+        'local group-type check skipped: $e',
+        logLevel: LogLevel.warning,
+      );
+    }
+    return null;
   }
 }
 
